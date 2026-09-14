@@ -56,3 +56,22 @@ assert sum(x['kind']=='guided' for x in full['readings'])==88
 for old,new in zip(r['readings'],full['readings']):
  assert all(old[k]==new[k] for k in old)
 print('888 unique catalogue fragments, 13 sources, 12 topics and unchanged legacy readings verified.')
+
+sy=json.loads((P/'content/yetzirah.json').read_text())
+assert [l['id'] for l in sy['lessons']]==list(range(1,13))
+assert len({l['slug'] for l in sy['lessons']})==12
+assert all(l['quote'] and l['read'] and l['question'] and l['reflection'] and l['sample'] and l['returnTask'] for l in sy['lessons'])
+for l in sy['lessons']:
+ assert len(l['sections'])>=2 and sum(len(' '.join(s['text']).split()) for s in l['sections'])>=150
+ assert len(l['quiz'])==2 and all(len(q['options'])==3 and q['answer'] in range(3) and q['why'] for q in l['quiz'])
+ html=(P/'course/yetzirah'/l['slug']/'index.html').read_text()
+ assert all('id="'+a+'"' in html for a in ['before','reading','practice','check','reflection','sources'])
+ assert 'data-sy-field="before"' in html and 'data-sy-field="note"' in html and 'data-sy-done' in html
+ assert 'yetzirah.css' in html and 'yetzirah-state.js' in html and 'yetzirah.js' in html
+assert len(sy['comparisons'])==7 and len({x['letter'] for x in sy['comparisons']})==7
+assert len(sy['months'])==12 and len({x['month'] for x in sy['months']})==12
+assert sy['comparisons'][0]['Tplanet']=='Сатурн' and sy['comparisons'][0]['Gplanet']=='Луна'
+sitemap=(P/'sitemap.xml').read_text()
+assert '/course/yetzirah/notebook/' not in sitemap
+assert all('/course/yetzirah/'+l['slug']+'/' in sitemap for l in sy['lessons'])
+print('Yetzirah: 12 complete lessons, 24 questions, 7 comparison rows, 12 months, notes, sources and public routes verified.')

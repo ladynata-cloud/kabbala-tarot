@@ -16,4 +16,20 @@ assert.equal(C.canComplete({score:2,checked:true},'Моя мысль о проч
 assert.equal(C.canComplete({score:3,checked:true},'',false),false);assert.equal(C.canComplete({score:3,checked:true},'',true),true);
 const data=require('../content/course.json');
 for(const l of data.lessons){assert.ok(C.grade(l.quiz,l.quiz.map(q=>q.answer)).every(Boolean));assert.ok(C.grade(l.quiz,l.quiz.map(q=>(q.answer+1)%3)).every(v=>!v));}
-console.log('State, import preservation, completion gates and grading for 72 questions: passed.');
+console.log('State, import preservation, completion gates and grading for all course questions: passed.');
+// Old exports remain usable after the expansion; readings survive ordinary lesson saves.
+const expandedMeta=require('../content/course.json').lessons;
+const oldState={version:2,lessons:{24:{done:true,checked:true,score:3}},notes:{24:'Сохранённая мысль до расширения'}};
+const expanded=C.normalize(oldState,expandedMeta);assert.equal(expanded.notes[24],oldState.notes[24]);assert.equal(expanded.lessons[24].done,true);
+expanded.readings[1]={note:'Первое чтение',done:true};expanded.readings[88]={note:'Последняя заметка',done:false};
+assert.deepEqual(C.normalize(expanded,expandedMeta).readings,expanded.readings);
+const readImport={...oldState,course:'eliora-kabbalah-v2',readings:{1:{note:'Другая мысль',done:false},88:{note:'Последняя заметка',done:true}}};
+const readMerged=C.merge(expanded,readImport,expandedMeta);assert.equal(readMerged.readings[1].done,true);assert.ok(readMerged.readings[1].note.includes('Первое чтение'));assert.ok(readMerged.readings[1].note.includes('Другая мысль'));assert.equal(readMerged.readings[88].done,true);
+assert.deepEqual(C.merge(readMerged,readImport,expandedMeta).readings,readMerged.readings);
+assert.deepEqual(C.merge(readMerged,{...oldState,course:'eliora-kabbalah-v2'},expandedMeta).readings,readMerged.readings);
+assert.throws(()=>C.merge(expanded,{...readImport,readings:{1:{note:{bad:true}}}},expandedMeta));
+const {CourseGematria:G}=require('../assets/course/extensions.js');
+assert.equal(G.calculate('חי').total,18);assert.equal(G.calculate('חַי').total,18);assert.equal(G.calculate('אהבה').total,13);assert.equal(G.calculate('אחד').total,13);
+assert.equal(G.calculate('מלך').total,90);assert.equal(G.calculate('ךםןףץ').total,280);assert.ok(G.calculate('Наталья').error);assert.ok(G.calculate('חי18').error);assert.ok(G.calculate('').error);
+assert.equal(G.calculate('שלום').total,376);
+console.log('Expanded progress, Zohar note merging, old imports and Hebrew gematria: passed.');

@@ -2,10 +2,15 @@
 (function(root){
  const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
  const dict=o=>o!==null&&typeof o==='object'&&!Array.isArray(o);
- const empty=()=>({version:2,lessons:{},notes:{},large:false});
+ const empty=()=>({version:2,lessons:{},notes:{},readings:{},large:false});
  function normalize(raw,meta){
   const out=empty();if(!dict(raw)||raw.version!==2)return out;
   out.large=raw.large===true;
+  for(let i=1;i<=88;i++){
+   const r=dict(raw.readings)&&own(raw.readings,i)?raw.readings[i]:undefined;
+   if(!dict(r))continue;
+   out.readings[i]={done:r.done===true,note:typeof r.note==='string'&&r.note.length<=100000?r.note:''};
+  }
   for(const l of meta){
    const n=dict(raw.notes)&&own(raw.notes,l.id)?raw.notes[l.id]:undefined;
    if(typeof n==='string'&&n.length<=100000)out.notes[l.id]=n;
@@ -18,7 +23,15 @@
  function merge(state,raw,meta){
   if(!dict(raw)||raw.course!=='eliora-kabbalah-v2'||raw.version!==2||!dict(raw.notes)||!dict(raw.lessons))throw Error('Это не экспорт тетради этого курса.');
   for(const l of meta)if(own(raw.notes,l.id)&&(typeof raw.notes[l.id]!=='string'||raw.notes[l.id].length>100000))throw Error('Некорректная запись.');
+  if(dict(raw.readings))for(let i=1;i<=88;i++)if(own(raw.readings,i)&&(!dict(raw.readings[i])||(raw.readings[i].note!==undefined&&(typeof raw.readings[i].note!=='string'||raw.readings[i].note.length>100000))))throw Error('Некорректная запись к Зоару.');
   const merged=normalize(state,meta),incoming=normalize(raw,meta);
+  for(let i=1;i<=88;i++){
+   const a=merged.readings[i],b=incoming.readings[i];if(!b)continue;
+   const before=a?.note||'',n=b.note||'',sep='\n\n— Импортированная запись —\n';
+   const note=before&&n&&before!==n&&!before.endsWith(sep+n)?before+sep+n:(before||n);
+   if(note.length>100000)throw Error('Объединённая запись к Зоару слишком велика.');
+   merged.readings[i]={note,done:!!a?.done||b.done};
+  }
   for(const l of meta){
    const n=incoming.notes[l.id];if(typeof n==='string'&&n.trim()){
     const before=merged.notes[l.id]||'';

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: http://kabbala-tarot.online/sitemap.xml
+Sitemap: https://kabbala-tarot.online/sitemap.xml

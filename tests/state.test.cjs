@@ -33,3 +33,10 @@ assert.equal(G.calculate('חי').total,18);assert.equal(G.calculate('חַי').to
 assert.equal(G.calculate('מלך').total,90);assert.equal(G.calculate('ךםןףץ').total,280);assert.ok(G.calculate('Наталья').error);assert.ok(G.calculate('חי18').error);assert.ok(G.calculate('').error);
 assert.equal(G.calculate('שלום').total,376);
 console.log('Expanded progress, Zohar note merging, old imports and Hebrew gematria: passed.');
+// A notebook made before the expansion must not discard newer reading records.
+const thousand=C.empty();thousand.readings[88]={note:'Старая запись',done:true};thousand.readings[89]={note:'Новая запись',done:false};thousand.readings[888]={note:'Последняя из 888',done:true};
+const restored888=C.normalize(JSON.parse(JSON.stringify(thousand)),expandedMeta);
+assert.deepEqual(restored888.readings,thousand.readings);
+const merged888=C.merge(restored888,{version:2,course:'eliora-kabbalah-v2',lessons:{},notes:{},readings:{88:{note:'Ещё одна старая мысль',done:false}}},expandedMeta);
+assert.equal(merged888.readings[888].note,'Последняя из 888');assert.equal(merged888.readings[89].note,'Новая запись');assert.ok(merged888.readings[88].note.includes('Старая запись'));
+assert.throws(()=>C.merge(thousand,{version:2,course:'eliora-kabbalah-v2',lessons:{},notes:{},readings:{888:{note:42}}},expandedMeta));

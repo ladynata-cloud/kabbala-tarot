@@ -44,3 +44,15 @@ for s in 'wcsp':assert {c['rank'] for c in t['cards'] if c['group']==s}==set(ran
 print('\n'.join(errors[:30]))
 assert not errors, f'{len(errors)} link/HTML errors'
 print(f'{len(parsers)} HTML files: internal links and anchors passed. 45 lessons, 135 questions, 88 readings, 78 cards verified.')
+
+
+full=json.loads((P/'content/readings888.json').read_text())
+assert [x['id'] for x in full['readings']]==list(range(1,889))
+assert len({x['quote'] for x in full['readings']})==888
+source_ids={x['id'] for x in full['sources']};topic_ids={x['id'] for x in full['topics']}
+assert len(source_ids)==13 and len(topic_ids)==12
+assert all(x['sourceId'] in source_ids and set(x['topics'])<=topic_ids for x in full['readings'])
+assert sum(x['kind']=='guided' for x in full['readings'])==88
+for old,new in zip(r['readings'],full['readings']):
+ assert all(old[k]==new[k] for k in old)
+print('888 unique catalogue fragments, 13 sources, 12 topics and unchanged legacy readings verified.')

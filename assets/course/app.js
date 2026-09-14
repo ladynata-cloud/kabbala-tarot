@@ -57,17 +57,18 @@ const imp=$('[data-import]');if(imp)imp.addEventListener('change',async()=>{cons
 function renderNotebook(){const container=$('#notebook-items');if(!container)return;container.innerHTML=META.map(l=>'<section class="notebook-item"><h3><a href="'+link(l)+'">'+l.id+'. '+esc(l.title)+'</a></h3><small>'+(state.lessons[l.id]?.done?'✓ Урок завершён':'Урок ещё не завершён')+'</small><label class="reflection-label" for="note-'+l.id+'">Моя запись к уроку '+l.id+'</label><textarea class="note" maxlength="20000" id="note-'+l.id+'" data-notebook-note="'+l.id+'">'+esc(state.notes[l.id]||'')+'</textarea><small data-saved-status="'+l.id+'"></small></section>').join('');$$('[data-notebook-note]').forEach(el=>el.addEventListener('input',()=>{state.notes[el.dataset.notebookNote]=el.value;save();$('[data-saved-status="'+el.dataset.notebookNote+'"]').textContent=storageOK?'Сохранено':'Экспортируйте запись перед закрытием';}));}
 
 function readingRecord(id){return state.readings[id]||(state.readings[id]={note:'',done:false});}
-function updateReadings(){const n=READING_META.filter(r=>state.readings[r.id]?.done).length;$$('[data-reading-progress]').forEach(el=>el.textContent='Прочитано '+n+' из 88');}
+function updateReadings(){$$('[data-reading-progress]').forEach(el=>{const limit=Number(el.dataset.readingLimit||88),n=READING_META.filter(r=>r.id<=limit&&state.readings[r.id]?.done).length;el.textContent='Прочитано '+n+' из '+limit;});}
 function wireReadingNotes(root=document){
  $$('[data-reading-note]',root).forEach(el=>{const id=el.dataset.readingNote;el.value=state.readings[id]?.note||'';el.addEventListener('input',()=>{readingRecord(id).note=el.value;save();const status=$('[data-reading-status="'+id+'"]',root);if(status)status.textContent=storageOK?'Сохранено в этом браузере':'Экспортируйте запись перед закрытием';});});
  $$('[data-reading-done]',root).forEach(el=>{const id=el.dataset.readingDone;el.checked=state.readings[id]?.done===true;el.addEventListener('change',()=>{readingRecord(id).done=el.checked;save();});});
 }
 function renderReadingNotebook(){const box=$('#reading-notebook');if(!box)return;
  const found=READING_META.filter(r=>state.readings[r.id]?.note||state.readings[r.id]?.done);
- box.innerHTML=found.length?found.map(r=>'<section class="notebook-item"><h3><a href="'+DATA.root+'course/reading/'+r.group+'/#reading-'+String(r.id).padStart(2,'0')+'">'+r.id+'. '+esc(r.title)+'</a></h3><label class="reflection-label" for="reading-note-'+r.id+'">Моя запись</label><textarea class="note" maxlength="20000" id="reading-note-'+r.id+'" data-reading-note="'+r.id+'"></textarea><small data-reading-status="'+r.id+'" role="status"></small><label class="self-check"><input type="checkbox" data-reading-done="'+r.id+'"> Прочитано и обдумано</label></section>').join(''):'<p>Здесь появятся фрагменты, к которым Вы оставили запись или отметили чтение.</p>';
+ box.innerHTML=found.length?found.map(r=>'<section class="notebook-item"><h3><a href="'+DATA.root+(r.href?r.href.replace(/^\//,''):'course/reading/'+r.group+'/#reading-'+String(r.id).padStart(2,'0'))+'">'+r.id+'. '+esc(r.title)+'</a></h3><label class="reflection-label" for="reading-note-'+r.id+'">Моя запись</label><textarea class="note" maxlength="20000" id="reading-note-'+r.id+'" data-reading-note="'+r.id+'"></textarea><small data-reading-status="'+r.id+'" role="status"></small><label class="self-check"><input type="checkbox" data-reading-done="'+r.id+'"> Прочитано и обдумано</label></section>').join(''):'<p>Здесь появятся фрагменты, к которым Вы оставили запись или отметили чтение.</p>';
  wireReadingNotes(box);
 }
 wireReadingNotes();renderReadingNotebook();updateReadings();
 
 renderNotebook();updateProgress();
 })();
+

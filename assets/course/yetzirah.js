@@ -51,7 +51,7 @@
   const letters=Array.from('אבגדהוזחטיכלמנסעפצקרשת');
   const draw=()=>{const n=Number($('#sy-pair-size').value),ordered=$('#sy-pair-ordered').checked;let pairs=[];
    for(let i=0;i<n;i++)for(let j=ordered?0:i+1;j<n;j++)if(i!==j)pairs.push('<span><bdi lang="he">'+letters[i]+'</bdi> · <bdi lang="he">'+letters[j]+'</bdi></span>');
-   $('[data-sy-pair-size]').textContent=n;$('[data-sy-pair-formula]').textContent=n+' × '+(n-1)+(ordered?'':' ÷ 2')+' = '+S.countPairs(n,ordered)+(ordered?' порядков пар':' пар');$('[data-sy-pair-list]').innerHTML=pairs.join('');
+   $('[data-sy-pair-size]').textContent=n;$('[data-sy-pair-formula]').textContent=(ordered?'Пар с учётом порядка: ':'Пар без учёта порядка: ')+n+' × '+(n-1)+(ordered?'':' ÷ 2')+' = '+S.countPairs(n,ordered);$('[data-sy-pair-list]').innerHTML=pairs.join('');
   };$('#sy-pair-size').addEventListener('input',draw);$('#sy-pair-ordered').addEventListener('change',draw);draw();
  }
  if($('#sy-perm-size')){

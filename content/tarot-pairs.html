@@ -1,0 +1,86 @@
+<header class="pairs-heading">
+  <div><h1>Конструктор пар</h1><p>Выберите две карты. Найдите связь и объясните её своими словами.</p></div>
+  <a href="../two-cards/">К уроку о двух картах</a>
+</header>
+<div id="pair-app" class="pairs-app" hidden>
+  <div class="pairs-settings">
+    <label>Как рассматриваем карты<select id="pair-order"><option value="sequence">Последовательность: А → Б</option><option value="pair">Пара: порядок не задан</option></select></label>
+    <label id="pair-lens-label">Роли позиций<select id="pair-lens"><option value="development">Развитие: от А к Б</option><option value="resource">Ресурс → действие</option><option value="obstacle">Препятствие → совет</option></select></label>
+    <label class="pair-check"><input type="checkbox" id="pair-reversals">Учитывать перевёрнутость</label>
+  </div>
+  <p class="pairs-count" id="pair-count"></p>
+  <div class="pair-selectors">
+    <fieldset><legend>Карта А</legend><label for="pair-a">Выберите карту</label><select id="pair-a">{{OPTIONS_A}}</select><label class="orientation" hidden>Положение<select id="pair-ra"><option value="0">Прямое</option><option value="1">Перевёрнутое</option></select></label></fieldset>
+    <fieldset><legend>Карта Б</legend><label for="pair-b">Выберите карту</label><select id="pair-b">{{OPTIONS_B}}</select><label class="orientation" hidden>Положение<select id="pair-rb"><option value="0">Прямое</option><option value="1">Перевёрнутое</option></select></label></fieldset>
+  </div>
+  <div class="pair-toolbar">
+    <button type="button" class="button" id="pair-swap">Поменять местами</button>
+    <button type="button" class="button secondary" id="pair-random">Случайное упражнение</button>
+    <div class="pair-pagination"><button type="button" id="pair-prev" aria-label="Предыдущее сочетание">←</button><label for="pair-index">№</label><input id="pair-index" type="number" min="1" step="1" inputmode="numeric"><span id="pair-total"></span><button type="button" id="pair-go">Перейти</button><button type="button" id="pair-next" aria-label="Следующее сочетание">→</button></div>
+  </div>
+  <p id="pair-message" class="pair-status" role="status"></p>
+  <div id="pair-tableau" class="pair-tableau"></div>
+  <p id="pair-order-help" class="pair-caption"></p>
+  <label class="pair-note-label" for="pair-question">Какой вопрос Вы рассматриваете?</label>
+  <textarea id="pair-question" data-note="question" maxlength="6000" rows="2" placeholder="Например: что поможет мне перейти от замысла к регулярной работе?"></textarea>
+  <p class="pair-caption">Вопрос и роли позиций задайте до толкования. Случайный выбор здесь — способ получить учебное упражнение.</p>
+  <nav class="pair-tabs" role="tablist" aria-label="Шаги самостоятельного разбора">
+    <button type="button" id="pair-tab-0" role="tab" aria-selected="true" aria-controls="pair-step-0" tabindex="0" data-pair-tab="0"><span>1</span>Наблюдать</button>
+    <button type="button" id="pair-tab-1" role="tab" aria-selected="false" aria-controls="pair-step-1" tabindex="-1" data-pair-tab="1"><span>2</span>Сопоставить</button>
+    <button type="button" id="pair-tab-2" role="tab" aria-selected="false" aria-controls="pair-step-2" tabindex="-1" data-pair-tab="2"><span>3</span>Связать</button>
+    <button type="button" id="pair-tab-3" role="tab" aria-selected="false" aria-controls="pair-step-3" tabindex="-1" data-pair-tab="3"><span>4</span>Проверить себя</button>
+  </nav>
+  <section class="pair-step" id="pair-step-0" role="tabpanel" aria-labelledby="pair-tab-0" tabindex="0">
+    <h2>Что происходит на изображениях?</h2><p>Назовите действие, направление взгляда, движение или остановку. Выберите по одной детали, на которую затем сможете опереться.</p>
+    <div class="pair-columns"><label>Что я вижу на карте А<textarea data-note="observationA" maxlength="6000" rows="4" placeholder="Кто или что действует? Какая деталь важна для моего вопроса?"></textarea></label><label>Что я вижу на карте Б<textarea data-note="observationB" maxlength="6000" rows="4" placeholder="Что сходно с первой картой, а что отличается?"></textarea></label></div>
+    <details class="pair-disclosure"><summary>Открыть наблюдения и прочтения курса</summary><div class="pair-columns" id="pair-observation-hints"></div></details>
+    <button type="button" class="button secondary" data-pair-next="1">К соответствиям →</button>
+  </section>
+  <section class="pair-step" id="pair-step-1" role="tabpanel" aria-labelledby="pair-tab-1" tabindex="0" hidden>
+    <h2>Найдите общий принцип и различие</h2>
+    <p>Работаем в западной герметической схеме Golden Dawn, адаптированной к названиям Уэйта–Смит. Соответствия дают дополнительные вопросы к изображениям.</p>
+    <div class="pair-columns" id="pair-correspondences"></div>
+    <div class="pair-layer" id="pair-structure"></div>
+    <div class="pair-layer" id="pair-elements"></div>
+    <p class="pair-caption">Book T рассматривает влияние соседей на карту в раскладе. Здесь правило соседства используется как упражнение для двух карт; это ещё не полная оценка достоинств карты в большом раскладе.</p>
+    <details class="pair-disclosure"><summary>Как устроена выбранная схема</summary>
+      <p>Числовые карты от Туза до Десятки соотносятся с десятью сефирот внутри мира своей масти. Старшие арканы связаны с буквами и путями: номер Мага I не превращает его в Кетер, а VIII Силы — в Ход.</p>
+      <p>Для придворных принята учебная адаптация: Король — Огонь и Йод, Королева — Вода и первая Хе, Рыцарь — Воздух и Вав, Паж — Земля и конечная Хе. Этот способ фигуры рассматривается внутри стихии масти. Названия придворных у Golden Dawn, Уэйта и Кроули различаются; автоматически переносить названия между колодами нельзя.</p>
+      <p>Сила VIII связана с Тет и Львом, Правосудие XI — с Ламед и Весами. Император — Хе, Звезда — Цади. Поздняя перестановка Хе и Цади у Кроули здесь не применяется. Это западная система Таро, а не таблица из Зоара или универсальное учение иудейской каббалы.</p>
+      <p>Подписи вроде «Ход — различение и организация», вопросы к мирам и способы построения фразы — учебные опоры курса. Они помогают начать работу, но не исчерпывают значения сефирот и миров.</p>
+    </details>
+    <button type="button" class="button secondary" data-pair-next="2">К собственной фразе →</button>
+  </section>
+  <section class="pair-step" id="pair-step-2" role="tabpanel" aria-labelledby="pair-tab-2" tabindex="0" hidden>
+    <h2>Как один образ связан с другим?</h2>
+    <p>Проверьте несколько отношений: поддержка, ограничение, напряжение, условие, развитие. Выберите то, которое объясняет Ваш вопрос и сохраняет существенное в обеих картах.</p>
+    <details class="pair-disclosure"><summary>Проверить меру, недостаток, избыток и искажение</summary>
+      <p id="pair-orientation-help"></p><p>Ниже — авторские учебные гипотезы для каждой карты. Состояние выбирается по вопросу, позиции и наблюдениям. Прямое положение тоже допускает проблемное проявление.</p>
+      <div class="pair-columns" id="pair-states"></div>
+    </details>
+    <div class="pair-columns"><label>Как проявляется карта А<select data-note="conditionA">{{CONDITIONS}}</select></label><label>Как проявляется карта Б<select data-note="conditionB">{{CONDITIONS}}</select></label></div>
+    <p class="pair-caption">Можно оставить «Пока не определено». Уточнение важнее поспешного выбора.</p>
+    <p id="pair-condition-feedback" class="pair-condition-feedback"></p>
+    <label>Моя связная фраза<textarea data-note="connection" maxlength="6000" rows="4" placeholder="Как действие одной карты связано с действием другой? Почему именно так?"></textarea></label>
+    <details class="pair-disclosure"><summary>Нужна опора для начала фразы</summary><p id="pair-frame" class="pair-frame"></p><p class="pair-caption">Это составленный по выбранным картам каркас. Закончите его конкретным условием из своего вопроса; он не является готовым значением сочетания.</p></details>
+    <label>Чем я обосновываю связь<textarea data-note="evidence" maxlength="6000" rows="4" placeholder="Деталь карты А, деталь карты Б, соответствие выбранной школы и их связь с вопросом."></textarea></label>
+    <details class="pair-disclosure" id="pair-reverse-block"><summary>Сравнить А → Б и Б → А</summary><div id="pair-reverse-reading"></div><p class="pair-caption">Меняются роли позиций; принадлежность к мастям и буквенные соответствия сохраняются. При перестановке перевёрнутость остаётся у той же карты. Для второй последовательности можно открыть отдельную запись кнопкой «Поменять местами».</p></details>
+    <button type="button" class="button secondary" data-pair-next="3">Проверить своё объяснение →</button>
+  </section>
+  <section class="pair-step" id="pair-step-3" role="tabpanel" aria-labelledby="pair-tab-3" tabindex="0" hidden>
+    <h2>Удерживается ли объяснение?</h2>
+    <label>Другое возможное прочтение<textarea data-note="alternative" maxlength="6000" rows="4" placeholder="Как ещё можно связать эти карты? Какие обстоятельства помогли бы выбрать между двумя прочтениями?"></textarea></label>
+    <div class="pair-self-checks"><label><input type="checkbox" data-self-check="images">Могу указать детали обеих карт, которые поддерживают мою мысль.</label><label><input type="checkbox" data-self-check="positions">Учитываю вопрос, роли позиций и выбранный порядок.</label><label><input type="checkbox" data-self-check="tradition">Различаю соответствие источника и собственную интерпретацию.</label><label><input type="checkbox" data-self-check="alternative">Рассмотрел(а) альтернативу и понимаю, чего пока не знаю.</label></div>
+    <label>Итоговое толкование<textarea data-note="conclusion" maxlength="6000" rows="5" placeholder="Ответ на мой вопрос, основание и условие, при котором такое прочтение подходит."></textarea></label>
+    <button type="button" class="button" id="pair-review">Проверить полноту разбора</button><p id="pair-review-result" class="pair-status" role="status"></p>
+    <p class="pair-caption">Проверка отмечает заполненные опоры и Вашу самооценку. Она не выставляет балл за смысл и не подтверждает истинность прогноза.</p>
+  </section>
+  <div class="pair-save-bar"><span id="pair-save-status" role="status">Записи сохраняются в этом браузере.</span><button type="button" id="pair-share" class="pair-link-button">Скопировать ссылку на сочетание</button></div>
+  <p id="pair-share-status" class="pair-status" role="status"></p>
+  <section class="pair-examples" id="pair-examples"><h2>Начните с разобранного примера</h2><p>Восемь примеров показывают разные способы рассуждения. Для каждой пары есть прочтение в двух направлениях и объяснение связи.</p><div class="pair-example-buttons">{{EXAMPLE_BUTTONS}}</div><details id="pair-example-answer" class="pair-disclosure" hidden><summary>Открыть разбор выбранного примера</summary><div id="pair-example-content"></div></details></section>
+  <section class="pair-notebook" id="pair-notebook"><h2>Мои разборы пар</h2><p>Для каждой пары, последовательности и набора позиций хранится отдельная запись. Она остаётся после обновления страницы. Для переноса на другое устройство скачайте тетрадь.</p><div class="pair-toolbar"><button type="button" id="pair-export" class="button secondary">Скачать тетрадь JSON</button><button type="button" id="pair-export-text" class="button secondary">Скачать записи TXT</button><label class="pair-import">Импортировать тетрадь<input type="file" id="pair-import" accept=".json,application/json"></label></div><p id="pair-import-status" class="pair-status" role="status"></p><details class="pair-disclosure"><summary>Открыть мои записи <span id="pair-notebook-count"></span></summary><label>Найти запись<input type="search" id="pair-note-search" placeholder="Название карты или слова из записи"></label><div id="pair-note-list"></div><button type="button" class="button secondary" id="pair-note-more" hidden>Показать ещё</button></details></section>
+</div>
+<noscript><p class="notice">Для выбора сочетаний и сохранения записей включите JavaScript. Методика, источники и примеры ниже доступны без него. <a href="../tarot/#cards">Посмотреть все 78 карт</a>.</p></noscript>
+<section class="pair-method" id="pair-method"><h2>Как пользоваться конструктором</h2><ol><li>Задайте вопрос и роли позиций. В паре без порядка рассматриваются два аспекта; в последовательности важен переход от первого ко второму.</li><li>Опишите обе сцены. Уточните сефирот, миры, буквы или способы действия придворных — в зависимости от типа карт.</li><li>Предложите связь и объясните, какие детали её поддерживают. Проверьте меру, недостаток, избыток и искажение.</li><li>Сформулируйте альтернативу. Спросите себя, какие обстоятельства позволили бы уточнить толкование.</li></ol><p>Из 78 разных карт получаются 3 003 пары без порядка и 6 006 последовательностей. Если для каждой карты отдельно различать прямое и перевёрнутое положение — 12 012 и 24 024 варианта соответственно. Одна и та же карта дважды не выбирается.</p><p>Конструктор строит вопросы и опоры по данным выбранных карт. Подробные авторские разборы подготовлены для восьми примеров; собственное толкование каждого из остальных сочетаний Вы собираете по той же методике.</p></section>
+<details class="pair-disclosure pair-static-examples"><summary>Все восемь примеров: текст для чтения</summary>{{STATIC_EXAMPLES}}</details>
+<section class="source-block pair-sources" id="pair-sources"><h2>Источники и границы схемы</h2><p><a href="https://sacred-texts.com/oto/lib78.htm" target="_blank" rel="noopener noreferrer">Book T в публикации Liber LXXVIII</a>: таблица двадцати двух ключей, описания числовых и придворных карт, раздел «Of the Dignities». Источник соответствий букв, рангов и мастей; названия придворных требуют отдельного сопоставления с Уэйтом–Смит.</p><p><a href="https://sacred-texts.com/tarot/pkt/index.htm" target="_blank" rel="noopener noreferrer">А. Э. Уэйт. The Pictorial Key to the Tarot</a>: изображения и описания колоды Уэйта–Смит. Тексты наблюдений, четыре состояния проявления, вопросы и примеры в конструкторе написаны для курса.</p><p>В конструкторе используются западные соответствия Таро. Нельзя переносить их на все школы каббалы или выдавать за указание из Зоара. Соответствие помогает построить символическое объяснение; само по себе оно не устанавливает факты о человеке или будущем.</p><p><a href="../tarot-sefirot/#upright-and-reversed">Подробнее о прямых и перевёрнутых картах</a> · <a href="../tarot-worlds/">Масти и четыре мира</a> · <a href="../tarot-schools/">Разные школы Таро</a></p></section>

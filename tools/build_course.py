@@ -7,6 +7,7 @@ import json,math,re
 import build_expansion as expansion
 import build_reading_catalog as reading_catalog
 import build_yetzirah as yetzirah
+import build_tarot_pairs as tarot_pairs
 ROOT=Path(__file__).resolve().parents[1]
 D=json.loads((ROOT/'content/course.json').read_text());CFG=json.loads((ROOT/'content/site.json').read_text());ORIGIN=CFG['origin'].rstrip('/')
 LESSONS=D['lessons'];routes=[]
@@ -78,6 +79,8 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
  html=f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#122e3b"><title>{E(title)} | Элиора Вейра</title><meta name="description" content="{E(description,quote=True)}"><meta name="author" content="Элиора Вейра"><meta name="robots" content="{'noindex,follow' if noindex else 'index,follow,max-image-preview:large'}"><link rel="canonical" href="{url}"><meta property="og:type" content="{'article' if L else 'website'}"><meta property="og:locale" content="ru_RU"><meta property="og:site_name" content="Каббала и Таро"><meta property="og:title" content="{E(title,quote=True)}"><meta property="og:description" content="{E(description,quote=True)}"><meta property="og:url" content="{url}"><meta property="og:image" content="{ORIGIN}/assets/beginning.jpg"><meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="{prefix}assets/course/course.css"><link rel="icon" href="{prefix}assets/course/icon.svg"><script type="application/ld+json">{jsonsafe(schema)}</script></head><body><a class="skip" href="#main">Перейти к содержанию</a><header class="top"><div class="top-inner"><a class="wordmark" href="{prefix or './'}" aria-label="Каббала и Таро — главная">Каббала<span><i>и</i> Таро</span></a><nav aria-label="Разделы курса">{nav}</nav><a class="author" href="{prefix}author/">Элиора Вейра</a></div></header><main class="wrap" id="main">{body}</main><footer class="footer"><div>Каббала и Таро · Элиора Вейра · 2026<br>Знакомиться можно постепенно. Возвращаться — сколько угодно.</div><div><a href="{prefix}author/">Об авторе и курсе</a><a href="{prefix}course/reading/#sources">Источники</a><a href="{prefix}course/notebook/">Тетрадь и перенос записей</a></div></footer><script id="course-data" type="application/json">{jsonsafe(payload)}</script><script defer src="{prefix}assets/course/state.js"></script><script defer src="{prefix}assets/course/readings-data.js"></script><script defer src="{prefix}assets/course/app.js"></script><script defer src="{prefix}assets/course/extensions.js"></script>{catalog_script}</body></html>'''
  if path.startswith('/course/yetzirah/'):
   html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/yetzirah.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/yetzirah-state.js"></script><script defer src="{prefix}assets/course/yetzirah.js"></script></body>')
+ if path=='/course/tarot-pairs/':
+  html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/tarot-pairs.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/tarot-pairs-core.js"></script><script defer src="{prefix}assets/course/tarot-pairs.js"></script></body>')
  out=ROOT/path.strip('/')/'index.html' if path!='/' else ROOT/'index.html';out.parent.mkdir(parents=True,exist_ok=True);out.write_text(html+'\n')
  if not noindex:routes.append(path)
 def crumbs(prefix,title=None):return '<nav class="crumb" aria-label="Путь к странице"><span><a href="'+prefix+'">Главная</a></span><span><a href="'+prefix+'course/">Курс</a></span>'+(('<span>'+E(title)+'</span>') if title else '')+'</nav>'
@@ -129,6 +132,7 @@ page('/course/atlas/','Древо сефирот, четыре мира и уч�
 expansion.build(page,crumbs,D,lessonlist)
 reading_catalog.build(page,crumbs)
 yetzirah.build(page,crumbs)
+tarot_pairs.build(page,crumbs)
 # Glossary
 body=crumbs('../../','Словарь')+'<header class="hero-small"><p class="eyebrow">Слово можно просто посмотреть</p><h1>Словарь без спешки</h1><p class="lead">Если термин забылся, вернитесь сюда. Короткое объяснение поможет вспомнить урок, а подробности найдутся в самом тексте.</p><label for="term-search">Какое слово ищем?</label><br><input id="term-search" class="search" type="search" data-search="terms" placeholder="Например, тиккун"><span class="status-text" data-search-status="terms" aria-live="polite"></span></header>'
 body+='<div class="books-reminder"><p>Нужно подробнее о Торе, Талмуде или Зоаре? Для них есть отдельное введение с примерами.</p><a href="../books/">Открыть знакомство с книгами →</a></div>'

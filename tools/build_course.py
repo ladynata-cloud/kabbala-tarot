@@ -7,6 +7,7 @@ import json,math,re
 import build_expansion as expansion
 import build_reading_catalog as reading_catalog
 import build_yetzirah as yetzirah
+import build_book_studies as book_studies
 import build_book_modules as book_modules
 import build_tarot_pairs as tarot_pairs
 import build_tarot_triples as tarot_triples
@@ -107,6 +108,9 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
  if path.startswith('/course/pathways/'):
   html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/spread-grammar.css"><link rel="stylesheet" href="{prefix}assets/course/pathways.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/spread-grammar-core.js?v=3"></script><script defer src="{prefix}assets/course/pathways-atlas.js"></script><script defer src="{prefix}assets/course/pathways-core.js"></script><script defer src="{prefix}assets/course/pathways.js"></script></body>')
  if path=='/course/bahir/letters-and-number/':html=html.replace('book-modules.js','book-modules.js?v=2').replace('book-modules.css','book-modules.css?v=2')
+ if path.startswith(('/course/shaarei-orah/','/course/mystical-qabalah/','/course/book-of-thoth/','/course/book-studies/')):
+  html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/yetzirah.css"><link rel="stylesheet" href="{prefix}assets/course/book-studies.css"></head>')
+  if path!='/course/book-studies/':html=html.replace('</body>',f'<script defer src="{prefix}assets/course/study-state.js"></script><script defer src="{prefix}assets/course/book-studies.js"></script></body>')
  out=ROOT/path.strip('/')/'index.html' if path!='/' else ROOT/'index.html';out.parent.mkdir(parents=True,exist_ok=True);out.write_text(html+'\n')
  if not noindex:routes.append(path)
 def crumbs(prefix,title=None):return '<nav class="crumb" aria-label="Путь к странице"><span><a href="'+prefix+'">Главная</a></span><span><a href="'+prefix+'course/">Курс</a></span>'+(('<span>'+E(title)+'</span>') if title else '')+'</nav>'
@@ -114,6 +118,7 @@ def sources(ids):return ''.join(f'<p class="fine"><a href="{E(D["sources"][i]["u
 # Books orientation is available before the numbered lessons and needs no JavaScript.
 body=crumbs('../../','Тора, Талмуд, Зоар')+(ROOT/'content/books.html').read_text()
 body+='<section class="books-start"><div><h2>Читаем отдельные книги подробно</h2><p>Сефер Йецира, Томер Двора и Бахир: три модуля по 12 занятий, с разными упражнениями и тетрадями.</p></div><a class="button" href="../book-modules/">Выбрать книгу →</a></section>'
+body+='<section class="books-start" id="new-book-studies"><div><p class="eyebrow">Три книги · 24 занятия</p><h2>От имён и сефирот к языку Таро</h2><p>«Шаарей Ора» Йосефа Гикатилы, «Мистическая Каббала» Дион Форчун и «Книга Тота» Алистера Кроули. Подробные пояснения, сравнение систем, 48 вопросов и три личные тетради.</p><p><a href="/course/shaarei-orah/">Врата света →</a> · <a href="/course/mystical-qabalah/">Мистическая Каббала →</a> · <a href="/course/book-of-thoth/">Книга Тота →</a></p></div><a class="button" href="/course/book-studies/">Выбрать книгу →</a></section>'
 page('/course/books/','Тора, Талмуд и Зоар — подробное знакомство с книгами','Что такое Тора, Танах, Мишна, Талмуд и Зоар: устройство книг, примеры чтения, комментарий Сулам и понятные объяснения для начинающих.',body)
 # Course overview
 body='<section class="hero-course"><div><p class="eyebrow">Бесплатный вводный курс</p><h1>Сначала — интерес.<br><em>Потом — понимание.</em></h1><p class="lead">Если Вы уже пытались читать о каббале и запутались в первых же терминах — Вы не одиноки. Здесь начнём спокойно: один небольшой урок, одна понятная схема, несколько вопросов. Так постепенно и сложится целая картина.</p><div class="actions"><a class="button" data-resume href="jewish-context/">Начать первый урок</a><a class="button secondary" href="books/">Сначала познакомиться с книгами</a><a href="#program">Программа курса</a></div><div class="hero-meta"><span><strong>45</strong> уроков</span><span><strong>888</strong> фрагментов Зоара</span><span>В своём темпе</span></div><div class="index-progress">'+progress()+'</div></div><figure class="cover"><img src="../assets/beginning.jpg" width="1536" height="1024" fetchpriority="high" alt="Открытая книга и карты у золотого дерева под ночным небом"></figure></section>'
@@ -130,6 +135,7 @@ body+='<section class="books-start"><div><p class="eyebrow">Следующая �
 body+='<section class="books-start"><div><p class="eyebrow">Следующая ступень · 6 занятий</p><h2>16 придворных: Имя, стихии и отношения</h2><p>Четыре буквы, матрица рангов и мастей, диалог двух функций и органическое чтение четвёрки. Практика всех порядков и трёх разбиений на пары.</p></div><a class="button" href="court-relations/">Исследовать придворных →</a></section>'
 body+='<section class="books-start"><div><p class="eyebrow">Следующая ступень · 6 занятий</p><h2>Свет, сосуд и передача: смешанный расклад</h2><p>Соединяем числовые карты, придворных и Старшие арканы. Пардес римоним, Тания и практика целого: форма, мера, восприятие и поступок.</p></div><a class="button" href="mixed-reading/">Читать смешанный расклад →</a></section>'
 body+='<section class="books-start"><div><p class="eyebrow">Следующая ступень · 6 занятий</p><h2>Мера и возвращение: прямые и перевёрнутые карты</h2><p>Сопоставляем правила Таро, каббалистические вопросы о мере и собственные гипотезы. Все варианты ориентаций, примеры и тетрадь наблюдений.</p></div><a class="button" href="reversal-study/">Исследовать ориентации →</a></section>'
+body+='<section class="books-start" id="new-book-studies"><div><p class="eyebrow">Три книги · 24 занятия</p><h2>От имён и сефирот к языку Таро</h2><p>«Шаарей Ора» Йосефа Гикатилы, «Мистическая Каббала» Дион Форчун и «Книга Тота» Алистера Кроули. Подробные пояснения, сравнение систем, 48 вопросов и три личные тетради.</p><p><a href="/course/shaarei-orah/">Врата света →</a> · <a href="/course/mystical-qabalah/">Мистическая Каббала →</a> · <a href="/course/book-of-thoth/">Книга Тота →</a></p></div><a class="button" href="/course/book-studies/">Выбрать книгу →</a></section>'
 page('/course/','Курс каббалы и Таро для начинающих — 45 уроков','Понятное введение в каббалу и Таро: 45 уроков, Древо сефирот, чтение Зоара, задания с пояснениями и личная тетрадь. Бесплатный курс Элиоры Вейры.',body)
 # Separate crawlable lesson pages.
 for L in LESSONS:
@@ -168,6 +174,7 @@ page('/course/atlas/','Древо сефирот, четыре мира и уч�
 expansion.build(page,crumbs,D,lessonlist)
 reading_catalog.build(page,crumbs)
 yetzirah.build(page,crumbs)
+book_studies.build(page,crumbs)
 book_modules.build(page,crumbs)
 tarot_pairs.build(page,crumbs)
 tarot_triples.build(page,crumbs)
@@ -195,6 +202,7 @@ body+='<section class="section"><h2>Мои исследования путей</
 body+='<section class="section"><h2>Мои исследования придворных</h2><p>Ранги, масти, функции позиций, пары пар и возвращения к собственному толкованию.</p><a class="button secondary" href="../court-relations/notebook/">Тетрадь придворных →</a></section>'
 body+='<section class="section"><h2>Мои смешанные расклады</h2><p>Источники, соответствия, гипотезы и наблюдения после выбранного шага.</p><a class="button secondary" href="../mixed-reading/notebook/">Тетрадь смешанных раскладов →</a></section>'
 body+='<section class="section"><h2>Мои исследования ориентаций</h2><p>Прямые и перевёрнутые карты, варианты проявления, основания и последующие наблюдения.</p><a class="button secondary" href="../reversal-study/notebook/">Тетрадь меры и возвращения →</a></section>'
+body+='<section class="section"><h2>Тетради новых книг</h2><p>В каждой сохраняются первый вопрос, работа с текстом и итоговый комментарий. Можно скачать JSON для переноса или текст для чтения.</p><p><a href="/course/shaarei-orah/notebook/">Врата света →</a> · <a href="/course/mystical-qabalah/notebook/">Мистическая Каббала →</a> · <a href="/course/book-of-thoth/notebook/">Книга Тота →</a></p></section>'
 page('/course/notebook/','Моя тетрадь — записи и прогресс курса','Личная учебная тетрадь курса каббалы и Таро: сохранённые мысли, пройденные уроки и перенос записей между устройствами.',body,noindex=True)
 # Author page — no invented credentials or identity disclosure.
 body=crumbs('../','Об авторе и курсе')+'<article class="hero-small"><p class="eyebrow">Несколько слов от автора</p><h1>Элиора Вейра</h1><p class="lead">Мне хотелось сделать место, куда можно прийти с простым «мне интересно» — без страха, что сначала придётся выучить словарь незнакомых слов.</p><p>О каббале и Таро легко говорить красиво и туманно. Гораздо труднее понять, что именно стоит за знакомыми символами, с какой книги начать и как прочитать хотя бы один непростой абзац. Поэтому уроки здесь небольшие: объяснение, схема, вопрос и немного времени для собственной мысли.</p><p>Я опиралась на книги по истории каббалы и русские издания Зоара с комментарием «Сулам». В уроках есть ссылки и точные указания на отрывки. Историческое исследование, религиозное объяснение и личная ассоциация могут быть рядом — важно только не выдавать одно за другое.</p><p>Здесь можно задержаться на одном образе, вернуться к схеме, не согласиться с объяснением и записать свой вопрос. Никакого экзамена на подготовленность нет. Есть лишь дорога от первого любопытства к более внимательному чтению.</p><p class="quote">Буду рада, если после курса у Вас появится книга, которую хочется открыть, — и свой вопрос к ней.</p><p>Элиора Вейра — мой авторский псевдоним для этого проекта.</p><div class="actions"><a class="button" href="../course/">Открыть курс</a><a class="button secondary" href="../course/reading/#sources">Посмотреть источники</a></div></article>'
@@ -214,7 +222,7 @@ s=s[:start]+'''<article><h2 id="essay-title">Можно начать с прос
 <p class="invitation">Начните со знакомства с книгами. Возможно, дальше Вас поведёт уже собственный вопрос.</p>
 <p><a href="course/books/">Тора, Талмуд, Зоар — что это за книги? →</a></p>
 <p><a href="course/">Перейти к курсу каббалы и Таро →</a></p>
-<p><a href="course/yetzirah/">Сефер Йецира: читаем, собираем схемы, сравниваем редакции →</a></p><div class="signature">Элиора Вейра<span>Автор проекта</span></div></article>'''+s[end+len('</article>'):]
+<p><a href="course/yetzirah/">Сефер Йецира: читаем, собираем схемы, сравниваем редакции →</a></p><p><a href="course/book-studies/">Новые модули: Гикатила, Форчун и Кроули →</a></p><div class="signature">Элиора Вейра<span>Автор проекта</span></div></article>'''+s[end+len('</article>'):]
 s=re.sub(r'<link rel="canonical"[^>]*>','',s)
 s=re.sub(r'<meta (?:name="robots"|property="og:url")[^>]*>','',s)
 s=re.sub(r'<script type="application/ld\+json">.*?</script>','',s,flags=re.S)

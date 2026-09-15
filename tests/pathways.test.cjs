@@ -1,0 +1,19 @@
+const test=require('node:test'),assert=require('node:assert/strict');
+const D=require('../content/pathways.json'),P=require('../assets/course/pathways-core.js'),G=require('../assets/course/spread-grammar-core.js'),cards=require('../content/tarot.json').cards.filter(c=>c.group==='major'),graph=P.create(D.paths);
+test('complete atlas and six lessons have consistent source-backed identifiers',()=>{assert.equal(D.paths.length,22);assert.deepEqual(D.paths.map(p=>p.id),cards.map(c=>c.id));assert.equal(new Set(D.paths.map(p=>[p.a,p.b].sort((a,b)=>a-b).join('-'))).size,22);assert.equal(D.lessons.length,6);for(const l of D.lessons){assert.equal(l.quiz.length,2);for(const q of l.quiz)assert.ok(q.options[q.answer]&&q.why);for(const ref of l.refs)assert.ok(D.sources[ref]);assert.equal(l.default.ids.length,P.LAYOUTS[l.default.layout].n);assert.ok(l.source.question&&l.example.alternative);}});
+test('known source examples distinguish a chain, wrong order, branch, cycle and separated edges',()=>{
+ assert.deepEqual(graph.walks(['8','11']),[[4,5,6]]);assert.deepEqual(graph.walks(['11','8']),[[6,5,4]]);
+ assert.deepEqual(graph.walks(['8','11','14']),[[4,5,6,9]]);assert.equal(graph.analyze(['8','14','11']).type,'order');
+ const branch=graph.analyze(['2','9','11']);assert.equal(branch.type,'branch');assert.ok(branch.joins.every(j=>j.nodes.length===1&&j.nodes[0]===6));assert.ok(branch.orders.every(o=>o.routes.length===0));
+ assert.equal(graph.analyze(['8','11','9']).cycle,true);assert.equal(graph.analyze(['0','21']).type,'disconnected');assert.deepEqual(graph.walks(['21','14','2']),[[10,9,6,1]]);
+});
+test('every ordered selection of one, two or three paths preserves exact edge continuity and reversal',()=>{
+ let count=0;const check=ids=>{const walks=graph.walks(ids),back=graph.walks(ids.slice().reverse());for(const row of walks){assert.equal(row.length,ids.length+1);ids.forEach((id,i)=>{const e=D.paths.find(p=>p.id===id);assert.ok((row[i]===e.a&&row[i+1]===e.b)||(row[i]===e.b&&row[i+1]===e.a));});assert.ok(back.some(r=>JSON.stringify(r)===JSON.stringify(row.slice().reverse())));}assert.equal(walks.length,back.length);assert.equal(graph.permutations(ids).length,[0,1,2,6][ids.length]);count++;};
+ for(const a of D.paths){check([a.id]);for(const b of D.paths)if(a.id!==b.id){check([a.id,b.id]);for(const c of D.paths)if(c.id!==a.id&&c.id!==b.id)check([a.id,b.id,c.id]);}}assert.equal(count,9724);
+ assert.throws(()=>graph.walks(['8','8']));assert.throws(()=>graph.walks(['p8']));
+});
+test('path notebook stays isolated and preserves per-card orientations, snapshots and return observations',()=>{
+ const E=G.create(cards,D.lessons,{app:P.APP,title:D.title,layouts:P.LAYOUTS}),oldD=require('../content/tree-reading.json'),old=G.create(require('../content/tarot.json').cards,oldD.lessons,{app:oldD.app,layoutIds:oldD.layoutIds});assert.throws(()=>E.validate(old.empty()));assert.throws(()=>old.validate(E.empty()));
+ const c=E.normalize({layout:'path3',ids:['21','14','2'],reversed:[true,false,false]});const reversed=graph.reverse(c);assert.deepEqual(reversed.ids,['2','14','21']);assert.deepEqual(reversed.reversed,[false,false,true]);assert.deepEqual(graph.reverse(reversed),c);
+ const n=E.blank(5,c);n.question='Вопрос';n.reading='Первая гипотеза';n.basis='Источник и довод';const state=E.empty();state.records[E.key(5,c)]=n;state.snapshots.push({id:'one',at:'2026-09-15T12:00:00Z',note:E.cleanNote(n)});n.reading='Новый черновик';state.observations.push({id:'return',snapshot:'one',at:'2026-09-15T13:00:00Z',date:'2026-09-15',facts:'Факт',revision:'Уточнение'});const copy=E.validate(JSON.parse(JSON.stringify(state)));assert.equal(copy.snapshots[0].note.reading,'Первая гипотеза');assert.deepEqual(E.merge(copy,copy),copy);const conflict=structuredClone(copy);conflict.snapshots[0].note.basis='Подмена';assert.throws(()=>E.merge(copy,conflict));
+});

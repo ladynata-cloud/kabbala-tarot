@@ -22,17 +22,18 @@
  const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
  const text=(v,max=12000)=>{if(v===undefined)return '';if(typeof v!=='string'||v.length>max)throw Error('В тетради есть некорректный или слишком длинный текст. Импорт отменён.');return v;};
  function create(cards,lessons,options={}){
+  const layouts=options.layouts||LAYOUTS;
   const app=options.app||APP,title=options.title||'Четыре карты';
-  const allowed=new Set(options.layoutIds||Object.keys(LAYOUTS)),fallback=allowed.has('pairs')?'pairs':[...allowed][0];
-  if(!allowed.size||[...allowed].some(id=>!LAYOUTS[id]))throw Error('Неизвестная схема модуля.');
+  const allowed=new Set(options.layoutIds||Object.keys(layouts)),fallback=allowed.has('pairs')?'pairs':[...allowed][0];
+  if(!allowed.size||[...allowed].some(id=>!layouts[id]))throw Error('Неизвестная схема модуля.');
   const byId=new Map(cards.map(c=>[c.id,c])),byLesson=new Map(lessons.map(l=>[String(l.id),l]));
   function normalize(raw={}){
-   const layout=allowed.has(raw.layout)?raw.layout:fallback,spec=LAYOUTS[layout],used=new Set();
+   const layout=allowed.has(raw.layout)?raw.layout:fallback,spec=layouts[layout],used=new Set();
    const ids=Array.from({length:spec.n},(_,i)=>{let id=raw.ids?.[i];if(!byId.has(id)||used.has(id))id=cards.find(c=>!used.has(c.id)).id;used.add(id);return id;});
    const roles=layout.startsWith('custom')?spec.roles.map((r,i)=>typeof raw.roles?.[i]==='string'&&raw.roles[i].trim()?raw.roles[i].trim().slice(0,100):r):[...spec.roles];
    return {layout,ids,reversed:ids.map((_,i)=>raw.reversed?.[i]===true),roles,partition:layout==='pairs'&&[0,1,2].includes(raw.partition)?raw.partition:0,focus:ids.includes(raw.focus)?raw.focus:ids.at(-1)};
   }
-  function strictConfig(raw){if(!object(raw)||!allowed.has(raw.layout)||!Array.isArray(raw.ids)||raw.ids.length!==LAYOUTS[raw.layout].n||new Set(raw.ids).size!==raw.ids.length||!raw.ids.every(id=>byId.has(id)))throw Error('В тетради есть некорректный набор карт. Импорт отменён.');if(raw.roles!==undefined&&(!Array.isArray(raw.roles)||raw.roles.some(r=>typeof r!=='string'||r.length>100)))throw Error('Некорректные роли позиций.');return normalize(raw);}
+  function strictConfig(raw){if(!object(raw)||!allowed.has(raw.layout)||!Array.isArray(raw.ids)||raw.ids.length!==layouts[raw.layout].n||new Set(raw.ids).size!==raw.ids.length||!raw.ids.every(id=>byId.has(id)))throw Error('В тетради есть некорректный набор карт. Импорт отменён.');if(raw.roles!==undefined&&(!Array.isArray(raw.roles)||raw.roles.some(r=>typeof r!=='string'||r.length>100)))throw Error('Некорректные роли позиций.');return normalize(raw);}
   function key(lesson,config){return String(lesson)+'|'+JSON.stringify(normalize(config));}
   function swap(raw,i,j){const c=normalize(raw);if(i<0||j<0||i>=c.ids.length||j>=c.ids.length)return c;[c.ids[i],c.ids[j]]=[c.ids[j],c.ids[i]];[c.reversed[i],c.reversed[j]]=[c.reversed[j],c.reversed[i]];return c;}
   function groups(raw,mode='triads'){const c=normalize(raw),all=c.ids.map((_,i)=>i);

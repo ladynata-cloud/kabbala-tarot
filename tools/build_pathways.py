@@ -1,0 +1,75 @@
+"""Six source-attributed lessons and a complete 22-path atlas."""
+from pathlib import Path
+from html import escape as E
+import json
+
+ROOT=Path(__file__).resolve().parents[1]
+BASE='/course/pathways/'
+D=json.loads((ROOT/'content/pathways.json').read_text())
+CARDS=[c for c in json.loads((ROOT/'content/tarot.json').read_text())['cards'] if c['group']=='major']
+BY_ID={c['id']:c for c in CARDS}
+METHOD=json.loads((ROOT/'content/tarot-pairs.json').read_text())
+MAJORS={m['id']:m for m in METHOD['majors']}
+SEFIROT=['Кетер','Хохма','Бина','Хесед','Гвура','Тиферет','Нецах','Ход','Йесод','Малхут']
+XY=[None,(260,65),(430,190),(90,190),(430,350),(90,350),(260,475),(430,615),(90,615),(260,755),(260,890)]
+FAMILIES={'mother':'Три матери','double':'Семь двойных','simple':'Двенадцать простых'}
+LABELS={'question':'Вопрос исследования','before':'Первое направление или первое объяснение','after':'Что меняется при другом направлении или порядке','reading':'Моё чтение отношений','basis':'Источник / соответствие / моя гипотеза','alternative':'Другая гипотеза и недостающие сведения','step':'Какое действие или наблюдение поможет уточнить'}
+def p(t):return '<p>'+E(t)+'</p>'
+def family(letter):return 'mother' if letter in 'אמש' else 'double' if letter in 'בגדכפרת' else 'simple'
+PATHS=[dict(x,**{k:MAJORS[x['id']][k] for k in ['letter','name','attribution']},number=11+i,family=family(MAJORS[x['id']]['letter'])) for i,x in enumerate(D['paths'])]
+def payload(l=None):
+    data={'title':D['title'],'lessons':[{k:x[k] for k in ['id','slug','title','default']} for x in D['lessons']],'current':l['id'] if l else 0,'quiz':l['quiz'] if l else []}
+    return '<script id="pathways-data" type="application/json">'+json.dumps(data,ensure_ascii=False,separators=(',',':')).replace('<','\\u003c')+'</script>'
+def progress():return '<div class="sg-progress"><progress value="0" max="6" aria-label="Прогресс модуля" data-tp-progress></progress><span data-tp-count>Отмечено 0 из 6 занятий</span></div>'
+def sources(l=None):
+    out='<section id="sources" class="sg-section sg-sources"><h2>Источники и метод</h2>'
+    for key in l['refs'] if l else D['sources']:
+        x=D['sources'][key];out+='<p><a href="'+E(x['url'],quote=True)+'" target="_blank" rel="noopener noreferrer">'+E(x['title'])+'</a><br>'+E(x['detail'])+'</p>'
+    return out+p('Схема здесь представляет выбранную герметическую традицию, а не все формы еврейского Древа. Жизненные примеры, вопросы направлений и упражнения на цепи написаны для курса. Изображения Уэйта–Смит и их источники доступны по ссылкам у карт. Проверка структуры не оценивает истинность жизненной гипотезы.')+'</section>'
+def controls():return '<div class="sg-actions"><button type="button" class="button" id="tp-export" disabled data-tp-enable>Скачать тетрадь JSON</button><button type="button" class="button secondary" id="tp-export-text" disabled data-tp-enable>Скачать записи TXT</button></div><label class="sg-field">Перенести тетрадь этого модуля<input type="file" id="tp-import" accept=".json,application/json" disabled data-tp-enable></label><p id="tp-import-status" role="status"></p>'
+def svg():
+    out='<svg class="tp-tree" viewBox="0 0 520 960" role="img" aria-labelledby="tp-tree-title tp-tree-desc"><title id="tp-tree-title">Десять сефирот и двадцать два пути</title><desc id="tp-tree-desc">Хохма, Хесед, Нецах справа; Бина, Гвура, Ход слева. Выбранные пути подсвечиваются. Все соединения доступны в текстовом атласе.</desc><g class="tp-edges">'
+    for x in PATHS:
+        a,b=XY[x['a']],XY[x['b']];out+=f'<line x1="{a[0]}" y1="{a[1]}" x2="{b[0]}" y2="{b[1]}" data-tp-edge="{x["id"]}" class="tp-edge"><title>'+E(x['name']+' · '+SEFIROT[x['a']-1]+' — '+SEFIROT[x['b']-1])+'</title></line>'
+    out+='</g>'
+    for i,name in enumerate(SEFIROT,1):
+        x,y=XY[i];out+=f'<g data-tp-node="{i}" class="tp-node"><circle cx="{x}" cy="{y}" r="49"/><text x="{x}" y="{y-10}" class="tp-node-number" text-anchor="middle">{i}</text><text x="{x}" y="{y+16}" text-anchor="middle">'+E(name)+'</text></g>'
+    return out+'</svg>'
+def laboratory(l):
+    out='''<section id="laboratory" class="sg-section"><p class="eyebrow">Лаборатория путей</p><h2>Сравнить отношения и порядок</h2><p>Выберите от одного до трёх разных Старших арканов. Программа проверит соединения на выбранной схеме. Направление чтения и перевёрнутость изображения рассматриваются отдельно.</p><div id="tp-lab" hidden><div class="sg-controls"><label>Сколько путей рассмотреть?<select id="tp-size"><option value="path1">Один путь</option><option value="path2">Два пути</option><option value="path3">Три пути</option></select></label></div><div class="sg-actions"><button type="button" class="button secondary" id="tp-reverse">Обратный порядок</button><button type="button" class="button secondary" id="tp-preset-chain">Пример цепи</button><button type="button" class="button secondary" id="tp-preset-branch">Пример развилки</button><button type="button" class="button secondary" id="tp-preset-cycle">Пример возвращения</button></div><div class="tp-workspace"><figure class="tp-map">'''+svg()+'''<figcaption>Подсвечены выбранные пути. Направления перечислены в текстовом разборе. Пересечение линий без круга не является сефирой.</figcaption></figure><div><div id="tp-cards"></div><section class="tp-diagnosis" aria-live="polite"><h3 id="tp-structure-title"></h3><p id="tp-structure-text"></p><div id="tp-routes"></div><div id="tp-joins"></div></section><details class="sg-disclosure" open><summary>Порядки выбранных карт</summary><p>Кнопки сохраняют перевёрнутость каждой карты. Для одного пути ниже показаны оба направления.</p><div id="tp-orders"></div></details><div id="tp-constructor-links" class="sg-actions"></div></div></div>'''
+    for key,label in LABELS.items():out+='<label class="sg-field">'+E(label)+f'<textarea data-tp-field="{key}" rows="'+('2' if key=='question' else '4')+'" maxlength="12000"></textarea></label>'
+    out+='''<div class="sg-actions"><button type="button" class="button" id="tp-snapshot">Зафиксировать разбор</button><button type="button" class="button secondary" id="tp-review">Проверить полноту</button></div><p id="tp-snapshot-status" role="status"></p><p id="tp-review-status" role="status"></p><details class="sg-disclosure"><summary>Мои другие варианты занятия</summary><div id="tp-variants"></div></details></div><noscript><p>Для выбора карт и тетради нужен JavaScript. Объяснения, исходные карты, примеры, ответы и полный атлас доступны без него.</p></noscript><p id="tp-save-status" role="status">Записи остаются в памяти этого браузера.</p></section>'''
+    return out
+def example(l):
+    e=l['example'];out='<details class="sg-disclosure"><summary>Разобранный пример: '+E(e['title'])+'</summary><div class="sg-static-cards">'
+    for id in l['default']['ids']:
+        c=BY_ID[id];out+='<figure><a href="'+E(c['imageSource'],quote=True)+'" target="_blank" rel="noopener noreferrer"><img loading="lazy" src="'+E(c['image'],quote=True)+'" width="85" height="147" alt="'+E(c['name'],quote=True)+'"></a><figcaption>'+E(c['name'])+'</figcaption></figure>'
+    out+='</div>'
+    for key,label in [('text','Возможное чтение'),('basis','Основание'),('alternative','Альтернатива')]:out+='<h3>'+label+'</h3>'+p(e[key])
+    return out+'</details>'
+def atlas():
+    out='<section id="atlas" class="sg-section"><h2>Атлас всех 22 путей</h2><p>Концы пути и буква — справочная часть. Два вопроса к направлениям — авторские опоры для Вашего толкования. Раскройте нужную строку или перейдите с ней в лабораторию.</p><div class="sg-controls"><label>Семейство букв<select id="tp-family" disabled data-tp-enable><option value="all">Все 22</option>'+''.join('<option value="'+k+'">'+v+'</option>' for k,v in FAMILIES.items())+'</select></label><label>Найти карту, букву или сефиру<input type="search" id="tp-search" disabled data-tp-enable></label></div><p id="tp-atlas-count" role="status">Показано 22 из 22 путей</p><div class="tp-atlas">'
+    for x in PATHS:
+        c=BY_ID[x['id']];a=SEFIROT[x['a']-1];b=SEFIROT[x['b']-1];search=' '.join([c['name'],x['letter'],x['name'],a,b,str(x['number']),x['attribution']]).lower()
+        out+=f'<details id="path-{x["number"]}" data-tp-entry data-family="{x["family"]}" data-search="'+E(search,quote=True)+'"><summary><span class="tp-path-no">'+str(x['number'])+'</span> '+E(c['name'])+' · <span lang="he">'+x['letter']+'</span> '+E(x['name'])+'<span class="tp-path-ends">'+E(a+' — '+b)+'</span></summary>'+p(FAMILIES[x['family']]+' · '+x['attribution'])+'<p><strong>'+E(a+' → '+b)+':</strong> '+E(x['forward'])+'</p><p><strong>'+E(b+' → '+a)+':</strong> '+E(x['backward'])+'</p><a href="sefirah-and-path/?a='+x['id']+'#laboratory">Исследовать этот путь →</a></details>'
+    return out+'</div></section>'
+def build(page,crumbs):
+    assert len(PATHS)==22 and len({x['id'] for x in PATHS})==22 and len(D['lessons'])==6
+    assert [sum(x['family']==k for x in PATHS) for k in FAMILIES]==[3,7,12]
+    atlas_data={'cards':CARDS,'paths':PATHS,'sefirot':SEFIROT}
+    (ROOT/'assets/course/pathways-atlas.js').write_text('window.PathwaysAtlas = '+json.dumps(atlas_data,ensure_ascii=False,separators=(',',':')).replace('<','\\u003c')+';\n')
+    b=crumbs('../../','22 пути Древа')+'<div class="sg-module tp-module"><header class="sg-hero"><p class="eyebrow">Продолжение курса · 6 занятий · 12 вопросов</p><h1>'+E(D['title'])+'</h1><p class="lead">'+E(D['lead'])+'</p><div class="sg-actions"><a class="button" href="sefirah-and-path/">Начать с одного пути →</a><a class="button secondary" href="#atlas">Все 22 пути</a><a href="notebook/">Моя тетрадь</a></div>'+progress()+'</header><section class="sg-section sg-intro"><div><h2>После чтения целого Древа</h2><p>В <a href="../tree-reading/">предыдущем модуле</a> мы задавали вопросы десяти позиций. Теперь рассматриваем отношения между сефирот и то, как Старшие арканы помогают их осмыслить.</p><p>Схема сверена по Регарди; соответствия карт — по выбранной герметической линии. Контекст Сефер Йецира и Патах Элиягу обозначен отдельно.</p></div><div><h2>Как заниматься</h2><p>На занятие — 20–35 минут. Прочитайте объяснение, сравните направления, запишите доводы и альтернативу. В конце ответьте на два вопроса.</p><p>Для любой выбранной пары и тройки лаборатория рассматривает все порядки. Она различает структуру связей, а жизненное толкование Вы составляете самостоятельно.</p></div></section><section id="program" class="sg-section"><h2>Шесть занятий</h2><div class="sg-program">'
+    for l in D['lessons']:b+=f'<article><span class="sg-number">{l["id"]:02d}</span><h3><a href="{l["slug"]}/">'+E(l['title'])+'</a></h3>'+p(l['aim'])+f'<span class="fine" data-tp-mark="{l["id"]}">Можно начать</span></article>'
+    b+='</div></section>'+atlas()+sources()+'</div>'+payload();page(BASE,D['title'],D['lead'],b)
+    for l in D['lessons']:
+        assert len(l['quiz'])==2 and l['default']['ids'] and set(l['default']['ids'])<=set(BY_ID)
+        b=crumbs('../../../','Пути Древа · '+str(l['id']))+'<div class="sg-module tp-module"><p><a href="../">← Весь модуль и атлас</a> · <a href="../notebook/">Моя тетрадь</a></p><header class="sg-lesson-hero"><p class="eyebrow">Занятие '+str(l['id'])+' из 6</p><h1>'+E(l['title'])+'</h1><p class="lead">'+E(l['aim'])+'</p>'+progress()+'</header><nav class="sg-lesson-nav" aria-label="Разделы занятия"><a href="#reading">Объяснение</a><a href="#task">Задание</a><a href="#laboratory">Лаборатория</a><a href="#check">Самопроверка</a><a href="#sources">Источники</a></nav><section id="reading" class="sg-reading"><h2>'+E(l['source']['title'])+'</h2>'+p(l['source']['text'])+'<p><strong>Вопрос к источнику.</strong> '+E(l['source']['question'])+'</p>'
+        for s in l['sections']:b+='<section><h2>'+E(s['title'])+'</h2>'+''.join(p(t) for t in s['text'])+'</section>'
+        b+='</section><section id="task" class="sg-section"><h2>Попробуйте сами</h2><ol>'+''.join('<li>'+E(t)+'</li>' for t in l['task'])+'</ol>'+p('Исходные карты: '+' → '.join(BY_ID[id]['name'] for id in l['default']['ids']))+example(l)+'</section>'+laboratory(l)
+        b+='<section id="check" class="sg-section sg-quiz"><h2>Могу ли я объяснить?</h2>'
+        for i,q in enumerate(l['quiz']):b+=f'<fieldset disabled data-tp-enable><legend>{i+1}. '+E(q['q'])+'</legend>'+''.join(f'<label><input type="radio" name="tp-q-{i}" value="{j}" data-tp-answer="{i}"> '+E(o)+'</label>' for j,o in enumerate(q['options']))+f'<p id="tp-feedback-{i}" role="status"></p></fieldset>'
+        b+='<button type="button" class="button" id="tp-check" disabled data-tp-enable>Проверить ответы</button><p id="tp-check-status" role="status"></p><details class="sg-disclosure"><summary>Ответы с объяснениями</summary>'+''.join('<p><strong>'+str(i+1)+'. '+E(q['options'][q['answer']])+'.</strong> '+E(q['why'])+'</p>' for i,q in enumerate(l['quiz']))+'</details></section><section class="sg-section"><label class="sg-complete"><input type="checkbox" id="tp-completed" disabled data-tp-enable> Отмечаю занятие как пройденное</label><details class="sg-disclosure"><summary>Скачать или перенести записи модуля</summary>'+controls()+'</details></section>'+sources(l)
+        prev=D['lessons'][l['id']-2] if l['id']>1 else None;nxt=D['lessons'][l['id']] if l['id']<6 else None
+        b+='<nav class="sg-next" aria-label="Соседние занятия">'+('<a href="../'+prev['slug']+'/">← '+E(prev['title'])+'</a>' if prev else '<a href="../">← Программа</a>')+('<a href="../'+nxt['slug']+'/">'+E(nxt['title'])+' →</a>' if nxt else '<a href="../notebook/">Тетрадь и наблюдения →</a>')+'</nav></div>'+payload(l)
+        page(BASE+l['slug']+'/',l['title']+' — 22 пути',l['aim'],b)
+    b=crumbs('../../../','Тетрадь путей Древа')+'<div class="sg-module tp-module"><header class="sg-hero"><p class="eyebrow">Отдельная тетрадь модуля</p><h1>Мои исследования путей</h1><p class="lead">Направления, порядки карт, основания и наблюдения.</p>'+progress()+'<p>Записи остаются в этом браузере на этом устройстве. Автор курса их не получает. Скачайте JSON для переноса и резервной копии; TXT подходит для чтения.</p>'+controls()+'<p id="tp-save-status" role="status"></p><p><a href="../">К программе и атласу →</a></p></header><section class="sg-section"><h2>Мои варианты</h2><label class="sg-field">Найти по карте, вопросу или тексту<input type="search" id="tp-note-search" disabled data-tp-enable></label><div id="tp-notes"></div><button type="button" class="button secondary" id="tp-more" hidden>Показать ещё</button></section><section class="sg-section"><h2>Сохранённые разборы и возвращения</h2><p>Новые факты добавляются отдельной записью. Исходный снимок остаётся прежним.</p><div id="tp-snapshots"></div><button type="button" class="button secondary" id="tp-snap-more" hidden>Показать ещё</button></section><noscript><p>Для личных записей и переноса тетради включите JavaScript.</p></noscript></div>'+payload();page(BASE+'notebook/','Тетрадь — 22 пути Древа','Личная тетрадь модуля о путях и Старших арканах.',b,noindex=True)

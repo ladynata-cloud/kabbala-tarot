@@ -75,3 +75,23 @@ sitemap=(P/'sitemap.xml').read_text()
 assert '/course/yetzirah/notebook/' not in sitemap
 assert all('/course/yetzirah/'+l['slug']+'/' in sitemap for l in sy['lessons'])
 print('Yetzirah: 12 complete lessons, 24 questions, 7 comparison rows, 12 months, notes, sources and public routes verified.')
+
+for book in ['tomer-devorah','bahir']:
+ mod=json.loads((P/'content'/(book+'.json')).read_text())
+ assert [l['id'] for l in mod['lessons']]==list(range(1,13))
+ assert len({l['slug'] for l in mod['lessons']})==12
+ assert len({l['reflection'] for l in mod['lessons']})==12
+ for l in mod['lessons']:
+  assert len(l['sections'])>=2 and sum(len(' '.join(s['text']).split()) for s in l['sections'])>=150
+  assert len(l['quiz'])==2 and all(len(q['options'])==3 and q['answer'] in range(3) and q['why'] for q in l['quiz'])
+  assert l['quote']['ref']==l['refs'][0]['ref'] and l['quote']['he'] and l['quote']['ru']
+  assert l['refs'] and all(r['url'].startswith('https://www.sefaria.org/') for r in l['refs'])
+  html=(P/'course'/book/l['slug']/'index.html').read_text()
+  assert all('id="'+a+'"' in html for a in ['before','reading','practice','check','reflection','sources'])
+  assert all('data-book-field="'+a+'"' in html for a in ['before','working','note'])
+  assert 'book-state.js' in html and 'book-modules.js' in html and 'book-modules.css' in html
+  assert '/course/'+book+'/'+l['slug']+'/' in sitemap
+  assert all(q in html for q in ['Рабочий перевод строки','учебный пересказ','data-book-done'])
+ assert '/course/'+book+'/notebook/' not in sitemap
+ assert 'noindex,follow' in (P/'course'/book/'notebook/index.html').read_text()
+print('Book modules: 24 lessons, 48 questions, three note fields, independent routes, sources and private notebooks verified.')

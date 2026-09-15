@@ -13,6 +13,7 @@ import build_tarot_triples as tarot_triples
 import build_spread_grammar as spread_grammar
 import build_tree_reading as tree_reading
 import build_pathways as pathways
+import build_court_relations as court_relations
 ROOT=Path(__file__).resolve().parents[1]
 D=json.loads((ROOT/'content/course.json').read_text());CFG=json.loads((ROOT/'content/site.json').read_text());ORIGIN=CFG['origin'].rstrip('/')
 LESSONS=D['lessons'];routes=[]
@@ -95,6 +96,8 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
   html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/spread-grammar.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/tarot-pairs-core.js"></script><script defer src="{prefix}assets/course/spread-grammar-atlas.js"></script><script defer src="{prefix}assets/course/spread-grammar-core.js"></script><script defer src="{prefix}assets/course/spread-grammar.js"></script></body>')
  if path.startswith('/course/tree-reading/'):
   html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/tree-reading.css"></head>').replace('spread-grammar-core.js"','spread-grammar-core.js?v=2"').replace('spread-grammar.js"','spread-grammar.js?v=2"')
+ if path.startswith('/course/court-relations/'):
+  html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/spread-grammar.css"><link rel="stylesheet" href="{prefix}assets/course/court-relations.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/spread-grammar-core.js?v=3"></script><script defer src="{prefix}assets/course/court-relations-atlas.js"></script><script defer src="{prefix}assets/course/court-relations-core.js"></script><script defer src="{prefix}assets/course/court-relations.js"></script></body>')
  if path.startswith('/course/pathways/'):
   html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/spread-grammar.css"><link rel="stylesheet" href="{prefix}assets/course/pathways.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/spread-grammar-core.js?v=3"></script><script defer src="{prefix}assets/course/pathways-atlas.js"></script><script defer src="{prefix}assets/course/pathways-core.js"></script><script defer src="{prefix}assets/course/pathways.js"></script></body>')
  if path=='/course/bahir/letters-and-number/':html=html.replace('book-modules.js','book-modules.js?v=2').replace('book-modules.css','book-modules.css?v=2')
@@ -118,6 +121,7 @@ body+='<section class="books-start"><div><p class="eyebrow">Два новых м
 body+='<section class="books-start"><div><p class="eyebrow">Искусство расклада · отдельный модуль</p><h2>Четыре карты: уровни, пары и пространство</h2><p>12 занятий с каббалистическими опорами: часть и целое, четыре мира, пары пар, место карты и наблюдение во времени.</p></div><a class="button" href="spread-grammar/">Открыть модуль →</a></section>'
 body+='<section class="books-start"><div><p class="eyebrow">Продолжение искусства расклада · 8 занятий</p><h2>Древо сефирот: от текста к целому раскладу</h2><p>Каббалистические источники, три столпа, две связанные триады и десять позиций Древа. Учимся различать сефиру позиции, соответствие карты и мир масти.</p></div><a class="button" href="tree-reading/">Перейти к новой ступени →</a></section>'
 body+='<section class="books-start"><div><p class="eyebrow">Следующая ступень · 6 занятий</p><h2>22 пути: Старшие арканы и связи Древа</h2><p>Полный атлас путей, чтение двух и трёх арканов, цепи и развилки, направление и перевёрнутость. От точного соответствия — к самостоятельному объяснению.</p></div><a class="button" href="pathways/">Исследовать пути →</a></section>'
+body+='<section class="books-start"><div><p class="eyebrow">Следующая ступень · 6 занятий</p><h2>16 придворных: Имя, стихии и отношения</h2><p>Четыре буквы, матрица рангов и мастей, диалог двух функций и органическое чтение четвёрки. Практика всех порядков и трёх разбиений на пары.</p></div><a class="button" href="court-relations/">Исследовать придворных →</a></section>'
 page('/course/','Курс каббалы и Таро для начинающих — 45 уроков','Понятное введение в каббалу и Таро: 45 уроков, Древо сефирот, чтение Зоара, задания с пояснениями и личная тетрадь. Бесплатный курс Элиоры Вейры.',body)
 # Separate crawlable lesson pages.
 for L in LESSONS:
@@ -162,6 +166,7 @@ tarot_triples.build(page,crumbs)
 spread_grammar.build(page,crumbs)
 tree_reading.build(page,crumbs)
 pathways.build(page,crumbs)
+court_relations.build(page,crumbs)
 # Glossary
 body=crumbs('../../','Словарь')+'<header class="hero-small"><p class="eyebrow">Слово можно просто посмотреть</p><h1>Словарь без спешки</h1><p class="lead">Если термин забылся, вернитесь сюда. Короткое объяснение поможет вспомнить урок, а подробности найдутся в самом тексте.</p><label for="term-search">Какое слово ищем?</label><br><input id="term-search" class="search" type="search" data-search="terms" placeholder="Например, тиккун"><span class="status-text" data-search-status="terms" aria-live="polite"></span></header>'
 body+='<div class="books-reminder"><p>Нужно подробнее о Торе, Талмуде или Зоаре? Для них есть отдельное введение с примерами.</p><a href="../books/">Открыть знакомство с книгами →</a></div>'
@@ -177,6 +182,7 @@ body+='<section class="section"><h2>Тетради других книг</h2><p>
 body+='<section class="section"><h2>Мои исследования раскладов</h2><p>Варианты каждого упражнения, зафиксированные гипотезы и последующие наблюдения.</p><a class="button secondary" href="../spread-grammar/notebook/">Тетрадь искусства расклада →</a></section>'
 body+='<section class="section"><h2>Мои чтения Древа</h2><p>Отдельная тетрадь следующего модуля: обоснования, расклады на десять позиций, сохранённые гипотезы и наблюдения.</p><a class="button secondary" href="../tree-reading/notebook/">Открыть тетрадь чтения Древа →</a></section>'
 body+='<section class="section"><h2>Мои исследования путей</h2><p>Направления, порядки Старших арканов, основания и наблюдения в отдельной тетради.</p><a class="button secondary" href="../pathways/notebook/">Тетрадь 22 путей →</a></section>'
+body+='<section class="section"><h2>Мои исследования придворных</h2><p>Ранги, масти, функции позиций, пары пар и возвращения к собственному толкованию.</p><a class="button secondary" href="../court-relations/notebook/">Тетрадь придворных →</a></section>'
 page('/course/notebook/','Моя тетрадь — записи и прогресс курса','Личная учебная тетрадь курса каббалы и Таро: сохранённые мысли, пройденные уроки и перенос записей между устройствами.',body,noindex=True)
 # Author page — no invented credentials or identity disclosure.
 body=crumbs('../','Об авторе и курсе')+'<article class="hero-small"><p class="eyebrow">Несколько слов от автора</p><h1>Элиора Вейра</h1><p class="lead">Мне хотелось сделать место, куда можно прийти с простым «мне интересно» — без страха, что сначала придётся выучить словарь незнакомых слов.</p><p>О каббале и Таро легко говорить красиво и туманно. Гораздо труднее понять, что именно стоит за знакомыми символами, с какой книги начать и как прочитать хотя бы один непростой абзац. Поэтому уроки здесь небольшие: объяснение, схема, вопрос и немного времени для собственной мысли.</p><p>Я опиралась на книги по истории каббалы и русские издания Зоара с комментарием «Сулам». В уроках есть ссылки и точные указания на отрывки. Историческое исследование, религиозное объяснение и личная ассоциация могут быть рядом — важно только не выдавать одно за другое.</p><p>Здесь можно задержаться на одном образе, вернуться к схеме, не согласиться с объяснением и записать свой вопрос. Никакого экзамена на подготовленность нет. Есть лишь дорога от первого любопытства к более внимательному чтению.</p><p class="quote">Буду рада, если после курса у Вас появится книга, которую хочется открыть, — и свой вопрос к ней.</p><p>Элиора Вейра — мой авторский псевдоним для этого проекта.</p><div class="actions"><a class="button" href="../course/">Открыть курс</a><a class="button secondary" href="../course/reading/#sources">Посмотреть источники</a></div></article>'

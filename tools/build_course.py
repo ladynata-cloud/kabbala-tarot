@@ -17,6 +17,7 @@ import build_pathways as pathways
 import build_court_relations as court_relations
 import build_mixed_reading as mixed_reading
 import build_reversal_study as reversal_study
+import build_spread_dynamics as spread_dynamics
 ROOT=Path(__file__).resolve().parents[1]
 D=json.loads((ROOT/'content/course.json').read_text());CFG=json.loads((ROOT/'content/site.json').read_text());ORIGIN=CFG['origin'].rstrip('/')
 LESSONS=D['lessons'];routes=[]
@@ -99,6 +100,8 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
   html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/spread-grammar.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/tarot-pairs-core.js"></script><script defer src="{prefix}assets/course/spread-grammar-atlas.js"></script><script defer src="{prefix}assets/course/spread-grammar-core.js"></script><script defer src="{prefix}assets/course/spread-grammar.js"></script></body>')
  if path.startswith('/course/tree-reading/'):
   html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/tree-reading.css"></head>').replace('spread-grammar-core.js"','spread-grammar-core.js?v=2"').replace('spread-grammar.js"','spread-grammar.js?v=2"')
+ if path.startswith('/course/spread-dynamics/'):
+  html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/spread-grammar.css"><link rel="stylesheet" href="{prefix}assets/course/tree-reading.css"><link rel="stylesheet" href="{prefix}assets/course/mixed-reading.css"><link rel="stylesheet" href="{prefix}assets/course/spread-dynamics.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/tarot-pairs-core.js"></script><script defer src="{prefix}assets/course/spread-grammar-core.js?v=3"></script><script defer src="{prefix}assets/course/spread-grammar-atlas.js"></script><script defer src="{prefix}assets/course/spread-dynamics-core.js"></script><script defer src="{prefix}assets/course/spread-dynamics.js"></script><script defer src="{prefix}assets/course/spread-grammar.js?v=6"></script></body>')
  if path.startswith('/course/reversal-study/'):
   html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/spread-grammar.css"><link rel="stylesheet" href="{prefix}assets/course/tree-reading.css"><link rel="stylesheet" href="{prefix}assets/course/mixed-reading.css"><link rel="stylesheet" href="{prefix}assets/course/reversal-study.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/tarot-pairs-core.js"></script><script defer src="{prefix}assets/course/spread-grammar-core.js?v=3"></script><script defer src="{prefix}assets/course/spread-grammar-atlas.js"></script><script defer src="{prefix}assets/course/reversal-study-core.js"></script><script defer src="{prefix}assets/course/reversal-study.js"></script><script defer src="{prefix}assets/course/spread-grammar.js?v=5"></script></body>')
  if path.startswith('/course/mixed-reading/'):
@@ -135,6 +138,7 @@ body+='<section class="books-start"><div><p class="eyebrow">Следующая �
 body+='<section class="books-start"><div><p class="eyebrow">Следующая ступень · 6 занятий</p><h2>16 придворных: Имя, стихии и отношения</h2><p>Четыре буквы, матрица рангов и мастей, диалог двух функций и органическое чтение четвёрки. Практика всех порядков и трёх разбиений на пары.</p></div><a class="button" href="court-relations/">Исследовать придворных →</a></section>'
 body+='<section class="books-start"><div><p class="eyebrow">Следующая ступень · 6 занятий</p><h2>Свет, сосуд и передача: смешанный расклад</h2><p>Соединяем числовые карты, придворных и Старшие арканы. Пардес римоним, Тания и практика целого: форма, мера, восприятие и поступок.</p></div><a class="button" href="mixed-reading/">Читать смешанный расклад →</a></section>'
 body+='<section class="books-start"><div><p class="eyebrow">Следующая ступень · 6 занятий</p><h2>Мера и возвращение: прямые и перевёрнутые карты</h2><p>Сопоставляем правила Таро, каббалистические вопросы о мере и собственные гипотезы. Все варианты ориентаций, примеры и тетрадь наблюдений.</p></div><a class="button" href="reversal-study/">Исследовать ориентации →</a></section>'
+body+='<section class="books-start"><div><p class="eyebrow">Следующая ступень · 6 занятий</p><h2>Время, ритм и возвращение: расклад в динамике</h2><p>Условия перехода, порыв и воплощение, мир — год — человек. Сравниваем два разбора и возвращаемся к своим выводам с наблюдениями.</p></div><a class="button" href="spread-dynamics/">Исследовать динамику →</a></section>'
 body+='<section class="books-start" id="new-book-studies"><div><p class="eyebrow">Три книги · 24 занятия</p><h2>От имён и сефирот к языку Таро</h2><p>«Шаарей Ора» Йосефа Гикатилы, «Мистическая Каббала» Дион Форчун и «Книга Тота» Алистера Кроули. Подробные пояснения, сравнение систем, 48 вопросов и три личные тетради.</p><p><a href="/course/shaarei-orah/">Врата света →</a> · <a href="/course/mystical-qabalah/">Мистическая Каббала →</a> · <a href="/course/book-of-thoth/">Книга Тота →</a></p></div><a class="button" href="/course/book-studies/">Выбрать книгу →</a></section>'
 page('/course/','Курс каббалы и Таро для начинающих — 45 уроков','Понятное введение в каббалу и Таро: 45 уроков, Древо сефирот, чтение Зоара, задания с пояснениями и личная тетрадь. Бесплатный курс Элиоры Вейры.',body)
 # Separate crawlable lesson pages.
@@ -184,6 +188,7 @@ pathways.build(page,crumbs)
 court_relations.build(page,crumbs)
 mixed_reading.build(page,crumbs)
 reversal_study.build(page,crumbs)
+spread_dynamics.build(page,crumbs)
 # Glossary
 body=crumbs('../../','Словарь')+'<header class="hero-small"><p class="eyebrow">Слово можно просто посмотреть</p><h1>Словарь без спешки</h1><p class="lead">Если термин забылся, вернитесь сюда. Короткое объяснение поможет вспомнить урок, а подробности найдутся в самом тексте.</p><label for="term-search">Какое слово ищем?</label><br><input id="term-search" class="search" type="search" data-search="terms" placeholder="Например, тиккун"><span class="status-text" data-search-status="terms" aria-live="polite"></span></header>'
 body+='<div class="books-reminder"><p>Нужно подробнее о Торе, Талмуде или Зоаре? Для них есть отдельное введение с примерами.</p><a href="../books/">Открыть знакомство с книгами →</a></div>'
@@ -202,6 +207,7 @@ body+='<section class="section"><h2>Мои исследования путей</
 body+='<section class="section"><h2>Мои исследования придворных</h2><p>Ранги, масти, функции позиций, пары пар и возвращения к собственному толкованию.</p><a class="button secondary" href="../court-relations/notebook/">Тетрадь придворных →</a></section>'
 body+='<section class="section"><h2>Мои смешанные расклады</h2><p>Источники, соответствия, гипотезы и наблюдения после выбранного шага.</p><a class="button secondary" href="../mixed-reading/notebook/">Тетрадь смешанных раскладов →</a></section>'
 body+='<section class="section"><h2>Мои исследования ориентаций</h2><p>Прямые и перевёрнутые карты, варианты проявления, основания и последующие наблюдения.</p><a class="button secondary" href="../reversal-study/notebook/">Тетрадь меры и возвращения →</a></section>'
+body+='<section class="section"><h2>Мои расклады во времени</h2><p>Два разбора рядом, сохранённые основания и наблюдения с датами.</p><a class="button secondary" href="../spread-dynamics/notebook/">Тетрадь динамики →</a></section>'
 body+='<section class="section"><h2>Тетради новых книг</h2><p>В каждой сохраняются первый вопрос, работа с текстом и итоговый комментарий. Можно скачать JSON для переноса или текст для чтения.</p><p><a href="/course/shaarei-orah/notebook/">Врата света →</a> · <a href="/course/mystical-qabalah/notebook/">Мистическая Каббала →</a> · <a href="/course/book-of-thoth/notebook/">Книга Тота →</a></p></section>'
 page('/course/notebook/','Моя тетрадь — записи и прогресс курса','Личная учебная тетрадь курса каббалы и Таро: сохранённые мысли, пройденные уроки и перенос записей между устройствами.',body,noindex=True)
 # Author page — no invented credentials or identity disclosure.

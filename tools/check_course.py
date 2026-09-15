@@ -95,3 +95,7 @@ for book in ['tomer-devorah','bahir']:
  assert '/course/'+book+'/notebook/' not in sitemap
  assert 'noindex,follow' in (P/'course'/book/'notebook/index.html').read_text()
 print('Book modules: 24 lessons, 48 questions, three note fields, independent routes, sources and private notebooks verified.')
+
+# The book laboratory must not trigger the existing general gematria initializer.
+gem=(P/'course/bahir/letters-and-number/index.html').read_text()
+assert 'data-book-gematria' in gem and ' data-gematria>' not in gem

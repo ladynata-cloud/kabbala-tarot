@@ -85,6 +85,7 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
   if path!='/course/book-modules/':html=html.replace('</body>',f'<script defer src="{prefix}assets/course/book-state.js"></script><script defer src="{prefix}assets/course/book-modules.js"></script></body>')
  if path=='/course/tarot-pairs/':
   html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/tarot-pairs.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/tarot-pairs-core.js"></script><script defer src="{prefix}assets/course/tarot-pairs.js"></script></body>')
+ if path=='/course/bahir/letters-and-number/':html=html.replace('book-modules.js','book-modules.js?v=2').replace('book-modules.css','book-modules.css?v=2')
  out=ROOT/path.strip('/')/'index.html' if path!='/' else ROOT/'index.html';out.parent.mkdir(parents=True,exist_ok=True);out.write_text(html+'\n')
  if not noindex:routes.append(path)
 def crumbs(prefix,title=None):return '<nav class="crumb" aria-label="Путь к странице"><span><a href="'+prefix+'">Главная</a></span><span><a href="'+prefix+'course/">Курс</a></span>'+(('<span>'+E(title)+'</span>') if title else '')+'</nav>'

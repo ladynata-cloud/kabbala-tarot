@@ -44,7 +44,7 @@ def lab(d,l):
   order=list(range(1,len(k['steps'])))+[0]
   s+='<fieldset disabled data-book-enhanced data-book-order><legend>Выбирайте шаги в нужном порядке</legend><div class="book-choices">'+''.join(button(k['steps'][i],f'data-order-step="{i}"',True) for i in order)+'</div><p class="sy-output" data-order-result role="status"></p><p data-order-feedback role="status"></p>'+button('Начать заново','data-order-reset',True)+'</fieldset>'
  elif k['type']=='gematria':
-  s+='<fieldset disabled data-book-enhanced data-gematria><legend>Два написания имени</legend><div class="sy-actions">'+button('Аврам · אברם','data-gematria-name="short" aria-pressed="true"')+button('Авраам · אברהם','data-gematria-name="full" aria-pressed="false"',True)+'</div><p class="sy-formula" data-gematria-output role="status" dir="ltr">אברם: 1 + 2 + 200 + 40 = 243</p></fieldset>'
+  s+='<fieldset disabled data-book-enhanced data-book-gematria><legend>Два написания имени</legend><div class="sy-actions">'+button('Аврам · אברם','data-gematria-name="short" aria-pressed="true"')+button('Авраам · אברהם','data-gematria-name="full" aria-pressed="false"',True)+'</div><p class="sy-formula" data-gematria-output role="status" dir="ltr"><bdi lang="he" dir="rtl">אברם</bdi>: <bdi dir="ltr">1 + 2 + 200 + 40 = 243</bdi></p></fieldset>'
  elif k['type']=='criteria':s+='<ul class="sy-rubric">'+''.join('<li>'+E(x)+'</li>' for x in k['criteria'])+'</ul>'
  else:raise ValueError(k['type'])
  s+='<div class="book-draft"><h3>Мой черновик</h3>'+field('working',k['task'],5)+solution(k['solution'])+'</div><noscript><p>Для кнопок и записи нужен JavaScript. Текст, источники и разбор задания можно читать без него.</p></noscript></section>'

@@ -1,0 +1,68 @@
+"""Source-attributed lessons and an independent notebook for reading whole spreads."""
+from pathlib import Path
+from html import escape as E
+import json
+
+ROOT=Path(__file__).resolve().parents[1]
+BASE='/course/spread-grammar/'
+D=json.loads((ROOT/'content/spread-grammar.json').read_text())
+CARDS=json.loads((ROOT/'content/tarot.json').read_text())['cards']
+BY_ID={c['id']:c for c in CARDS}
+METHOD=json.loads((ROOT/'content/tarot-pairs.json').read_text())
+
+def p(t):return '<p>'+E(t)+'</p>'
+def field(key,label,rows=4):return '<label class="sg-field">'+E(label)+f'<textarea data-sg-field="{key}" rows="{rows}" maxlength="12000" disabled data-sg-enable></textarea></label>'
+def progress():return '<div class="sg-progress"><progress value="0" max="12" aria-label="Прогресс модуля" data-sg-progress></progress><span data-sg-count>Отмечено 0 из 12 занятий</span></div>'
+def payload(lesson=None):
+    data={'title':D['title'],'lessons':[{k:l[k] for k in ['id','slug','title','default']} for l in D['lessons']],'current':lesson['id'] if lesson else 0,'quiz':lesson['quiz'] if lesson else []}
+    return '<script id="spread-grammar-data" type="application/json">'+json.dumps(data,ensure_ascii=False,separators=(',',':')).replace('<','\\u003c')+'</script>'
+def sources(lesson=None):
+    keys=lesson['refs'] if lesson else list(D['sources'])
+    s='<section id="sources" class="sg-section sg-sources"><h2>На что опираемся</h2>'
+    if lesson:s+=p(lesson['bridge'])
+    for key in keys:
+        x=D['sources'][key];s+='<p><a href="'+x['url']+'" target="_blank" rel="noopener noreferrer">'+E(x['title'])+'</a><br>'+E(x['detail'])+'</p>'
+    s+=p('Объяснения, современные ситуации и схемы упражнений написаны для курса. Используются западные герметические соответствия Golden Dawn и изображения Уэйта–Смит. Для придворных принято сопоставление Король / Королева / Рыцарь / Паж как Огонь / Вода / Воздух / Земля внутри стихии масти. Оно не подменяет терминологию других колод. Номер Старшего аркана не равен номеру сефиры.')
+    return s+'</section>'
+def notes_controls():return '<div class="sg-actions"><button type="button" class="button" id="sg-export" disabled data-sg-enable>Скачать тетрадь JSON</button><button type="button" class="button secondary" id="sg-export-text" disabled data-sg-enable>Скачать записи TXT</button></div><label class="sg-field">Перенести тетрадь этого модуля<input id="sg-import" type="file" accept=".json,application/json" disabled data-sg-enable></label><p id="sg-import-status" role="status"></p>'
+def lab(lesson):
+    return '''<section id="laboratory" class="sg-section"><p class="eyebrow">Лаборатория расклада</p><h2>Изменить одну связь и сравнить</h2><p>Выбирайте карты и роли. У каждого сочетания, схемы, группировки и выбранной для исключения карты — отдельная запись. Перевёрнутость при перестановке остаётся у самой карты; она предлагает уточнить способ проявления, а не автоматически меняет соответствие.</p><div id="sg-lab" hidden>
+<div class="sg-controls"><label>Устройство расклада<select id="sg-layout"></select></label><label id="sg-partition-label">Разбиение на пары<select id="sg-partition"><option value="0">А–Б и В–Г</option><option value="1">А–В и Б–Г</option><option value="2">А–Г и Б–В</option></select></label><label>Один ранг в четырёх мастях<select id="sg-rank"><option value="">Выберите ранг…</option>'''+''.join(f'<option value="{i}">{i}</option>' for i in range(1,11))+'''</select></label></div>
+<p id="sg-layout-help" class="sg-help"></p><div id="sg-cards" class="sg-card-grid"></div>
+<details class="sg-disclosure"><summary>Как читать группы этой схемы</summary><div id="sg-groups"></div></details>
+<details class="sg-disclosure"><summary>Собственные соответствия каждой карты</summary><div id="sg-correspondences" class="sg-meta-grid"></div></details>
+<div class="sg-omission"><h3>Проверить вклад одной карты</h3><label>Какую карту временно убрать?<select id="sg-focus"></select></label><div class="sg-actions"><button type="button" class="button secondary" id="sg-hide">Убрать из рассмотрения</button><button type="button" class="button secondary" id="sg-show" disabled>Вернуть в целое</button><button type="button" class="button secondary" id="sg-replace">Заменить только эту карту</button></div><p id="sg-omission-status" role="status"></p></div>
+'''+field('question','Вопрос моего расклада',2)+field('before','Как я читаю оставшиеся карты без выбранной',3)+field('after','Что пришлось пересмотреть после возвращения карты',3)+field('reading','Моё толкование целого',5)+field('basis','На какие детали, соответствия и источники я опираюсь',4)+field('alternative','Другая гипотеза и недостающие обстоятельства',3)+field('step','Какой шаг или наблюдение поможет уточнить толкование',3)+'''
+<div class="sg-actions"><button type="button" class="button" id="sg-snapshot">Зафиксировать этот разбор</button><button type="button" class="button secondary" id="sg-review">Проверить полноту</button></div><p id="sg-review-status" role="status"></p><p id="sg-snapshot-status" role="status"></p><p class="fine">Фиксация сохраняет отдельный снимок с датой. Позже в тетради к нему можно добавить факты и новое понимание. Проверка полноты оценивает наличие опор, не смысл или истинность толкования.</p><details class="sg-disclosure"><summary>Мои другие варианты этого занятия</summary><div id="sg-variants"></div></details>
+</div><noscript><p>Для выбора карт и записей нужен JavaScript. Задание, исходные карты, авторский пример и пояснения доступны ниже и выше без него.</p></noscript><p id="sg-save-status" role="status">Для личных записей используется память этого браузера.</p></section>'''
+def example(l):
+    x=l['example'];s='<details class="sg-disclosure sg-example"><summary>Разобранный пример: '+E(x['question'])+'</summary><div class="sg-static-cards">'
+    for id in l['default']['ids']:
+        c=BY_ID[id];s+='<figure><a href="'+E(c['imageSource'],quote=True)+'" target="_blank" rel="noopener noreferrer"><img loading="lazy" width="85" height="147" src="'+E(c['image'],quote=True)+'" alt="'+E(c['name'],quote=True)+'"></a><figcaption>'+E(c['name'])+'</figcaption></figure>'
+    s+='</div>'
+    for key,title in [('reading','Возможное прочтение'),('evidence','Основание'),('alternative','Альтернатива')]:s+='<h3>'+title+'</h3>'+p(x[key])
+    return s+'</details>'
+def build(page,crumbs):
+    atlas=json.dumps({'cards':CARDS,'method':METHOD},ensure_ascii=False,separators=(',',':')).replace('<','\\u003c')
+    (ROOT/'assets/course/spread-grammar-atlas.js').write_text('window.SpreadGrammarAtlas = '+atlas+';\n')
+    assert len(D['lessons'])==12 and len({l['slug'] for l in D['lessons']})==12
+    assert len(CARDS)==78
+    for l in D['lessons']:
+        assert len(l['quiz'])==2 and all(0<=q['answer']<len(q['options']) for q in l['quiz'])
+        assert len(l['default']['ids'])==len(set(l['default']['ids'])) and set(l['default']['ids'])<=set(BY_ID)
+    b=crumbs('../../','Искусство расклада')+'<div class="sg-module"><header class="sg-hero"><p class="eyebrow">Отдельный модуль · 12 занятий · 24 вопроса</p><h1>'+E(D['title'])+'</h1><p class="sg-subtitle">'+E(D['subtitle'])+'</p><p class="lead">'+E(D['lead'])+'</p><div class="sg-actions"><a class="button" href="part-and-whole/">Начать с части и целого →</a><a class="button secondary" href="#program">Программа</a><a href="notebook/">Моя тетрадь</a></div>'+progress()+'</header><section class="sg-section sg-intro"><div><h2>Органический подход</h2><p>Смысл части уточняется её функцией в целом. Поддержка, ограничение, согласование и осуществление рассматриваются во взаимосвязи. Для карт это означает: объяснить вклад каждого образа и проверить, что изменится без него.</p><p>Комбинаторика помогает устроить сравнение. Переставляя одну карту или меняя группировку, мы исследуем устройство объяснения. Каббалистические источники, герметические соответствия и наши учебные гипотезы обозначены отдельно.</p></div><div><h2>Как заниматься</h2><p>Ориентир — 20–30 минут на занятие. Сначала прочитайте объяснение, затем измените одну связь в лаборатории. Сохраните гипотезу и альтернативу, сопоставьте с разобранным примером и ответьте на два вопроса.</p><p>Все занятия открыты. Можно начать с любого, но первые три дают основу. Конструкторы <a href="../tarot-pairs/">пар</a> и <a href="../tarot-triples/">троек</a> пригодятся для исследования отдельных групп.</p></div></section><section id="program" class="sg-section"><h2>Двенадцать занятий</h2><div class="sg-program">'
+    for l in D['lessons']:b+=f'<article><span class="sg-number">{l["id"]:02d}</span><h3><a href="{l["slug"]}/">'+E(l['title'])+'</a></h3>'+p(l['aim'])+f'<span class="fine" data-sg-mark="{l["id"]}">Можно начать</span></article>'
+    b+='</div></section>'+sources()+'</div>'+payload();page(BASE,D['title']+' — искусство расклада',D['lead'],b)
+    for l in D['lessons']:
+        b=crumbs('../../../','Искусство расклада · '+str(l['id']))+'<div class="sg-module"><p class="sg-back"><a href="../">← Весь модуль</a> · <a href="../notebook/">Тетрадь и наблюдения</a></p><header class="sg-lesson-hero"><p class="eyebrow">Занятие '+str(l['id'])+' из 12</p><h1>'+E(l['title'])+'</h1><p class="lead">'+E(l['aim'])+'</p>'+progress()+'</header><nav class="sg-lesson-nav" aria-label="Разделы занятия"><a href="#reading">Объяснение</a><a href="#task">Задание</a><a href="#laboratory">Лаборатория</a><a href="#check">Самопроверка</a><a href="#sources">Источники</a></nav><div id="reading" class="sg-reading"><p class="sg-opening">'+E(l['opening'])+'</p>'
+        for section in l['sections']:b+='<section><h2>'+E(section['title'])+'</h2>'+''.join(p(t) for t in section['text'])+'</section>'
+        b+='</div><section id="task" class="sg-section"><h2>Попробуйте сами</h2><ol>'+''.join('<li>'+E(t)+'</li>' for t in l['task'])+'</ol>'+p('Исходные карты: '+' → '.join(BY_ID[id]['name'] for id in l['default']['ids']))+example(l)+'</section>'+lab(l)
+        b+='<section id="check" class="sg-section sg-quiz"><h2>Могу ли я объяснить?</h2><p>Вопросы проверяют понимание метода. Смысл личного толкования автоматически не оценивается.</p>'
+        for i,q in enumerate(l['quiz']):
+            b+=f'<fieldset disabled data-sg-enable><legend>{i+1}. '+E(q['q'])+'</legend>'+''.join(f'<label><input type="radio" name="sg-q-{i}" value="{j}" data-sg-answer="{i}"> '+E(o)+'</label>' for j,o in enumerate(q['options']))+f'<p id="sg-feedback-{i}" role="status"></p></fieldset>'
+        b+='<button type="button" class="button" id="sg-check" disabled data-sg-enable>Проверить ответы</button><p id="sg-check-status" role="status"></p><details class="sg-disclosure"><summary>Ответы с объяснениями</summary>'+''.join('<p><strong>'+str(i+1)+'. '+E(q['options'][q['answer']])+'.</strong> '+E(q['why'])+'</p>' for i,q in enumerate(l['quiz']))+'</details></section><section class="sg-section"><h2>После занятия</h2>'+p(l['reflection'])+'<p>Ответ можно включить в поле «Моё толкование целого» или в обоснование. Для возвращения к нему зафиксируйте разбор.</p><label class="sg-complete"><input type="checkbox" id="sg-completed" disabled data-sg-enable> Отмечаю занятие как пройденное</label><details class="sg-disclosure"><summary>Скачать или перенести записи модуля</summary>'+notes_controls()+'</details></section>'+sources(l)+'<nav class="sg-next" aria-label="Соседние занятия">'
+        prev=D['lessons'][l['id']-2] if l['id']>1 else None;nxt=D['lessons'][l['id']] if l['id']<12 else None
+        b+=('<a href="../'+prev['slug']+'/">← '+E(prev['title'])+'</a>' if prev else '<a href="../">← Начало модуля</a>')+('<a href="../'+nxt['slug']+'/">'+E(nxt['title'])+' →</a>' if nxt else '<a href="../notebook/">Моя тетрадь →</a>')+'</nav></div>'+payload(l)
+        page(BASE+l['slug']+'/',l['title']+' — искусство расклада',l['aim'],b)
+    b=crumbs('../../../','Тетрадь искусства расклада')+'<div class="sg-module"><header class="sg-hero"><p class="eyebrow">Записи и возвращения</p><h1>Моя тетрадь раскладов</h1><p class="lead">Черновики каждого варианта, зафиксированные объяснения и последующие наблюдения.</p>'+progress()+'<p>Записи остаются в этом браузере на этом устройстве. Автор курса их не получает. Для переноса и резервной копии скачайте JSON; для чтения подходит TXT.</p>'+notes_controls()+'<p id="sg-save-status" role="status"></p><p><a href="../">К программе модуля →</a></p></header><section class="sg-section"><h2>Мои варианты</h2><label class="sg-field">Найти по карте, вопросу или тексту<input type="search" id="sg-search" disabled data-sg-enable></label><div id="sg-notes"></div><button type="button" class="button secondary" id="sg-more" hidden>Показать ещё</button></section><section id="observations" class="sg-section"><h2>Зафиксированные разборы и наблюдения</h2><p>Снимок сохраняет объяснение на момент фиксации. Добавляйте к нему факты и новое понимание отдельными записями. Изменения черновика не переписывают снимок.</p><div id="sg-snapshots"></div><button type="button" class="button secondary" id="sg-snap-more" hidden>Показать ещё снимки</button></section><noscript><p>Для личных записей и переноса тетради включите JavaScript.</p></noscript></div>'+payload()
+    page(BASE+'notebook/','Тетрадь — искусство расклада','Личные варианты раскладов, сохранённые гипотезы и последующие наблюдения.',b,noindex=True)

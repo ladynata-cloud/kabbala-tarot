@@ -9,6 +9,7 @@ import build_reading_catalog as reading_catalog
 import build_yetzirah as yetzirah
 import build_book_modules as book_modules
 import build_tarot_pairs as tarot_pairs
+import build_tarot_triples as tarot_triples
 ROOT=Path(__file__).resolve().parents[1]
 D=json.loads((ROOT/'content/course.json').read_text());CFG=json.loads((ROOT/'content/site.json').read_text());ORIGIN=CFG['origin'].rstrip('/')
 LESSONS=D['lessons'];routes=[]
@@ -85,6 +86,8 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
   if path!='/course/book-modules/':html=html.replace('</body>',f'<script defer src="{prefix}assets/course/book-state.js"></script><script defer src="{prefix}assets/course/book-modules.js"></script></body>')
  if path=='/course/tarot-pairs/':
   html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/tarot-pairs.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/tarot-pairs-core.js"></script><script defer src="{prefix}assets/course/tarot-pairs.js"></script></body>')
+ if path=='/course/tarot-triples/':
+  html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/tarot-pairs.css"><link rel="stylesheet" href="{prefix}assets/course/tarot-triples.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/tarot-pairs-core.js"></script><script defer src="{prefix}assets/course/tarot-triples-core.js"></script><script defer src="{prefix}assets/course/tarot-triples.js"></script></body>')
  if path=='/course/bahir/letters-and-number/':html=html.replace('book-modules.js','book-modules.js?v=2').replace('book-modules.css','book-modules.css?v=2')
  out=ROOT/path.strip('/')/'index.html' if path!='/' else ROOT/'index.html';out.parent.mkdir(parents=True,exist_ok=True);out.write_text(html+'\n')
  if not noindex:routes.append(path)
@@ -143,6 +146,7 @@ reading_catalog.build(page,crumbs)
 yetzirah.build(page,crumbs)
 book_modules.build(page,crumbs)
 tarot_pairs.build(page,crumbs)
+tarot_triples.build(page,crumbs)
 # Glossary
 body=crumbs('../../','Словарь')+'<header class="hero-small"><p class="eyebrow">Слово можно просто посмотреть</p><h1>Словарь без спешки</h1><p class="lead">Если термин забылся, вернитесь сюда. Короткое объяснение поможет вспомнить урок, а подробности найдутся в самом тексте.</p><label for="term-search">Какое слово ищем?</label><br><input id="term-search" class="search" type="search" data-search="terms" placeholder="Например, тиккун"><span class="status-text" data-search-status="terms" aria-live="polite"></span></header>'
 body+='<div class="books-reminder"><p>Нужно подробнее о Торе, Талмуде или Зоаре? Для них есть отдельное введение с примерами.</p><a href="../books/">Открыть знакомство с книгами →</a></div>'
@@ -197,4 +201,3 @@ routes=['/']+routes
 xml='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+''.join(f'  <url><loc>{ORIGIN}{p}</loc><lastmod>{CFG["updated"]}</lastmod></url>\n' for p in routes)+'</urlset>\n'
 (ROOT/'sitemap.xml').write_text(xml);(ROOT/'robots.txt').write_text(f'User-agent: *\nAllow: /\n\nSitemap: {ORIGIN}/sitemap.xml\n')
 print(f'Built {len(LESSONS)} lessons; {len(routes)} indexable URLs; private notebook excluded from sitemap.')
-

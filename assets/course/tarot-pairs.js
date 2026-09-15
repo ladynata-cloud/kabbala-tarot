@@ -87,6 +87,8 @@
   }
   function render() {
     analysis=P.analyze(state,cards,method);state=analysis.state;
+    const third=['p6',...cards.map(c=>c.id)].find(id=>id!==state.a&&id!==state.b);
+    $('pair-to-triples').href='../tarot-triples/?'+new URLSearchParams({a:state.a,b:state.b,c:third,order:state.order==='pair'?'group':'sequence',lens:state.order==='pair'?'system':'mediation',rev:state.reversals?'1':'0',ra:state.ra?'1':'0',rb:state.rb?'1':'0',rc:'0'});
     note=structuredClone(notes[P.key(state,cards)]||P.emptyNote({...state}));
     $('pair-a').value=state.a;$('pair-b').value=state.b;
     for(const option of $('pair-a').options)option.disabled=option.value===state.b;

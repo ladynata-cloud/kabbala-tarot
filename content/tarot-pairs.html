@@ -1,6 +1,7 @@
 <header class="pairs-heading">
   <div><h1>Конструктор пар</h1><p>Выберите две карты. Найдите связь и объясните её своими словами.</p></div>
   <a href="../two-cards/">К уроку о двух картах</a>
+  <a href="../tarot-triples/">К конструктору троек</a>
 </header>
 <div id="pair-app" class="pairs-app" hidden>
   <div class="pairs-settings">
@@ -16,6 +17,7 @@
   <div class="pair-toolbar">
     <button type="button" class="button" id="pair-swap">Поменять местами</button>
     <button type="button" class="button secondary" id="pair-random">Случайное упражнение</button>
+    <a class="button secondary" id="pair-to-triples" href="../tarot-triples/">Добавить третью карту</a>
     <div class="pair-pagination"><button type="button" id="pair-prev" aria-label="Предыдущее сочетание">←</button><label for="pair-index">№</label><input id="pair-index" type="number" min="1" step="1" inputmode="numeric"><span id="pair-total"></span><button type="button" id="pair-go">Перейти</button><button type="button" id="pair-next" aria-label="Следующее сочетание">→</button></div>
   </div>
   <p id="pair-message" class="pair-status" role="status"></p>

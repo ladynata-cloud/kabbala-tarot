@@ -25,7 +25,7 @@
   const question=key?.startsWith('clinic:')?D.errors.find(x=>x.id===key.split(':')[1]):null;
   if(question&&['answer','checked'].includes(k)){
    const choices=[...new Set(v.split('\n').map(x=>x.trim()).filter(x=>/^[0-2]$/.test(x)))];
-   v=choices.map(x=>k==='answer'?(question.options?.[Number(x)]||'Вариант '+(Number(x)+1)):(Number(x)===question.answer?'Ответ верный.':'Стоит вернуться к пояснению и попробовать ещё раз.')).join('\n')||'Откройте упражнение и выберите ответ заново.';
+   v=choices.map(x=>k==='answer'?(question.options?.[Number(x)]||'Вариант '+(Number(x)+1)):(typeof question.answer!=='number'?'Результат сохранён. Откройте упражнение, чтобы посмотреть пояснение.':Number(x)===question.answer?'Ответ верный.':'Стоит вернуться к пояснению и попробовать ещё раз.')).join('\n')||'Откройте упражнение и выберите ответ заново.';
   }
   return label(k)+'\n'+v;
  }).join('\n\n');}

@@ -118,9 +118,9 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
  if path.startswith('/course/pardes-rimmonim/'):
   html=html.replace('study-state.js\"','study-state.js?v=2\"').replace('book-studies.js\"','book-studies.js?v=2\"').replace('book-studies.css\"','book-studies.css?v=2\"')
  if path.startswith(('/course/study-tools/','/course/reading-workshop/','/course/compare-authors/','/course/argument-clinic/')):
-  html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/study-tools.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/study-tools-core.js"></script><script defer src="{prefix}assets/course/study-tools.js"></script></body>')
+  html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/study-tools.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/study-tools-core.js"></script><script defer src="{prefix}assets/course/study-tools.js?v=2"></script></body>')
  if path in ('/course/tarot-pairs/','/course/tarot-triples/'):
-  html=html.replace('</body>',f'<script defer src="{prefix}assets/course/reasoning-prompts.js"></script></body>')
+  html=html.replace('</body>',f'<script defer src="{prefix}assets/course/reasoning-prompts.js?v=2"></script></body>')
  out=ROOT/path.strip('/')/'index.html' if path!='/' else ROOT/'index.html';out.parent.mkdir(parents=True,exist_ok=True);out.write_text(html+'\n')
  if not noindex:routes.append(path)
 def crumbs(prefix,title=None):return '<nav class="crumb" aria-label="Путь к странице"><span><a href="'+prefix+'">Главная</a></span><span><a href="'+prefix+'course/">Курс</a></span>'+(('<span>'+E(title)+'</span>') if title else '')+'</nav>'

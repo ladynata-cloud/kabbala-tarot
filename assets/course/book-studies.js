@@ -18,7 +18,7 @@
   $$('[data-book-answer]').forEach(x=>x.addEventListener('change',()=>{$('[data-book-q-feedback="'+x.dataset.bookAnswer+'"]').textContent='';$('[data-book-quiz-result]').textContent='';}));
  }
  $$('[data-case-option]').forEach(b=>b.addEventListener('click',()=>{const i=Number(b.dataset.caseOption);$$('[data-case-option]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));const o=D.lab.options[i];$('[data-case-output]').innerHTML='<h3>'+esc(o.title)+'</h3><p>'+esc(o.feedback)+'</p>';}));
- $$('[data-layer]').forEach(b=>b.addEventListener('click',()=>{const i=Number(b.dataset.layer);$$('[data-layer]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));$('[data-layer-output]').textContent=D.lab.layers[i].text;}));
+ $$('[data-layer]').forEach(b=>b.addEventListener('click',()=>{const i=Number(b.dataset.layer);$$('[data-layer]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));$('[data-layer-output]').textContent=D.lab.layers[i].text;$$('[data-pardes-filter]').forEach(x=>x.setAttribute('fill',D.lab.layers[i].color||'#e4ddc7'));}));
  $$('[data-book-match-check]').forEach(b=>b.addEventListener('click',()=>{const root=b.closest('fieldset'),selects=$$('select',root);let n=0;selects.forEach(x=>{const ok=x.value===x.dataset.answer;n+=ok;x.setAttribute('aria-invalid',String(!ok));$('#'+x.getAttribute('aria-describedby')).textContent=ok?'Верно':x.value?'Сверьтесь с отрывком':'Выберите ответ';});$('[data-book-match-status]',root).textContent='Верно '+n+' из '+selects.length+'.';}));
  $$('select[data-answer]').forEach(x=>x.addEventListener('change',()=>{x.removeAttribute('aria-invalid');$('#'+x.getAttribute('aria-describedby')).textContent='';}));
  if($('[data-book-order]')){

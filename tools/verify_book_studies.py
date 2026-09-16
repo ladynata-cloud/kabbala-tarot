@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-slugs=['shaarei-orah','mystical-qabalah','book-of-thoth','pardes-rimmonim','tanya']
+slugs=['shaarei-orah','mystical-qabalah','book-of-thoth','pardes-rimmonim','tanya','etz-chaim','book-t']
 sitemap=(ROOT/'sitemap.xml').read_text()
 types=set();answers=[]
 for slug in slugs:
@@ -13,6 +13,11 @@ for slug in slugs:
  for l in d['lessons']:
   assert l['refs'] and all(r['url'].startswith('https://') for r in l['refs'])
   assert len(l['sections'])>=2 and sum(len(t.split()) for s in l['sections'] for t in s['text'])>=130
+  if slug in ('etz-chaim','book-t'):
+   assert len(l['sections'])>=3
+   assert sum(len(t.split()) for section in l['sections'] for t in section['text'])>=230
+   assert len(l['pedagogy']['worked']['steps'])==3 and len(l['pedagogy']['hints'])==2
+   assert len(l['pedagogy']['rubric'])==3
   assert len(l['quiz'])==2
   for q in l['quiz']:
    assert len(q['options'])==3 and len(set(q['options']))==3 and q['answer'] in range(3) and q['why']
@@ -28,5 +33,5 @@ for slug in slugs:
  nb=f'/course/{slug}/notebook/'
  assert nb not in sitemap and 'noindex,follow' in (ROOT/nb.strip('/')/'index.html').read_text()
 assert set(answers)=={0,1,2}
-assert types=={'layers','match','order','case','criteria'}
-print('Book studies: 5 modules, 40 complete lessons, 80 answer keys, 5 exercise formats, 5 private notebooks verified.')
+assert types=={'layers','match','order','case','criteria','kav','fives','dignities'}
+print('Book studies: 7 modules, 56 complete lessons, 112 answer keys, 8 exercise formats, 7 private notebooks verified.')

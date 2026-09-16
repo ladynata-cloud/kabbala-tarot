@@ -20,8 +20,15 @@
    const raw=JSON.stringify(state);localStorage.setItem(KEY,raw);lastRaw=raw;status(message);
   }catch(e){storageOK=false;status('Не удалось сохранить в браузере: '+e.message+' Скачайте копию перед закрытием страницы.');}
  }
- function label(f){return Object.values(D.fieldLabels).map(x=>x[f]).find(Boolean)||({reference:'Источник',excerpt:'Мой фрагмент',answer:'Выбранный ответ (номер с нуля)',checked:'Последняя проверка'})[f]||f;}
- function textFields(f){return Object.entries(f).filter(([,v])=>v.trim()).map(([k,v])=>label(k)+'\n'+v).join('\n\n');}
+ function label(f){return Object.values(D.fieldLabels).map(x=>x[f]).find(Boolean)||({reference:'Источник',excerpt:'Мой фрагмент',answer:'Выбранный ответ',checked:'Результат проверки'})[f]||f;}
+ function textFields(f,key=current){return Object.entries(f).filter(([,v])=>v.trim()).map(([k,v])=>{
+  const question=key?.startsWith('clinic:')?D.errors.find(x=>x.id===key.split(':')[1]):null;
+  if(question&&['answer','checked'].includes(k)){
+   const choices=[...new Set(v.split('\n').map(x=>x.trim()).filter(x=>/^[0-2]$/.test(x)))];
+   v=choices.map(x=>k==='answer'?(question.options?.[Number(x)]||'Вариант '+(Number(x)+1)):(Number(x)===question.answer?'Ответ верный.':'Стоит вернуться к пояснению и попробовать ещё раз.')).join('\n')||'Откройте упражнение и выберите ответ заново.';
+  }
+  return label(k)+'\n'+v;
+ }).join('\n\n');}
  function addText(parent,tag,t,cls){const el=document.createElement(tag);el.textContent=t;if(cls)el.className=cls;parent.append(el);return el;}
  function revisions(){
   const host=$('[data-st-revisions]');if(!host||!current)return;host.replaceChildren();const r=C.record(state,current);
@@ -62,7 +69,7 @@
  $$('[data-st-check]').forEach(x=>x.addEventListener('click',()=>showAnswer(x.dataset.stCheck,true)));
  $$('[data-st-item] input[type=radio]').forEach(x=>x.addEventListener('change',()=>{const id=x.closest('[data-st-item]').dataset.stItem;C.record(state,'clinic:'+id).fields.answer=x.value;$('[data-st-result="'+id+'"]').textContent='';persist();}));
  function download(content,type,name){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
- function exportText(){return 'Элиора Вейра · Тетрадь мастерских\n\n'+Object.entries(state.records).filter(([,r])=>Object.values(r.fields).some(v=>v.trim())||r.revisions.length).map(([k,r])=>titles[k]+'\nТекущий черновик\n'+textFields(r.fields)+'\n\n'+r.revisions.map((v,i)=>'Редакция '+(i+1)+' · '+v.at+'\n'+textFields(v.fields)).join('\n\n')).join('\n\n────────────────\n\n');}
+ function exportText(){return 'Элиора Вейра · Тетрадь мастерских\n\n'+Object.entries(state.records).filter(([,r])=>Object.values(r.fields).some(v=>v.trim())||r.revisions.length).map(([k,r])=>titles[k]+'\nТекущий черновик\n'+textFields(r.fields,k)+'\n\n'+r.revisions.map((v,i)=>'Редакция '+(i+1)+' · '+v.at+'\n'+textFields(v.fields,k)).join('\n\n')).join('\n\n────────────────\n\n');}
  function exportJSON(){download(JSON.stringify(state,null,2),'application/json','Eliora_Study_Workshops.json');}
  // A local download is available on every tool, including when browser storage fails.
  if(current){const actions=$('.st-actions');const b=addText(actions,'button','Скачать копию','button secondary');b.type='button';b.addEventListener('click',exportJSON);}
@@ -74,8 +81,8 @@
    if(!Object.values(r.fields).some(v=>v.trim())&&!r.revisions.length)continue;count++;
    const section=document.createElement('section');section.className='st-panel';addText(section,'h2',titles[key]);
    const [kind,id]=key.split(':'),a=addText(section,'a','Продолжить эту работу →');a.href='/course/'+paths[kind]+'/?source='+id;
-   addText(section,'h3','Текущий черновик');addText(section,'pre',textFields(r.fields)||'Пустой черновик');
-   r.revisions.forEach((v,i)=>{const details=document.createElement('details');addText(details,'summary',(i===0?'Первая сохранённая попытка':'Редакция '+(i+1))+' · '+new Date(v.at).toLocaleString('ru-RU'));addText(details,'pre',textFields(v.fields));section.append(details);});host.append(section);
+   addText(section,'h3','Текущий черновик');addText(section,'pre',textFields(r.fields,key)||'Пустой черновик');
+   r.revisions.forEach((v,i)=>{const details=document.createElement('details');addText(details,'summary',(i===0?'Первая сохранённая попытка':'Редакция '+(i+1))+' · '+new Date(v.at).toLocaleString('ru-RU'));addText(details,'pre',textFields(v.fields,key));section.append(details);});host.append(section);
   }
   if(!count)addText(host,'p','Записей пока нет. Откройте любую мастерскую и начните с небольшого фрагмента.');
  }

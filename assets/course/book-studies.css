@@ -4,3 +4,5 @@
 @media print{.book-choices,.book-crosslinks{display:none}.book-module-map{grid-template-columns:repeat(2,1fr)}.book-case-output{display:none}}
 
 .book-glossary{display:block}.book-glossary dl{display:grid;grid-template-columns:150px 1fr;gap:12px}.book-glossary h2{margin-top:0}.sy-table-scroll th,.sy-table-scroll td{min-width:110px}.sy-actions{flex-wrap:wrap}@media(max-width:760px){.book-glossary dl{grid-template-columns:1fr;gap:6px}}
+
+.pardes-vessel{margin:1.5rem 0;padding:1rem;border:1px solid #c9c4b7;border-radius:12px}.pardes-vessel svg{width:100%;max-height:160px}.pardes-vessel figcaption{font-size:.9rem}

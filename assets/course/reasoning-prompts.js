@@ -1,0 +1,12 @@
+'use strict';
+(function(){
+ const triple=location.pathname.includes('tarot-triples'),prefix=triple?'data-triple-note':'data-note';
+ const evidence=document.querySelector('['+prefix+'="evidence"]');if(!evidence)return;
+ const section=document.createElement('section');section.className='section';section.setAttribute('aria-label','Обосновать своё чтение');
+ const h=document.createElement('h3');h.textContent='Три вопроса к своему объяснению';section.append(h);
+ const lead=document.createElement('p');lead.textContent='Выберите вопрос, затем дополните соответствующую запись. Ответы сохраняются вместе с Вашим разбором.';section.append(lead);
+ const data=[['Почему эта связь?','evidence','Назовите по одной видимой детали каждой карты. Объясните, как детали поддерживают выбранную связь. Если опираетесь на соответствие, укажите систему или источник.'],['Что меняет порядок?',triple?'reading':'connection',triple?'Сравните исходную тройку с перестановкой в эксперименте. Какая карта теперь задаёт переход? Какие основания чтения нужно изменить? Запишите различие в поле общего разбора.':'Посмотрите сравнение А → Б и Б → А в конструкторе. Какие слова в объяснении связи придётся изменить? Укажите, что зависит от позиции, а что остаётся свойством самой карты.'],['Какая альтернатива?','alternative','Предложите другое объяснение тех же деталей. Какое наблюдение помогло бы выбрать между вариантами? Отделите предположение от того, что действительно видно.']];
+ data.forEach(([title,field,prompt])=>{const details=document.createElement('details');const summary=document.createElement('summary');summary.textContent=title;details.append(summary);const p=document.createElement('p');p.textContent=prompt;details.append(p);const b=document.createElement('button');b.type='button';b.className='button secondary';b.textContent='Перейти к моей записи';b.addEventListener('click',()=>{const input=document.querySelector('['+prefix+'="'+field+'"]');if(input){let ancestor=input.parentElement;while(ancestor){if(ancestor.tagName==='DETAILS')ancestor.open=true;ancestor=ancestor.parentElement;}input.focus();input.scrollIntoView({block:'center',behavior:'smooth'});}});details.append(b);section.append(details);});
+ const p=document.createElement('p'),a=document.createElement('a');a.href='/course/study-tools/';a.textContent='Мастерские комментария и проверки оснований →';p.append(a);section.append(p);
+ const anchor=evidence.closest('label')||evidence;anchor.insertAdjacentElement('afterend',section);
+})();

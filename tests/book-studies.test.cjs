@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict');
 const {StudyState}=require('../assets/course/study-state.js');
-const books=['shaarei-orah','mystical-qabalah','book-of-thoth'];
+const books=['shaarei-orah','mystical-qabalah','book-of-thoth','pardes-rimmonim'];
 for(const book of books){
  const s=StudyState.create(book),data=s.empty();
  data.lessons['1']={before:'Первый вопрос',working:'Черновик',note:'Моя мысль',done:true};
@@ -23,4 +23,4 @@ for(const book of books){
  assert.deepEqual(s.normalize(other),s.empty());
 }
 assert.throws(()=>StudyState.create('unknown'));
-console.log('Three independent notebooks: JSON round trip, preserved earlier answers, idempotent merge, wrong-book and invalid-lesson rejection passed.');
+console.log('Four independent notebooks: JSON round trip, preserved earlier answers, idempotent merge, wrong-book and invalid-lesson rejection passed.');

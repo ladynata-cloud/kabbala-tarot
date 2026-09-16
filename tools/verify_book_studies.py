@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-slugs=['shaarei-orah','mystical-qabalah','book-of-thoth','pardes-rimmonim']
+slugs=['shaarei-orah','mystical-qabalah','book-of-thoth','pardes-rimmonim','tanya']
 sitemap=(ROOT/'sitemap.xml').read_text()
 types=set();answers=[]
 for slug in slugs:
@@ -29,4 +29,4 @@ for slug in slugs:
  assert nb not in sitemap and 'noindex,follow' in (ROOT/nb.strip('/')/'index.html').read_text()
 assert set(answers)=={0,1,2}
 assert types=={'layers','match','order','case','criteria'}
-print('Book studies: 4 modules, 32 complete lessons, 64 answer keys, 5 exercise formats, 4 private notebooks verified.')
+print('Book studies: 5 modules, 40 complete lessons, 80 answer keys, 5 exercise formats, 5 private notebooks verified.')

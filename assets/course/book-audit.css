@@ -1,0 +1,15 @@
+.book-audit{margin:24px 0}
+.book-audit fieldset{border:0;border-top:1px solid #c8d3cf;margin:26px 0;padding:18px 0 0;min-width:0}
+.book-audit legend{font-weight:600;max-width:100%;padding:0 0 10px}
+.book-audit .sy-option{align-items:flex-start;line-height:1.6;overflow-wrap:anywhere}
+.book-audit input{flex:none;margin-top:.45em}
+.book-audit [role=status]{min-height:1.5em}
+.book-audit fieldset[aria-invalid=true]{border-color:#974b39}
+.book-assessment{margin:28px 0;border-top:1px solid #c8d3cf;padding-top:16px}
+.book-assessment details{padding:14px 0;border-bottom:1px solid #dce3df}
+.book-assessment summary{cursor:pointer;line-height:1.6;font-weight:600}
+.book-assessment li{padding:5px 0}
+.book-assessment summary:focus-visible,.book-audit input:focus-visible{outline:3px solid #a88750;outline-offset:4px}
+.book-assessment blockquote,.book-audit blockquote{margin:20px 0;padding:8px 18px;border-left:3px solid #a88750}
+@media(max-width:600px){.book-audit .sy-option{padding:12px 10px}.book-assessment ol{padding-left:24px}}
+@media print{.book-audit{display:none}.book-assessment details::details-content{display:block}}

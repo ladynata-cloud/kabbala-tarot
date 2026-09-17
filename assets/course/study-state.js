@@ -2,7 +2,7 @@
 (function(root){
  const object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
  function create(book){
-  if(!['shaarei-orah','mystical-qabalah','book-of-thoth','pardes-rimmonim','tanya','etz-chaim','book-t','daat-tevunot','tarot-bohemians','nefesh-hachaim','levi-dogma-ritual','shaarei-kedusha','pictorial-key'].includes(book))throw Error('Неизвестный модуль.');
+  if(!['shaarei-orah','mystical-qabalah','book-of-thoth','pardes-rimmonim','tanya','etz-chaim','book-t','daat-tevunot','tarot-bohemians','nefesh-hachaim','levi-dogma-ritual','shaarei-kedusha','pictorial-key','derekh-hashem','mathers-tarot'].includes(book))throw Error('Неизвестный модуль.');
   const course='eliora-book-'+book+'-v1',fields=['before','working','note'];
   const empty=()=>({course,version:1,lessons:{}});
   const valid=id=>/^[1-8]$/.test(String(id));

@@ -5,6 +5,9 @@ def worked(l):
  d=l.get('pedagogy')
  if not d:return ''
  w=d['worked']
+ if d.get('fade'):
+  mode=d['fade'];label={'model':'Разобранный образец: прочитайте, затем сверните','complete':'Сначала дополните переход; затем откройте опору','independent':'Образец проверки — после собственной попытки'}[mode]
+  return '<section class="book-worked"><p class="eyebrow">'+E(label)+'</p><details'+(' open' if mode=='model' else '')+'><summary>'+E(w['question'])+'</summary><ol>'+''.join('<li>'+E(s)+'</li>' for s in w['steps'])+'</ol></details></section>'
  return '<section class="book-worked"><p class="eyebrow">Смотрим, как строится объяснение</p><h2>'+E(w['question'])+'</h2><ol>'+''.join('<li>'+E(s)+'</li>' for s in w['steps'])+'</ol><p class="fine">Теперь закройте этот пример и попробуйте следующий случай самостоятельно.</p></section>'
 
 def hints(l):

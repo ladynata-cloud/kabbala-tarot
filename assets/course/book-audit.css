@@ -4,6 +4,14 @@
 .book-audit .sy-option{align-items:flex-start;line-height:1.6;overflow-wrap:anywhere}
 .book-audit input{flex:none;margin-top:.45em}
 .book-audit [role=status]{min-height:1.5em}
+.book-revisit{display:block;margin-top:10px;text-underline-offset:3px}
+.sy-reading[id]{scroll-margin-top:110px}
+.sy-reading h2:focus{outline:2px solid #a88750;outline-offset:5px}
+.book-reading-guide{padding:20px 24px;margin:24px 0;background:#f2f5ef;border-left:3px solid #a88750}
+.book-reading-guide li{padding:4px 0 12px}
+.book-reading-guide summary{cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.book-reading-guide summary:focus-visible,.book-revisit:focus-visible{outline:3px solid #a88750;outline-offset:4px}
+@media(max-width:600px){.book-reading-guide{padding:16px}.book-reading-guide ol{padding-left:22px}}
 .book-audit fieldset[aria-invalid=true]{border-color:#974b39}
 .book-assessment{margin:28px 0;border-top:1px solid #c8d3cf;padding-top:16px}
 .book-assessment details{padding:14px 0;border-bottom:1px solid #dce3df}

@@ -1,0 +1,30 @@
+const assert=require('node:assert/strict');
+const G=require('../assets/course/spread-grammar-core.js');
+const M=require('../assets/course/spread-dynamics-core.js');
+const cards=require('../content/tarot.json').cards;
+const D=require('../content/spread-workshop.json');
+const E=G.create(cards,D.lessons,{app:D.app,title:D.title,layoutIds:D.layoutIds});
+const C=M.create(cards,D.lessons,{title:D.title,layoutIds:D.layoutIds});
+assert.equal(D.lessons.length,8);
+assert.deepEqual(D.lessons.map(l=>l.support),['guided','guided','hints','hints','hints','independent','independent','independent']);
+for(const l of D.lessons){
+ assert.deepEqual(E.strictConfig(l.default).ids,l.default.ids);
+ const note={...E.blank(l.id,l.default),question:l.example.question,reading:l.example.reading,basis:l.example.evidence,alternative:l.example.alternative,step:l.example.step};
+ const before=JSON.stringify(note);C.compare(note,l.comparison.note);assert.equal(JSON.stringify(note),before);
+ assert.ok(l.quiz.every(q=>Number.isInteger(q.answer)&&q.answer>=0&&q.answer<q.options.length&&q.why));
+ assert.ok(l.transfer&&l.rubric.length>=4&&l.source.boundary&&l.hints.length>=3);
+}
+const l=D.lessons.at(-1),draft={...E.blank(l.id,l.default),question:'Мой вопрос',reading:'Начальная версия'},state=E.empty();
+state.records[E.key(l.id,l.default)]=E.cleanNote(draft);
+state.snapshots.push({id:'original',at:'2026-09-18T00:00:00Z',note:E.cleanNote(draft)});
+draft.reading='Пересмотренная версия';state.records[E.key(l.id,l.default)]=E.cleanNote(draft);
+state.observations.push({id:'observation',snapshot:'original',at:'2026-09-19T00:00:00Z',date:'2026-09-19',facts:'Новые сведения',revision:'Меняю предположение'});
+const restored=E.validate(JSON.parse(JSON.stringify(state)));
+assert.equal(restored.snapshots[0].note.reading,'Начальная версия');
+assert.equal(restored.records[E.key(l.id,l.default)].reading,'Пересмотренная версия');
+assert.equal(restored.observations[0].snapshot,'original');
+assert.throws(()=>E.validate({...state,app:'eliora-spread-dynamics'}));
+const incoming=structuredClone(restored);incoming.records[E.key(l.id,l.default)].reading='Иная версия';
+const merged=E.merge(restored,incoming);assert.match(merged.records[E.key(l.id,l.default)].reading,/Пересмотренная версия/);assert.match(merged.records[E.key(l.id,l.default)].reading,/Иная версия/);
+const tree=D.lessons.find(l=>l.default.layout==='sefirot');assert.equal(E.groups(tree.default,'pillars').length,3);assert.equal(E.groups(tree.default).length,4);
+console.log('Workshop: eight valid practice tasks, fading support, comparison, ten-position groups, immutable snapshots, import merge and notebook isolation passed.');

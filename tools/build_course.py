@@ -19,6 +19,7 @@ import build_court_relations as court_relations
 import build_mixed_reading as mixed_reading
 import build_reversal_study as reversal_study
 import build_spread_dynamics as spread_dynamics
+import build_spread_workshop as spread_workshop
 import build_hekate as hekate
 ROOT=Path(__file__).resolve().parents[1]
 D=json.loads((ROOT/'content/course.json').read_text());CFG=json.loads((ROOT/'content/site.json').read_text());ORIGIN=CFG['origin'].rstrip('/')
@@ -83,6 +84,16 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
   if path=='/course/':body=body.replace('<section class="section">',feature+'<section class="section">',1)
   else:body+=feature
 
+ if path=='/course/tarot/':
+  body=body.replace('</header>','</header>'+spread_workshop.route(),1)
+  title='Таро: полный маршрут от первой карты к самостоятельному раскладу'
+  description='Все ступени изучения Таро: 78 карт, пары, тройки, Древо, пути, придворные, динамика и итоговая мастерская.'
+ if path=='/course/':
+  body=body.replace('<section class="section">','<section class="books-start"><div><p class="eyebrow">Ветвь Таро · завершённая ступень</p><h2>Мастерская самостоятельного расклада</h2><p>Восемь практикумов: от разбора с подсказками к собственному вопросу, схеме, обоснованию и возвращению к записи.</p><p><a href="/course/tarot/#reading-route">Весь маршрут раскладов →</a></p></div><a class="button" href="/course/spread-workshop/">Начать практику →</a></section><section class="section">',1)
+ if path=='/course/notebook/':
+  body+='<section class="section"><h2>Мои самостоятельные расклады</h2><p>Работы итоговой мастерской, снимки версий и возвращения к наблюдениям.</p><a href="/course/spread-workshop/notebook/">Тетрадь мастерской →</a></section>'
+ if path=='/course/spread-dynamics/' or path=='/course/spread-dynamics/record-and-revisit/':
+  body+='<section class="section"><p class="eyebrow">Следующая ступень</p><h2>Собрать самостоятельный расклад</h2><p>Соедините изученное в мастерской: вопрос, схема, связи карт, обоснование и собственные наблюдения.</p><a class="button" href="/course/spread-workshop/">Перейти к восьми практикумам →</a></section>'
  prefix=rootprefix(path);url=ORIGIN+path;author={'@type':'Person','name':D['author'],'url':ORIGIN+'/author/'}
  schema={'@context':'https://schema.org','@graph':[{'@type':'WebPage','@id':url+'#page','url':url,'name':title,'description':description,'inLanguage':'ru','isPartOf':{'@id':ORIGIN+'/#website'}},{'@type':'WebSite','@id':ORIGIN+'/#website','name':'Каббала и Таро','url':ORIGIN+'/','inLanguage':'ru'}]}
  if L:schema['@graph']+=[{'@type':'Article','headline':L['title'],'description':description,'author':author,'dateModified':CFG['updated'],'inLanguage':'ru','mainEntityOfPage':url,'isPartOf':{'@type':'Course','name':D['title'],'url':ORIGIN+'/course/'}},{'@type':'BreadcrumbList','itemListElement':[{'@type':'ListItem','position':1,'name':'Главная','item':ORIGIN+'/'},{'@type':'ListItem','position':2,'name':'Курс','item':ORIGIN+'/course/'},{'@type':'ListItem','position':3,'name':L['title'],'item':url}]}]
@@ -147,6 +158,11 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
   html=html.replace('</body>',f'<script defer src="{prefix}assets/course/reasoning-prompts.js?v=2"></script></body>')
  if path.startswith('/course/hekate/'):
   html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/hekate.css?v=1"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/hekate-core.js?v=1"></script><script defer src="{prefix}assets/course/hekate.js?v=1"></script></body>')
+ if path=='/course/tarot/' or path.startswith('/course/spread-workshop/'):
+  html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/spread-workshop.css?v=1"></head>')
+ if path.startswith('/course/spread-workshop/'):
+  html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/spread-grammar.css"><link rel="stylesheet" href="{prefix}assets/course/tree-reading.css"><link rel="stylesheet" href="{prefix}assets/course/mixed-reading.css"><link rel="stylesheet" href="{prefix}assets/course/spread-dynamics.css"></head>')
+  html=html.replace('</body>',f'<script defer src="{prefix}assets/course/tarot-pairs-core.js"></script><script defer src="{prefix}assets/course/spread-grammar-core.js?v=3"></script><script defer src="{prefix}assets/course/spread-grammar-atlas.js"></script><script defer src="{prefix}assets/course/spread-dynamics-core.js"></script><script defer src="{prefix}assets/course/spread-dynamics.js"></script><script defer src="{prefix}assets/course/spread-grammar.js?v=6"></script><script defer src="{prefix}assets/course/spread-workshop.js?v=1"></script></body>')
  out=ROOT/path.strip('/')/'index.html' if path!='/' else ROOT/'index.html';out.parent.mkdir(parents=True,exist_ok=True);out.write_text(html+'\n')
  if not noindex:routes.append(path)
 def crumbs(prefix,title=None):return '<nav class="crumb" aria-label="Путь к странице"><span><a href="'+prefix+'">Главная</a></span><span><a href="'+prefix+'course/">Курс</a></span>'+(('<span>'+E(title)+'</span>') if title else '')+'</nav>'
@@ -223,6 +239,7 @@ court_relations.build(page,crumbs)
 mixed_reading.build(page,crumbs)
 reversal_study.build(page,crumbs)
 spread_dynamics.build(page,crumbs)
+spread_workshop.build(page,crumbs)
 hekate.build(page,crumbs)
 # Glossary
 body=crumbs('../../','Словарь')+'<header class="hero-small"><p class="eyebrow">Слово можно просто посмотреть</p><h1>Словарь без спешки</h1><p class="lead">Если термин забылся, вернитесь сюда. Короткое объяснение поможет вспомнить урок, а подробности найдутся в самом тексте.</p><label for="term-search">Какое слово ищем?</label><br><input id="term-search" class="search" type="search" data-search="terms" placeholder="Например, тиккун"><span class="status-text" data-search-status="terms" aria-live="polite"></span></header>'

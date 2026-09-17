@@ -28,7 +28,7 @@
   let stage=0;const next=$('[data-argument-next]'),feedback=$('[data-argument-feedback]'),stages=d.lab.stages;
   function draw(focus){
    next.disabled=true;box.replaceChildren();feedback.textContent='Сначала выберите ответ.';
-   if(stage===stages.length){const h=el('h3','Три перехода восстановлены');h.tabIndex=-1;box.append(h,el('p','Теперь составьте собственный ответ без вариантов выбора в черновике ниже. Отдельно назовите цель, участие и предел частного вывода.'));feedback.textContent='Эта тренировка завершена. Запишите итог: он сохранится вместе с черновиком.';next.hidden=true;if(focus)h.focus();return;}
+   if(stage===stages.length){const h=el('h3','Три перехода восстановлены');h.tabIndex=-1;box.append(h,el('p',d.lab.completion||'Теперь составьте собственный ответ без вариантов выбора в черновике ниже. Отдельно назовите цель, участие и предел частного вывода.'));feedback.textContent='Эта тренировка завершена. Запишите итог: он сохранится вместе с черновиком.';next.hidden=true;if(focus)h.focus();return;}
    next.hidden=false;next.textContent=stage===stages.length-1?'Завершить тренировку':'Следующий переход';
    const s=stages[stage],h=el('h3',s.title);h.tabIndex=-1;box.append(h,el('p',s.premise));
    const field=document.createElement('fieldset');field.append(el('legend',s.prompt));const choices=[];

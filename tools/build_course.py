@@ -19,6 +19,7 @@ import build_court_relations as court_relations
 import build_mixed_reading as mixed_reading
 import build_reversal_study as reversal_study
 import build_spread_dynamics as spread_dynamics
+import build_hekate as hekate
 ROOT=Path(__file__).resolve().parents[1]
 D=json.loads((ROOT/'content/course.json').read_text());CFG=json.loads((ROOT/'content/site.json').read_text());ORIGIN=CFG['origin'].rstrip('/')
 LESSONS=D['lessons'];routes=[]
@@ -77,6 +78,11 @@ def lessonlist(items,prefix,current=0):
  return '<ol class="lesson-list">'+''.join(f'<li data-search-item="lessons"><a href="{prefix}course/{l["slug"]}/" {"aria-current=page" if current==l["id"] else ""}><span class="num">{l["id"]:02d}</span><span>{E(l["title"])}</span><span class="done-mark" data-lesson-status="{l["id"]}"></span></a></li>' for l in items)+'</ol>'
 def progress():return '<div class="progress-line" role="presentation"><i data-progress-fill></i></div><small data-progress-text>0 из 45 уроков завершено</small>'
 def page(path,title,description,body,kind='page',L=None,noindex=False):
+ if path in ('/course/','/course/tarot/','/course/books/','/course/book-studies/'):
+  feature='<section class="books-start" id="hekate-line"><div><p class="eyebrow">Ритуальная магия · новая большая линия</p><h2>Геката, каббала и Таро</h2><p>28 занятий: от античных гимнов и теургии к Жрице, образу врат и герметическим соответствиям. Примеры, самостоятельные работы, возвращение к изученному и отдельная тетрадь.</p><p><a href="/course/hekate/bridges/">Как связаны три линии →</a></p></div><a class="button" href="/course/hekate/">Открыть маршрут →</a></section>'
+  if path=='/course/':body=body.replace('<section class="section">',feature+'<section class="section">',1)
+  else:body+=feature
+
  prefix=rootprefix(path);url=ORIGIN+path;author={'@type':'Person','name':D['author'],'url':ORIGIN+'/author/'}
  schema={'@context':'https://schema.org','@graph':[{'@type':'WebPage','@id':url+'#page','url':url,'name':title,'description':description,'inLanguage':'ru','isPartOf':{'@id':ORIGIN+'/#website'}},{'@type':'WebSite','@id':ORIGIN+'/#website','name':'Каббала и Таро','url':ORIGIN+'/','inLanguage':'ru'}]}
  if L:schema['@graph']+=[{'@type':'Article','headline':L['title'],'description':description,'author':author,'dateModified':CFG['updated'],'inLanguage':'ru','mainEntityOfPage':url,'isPartOf':{'@type':'Course','name':D['title'],'url':ORIGIN+'/course/'}},{'@type':'BreadcrumbList','itemListElement':[{'@type':'ListItem','position':1,'name':'Главная','item':ORIGIN+'/'},{'@type':'ListItem','position':2,'name':'Курс','item':ORIGIN+'/course/'},{'@type':'ListItem','position':3,'name':L['title'],'item':url}]}]
@@ -85,7 +91,7 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
  payload={'root':prefix,'lessons':[{k:l[k] for k in ['id','slug','title']} for l in LESSONS],**{k:D[k] for k in ['sefirot','worlds','timeline','luria']}}
  if L:payload['lesson']={k:L[k] for k in ['id','quiz']}
  jsonsafe=lambda x:json.dumps(x,ensure_ascii=False,separators=(',',':')).replace('<','\\u003c')
- nav=''.join(f'<a href="{prefix}{loc}" {"aria-current=page" if path=="/"+loc else ""}>{txt}</a>' for loc,txt in [('course/','Курс'),('course/books/','Книги'),('course/tarot/','Таро'),('course/atlas/','Схемы'),('course/reading/','Читаем Зоар'),('course/glossary/','Словарь'),('course/notebook/','Моя тетрадь')])
+ nav=''.join(f'<a href="{prefix}{loc}" {"aria-current=page" if path=="/"+loc else ""}>{txt}</a>' for loc,txt in [('course/','Курс'),('course/books/','Книги'),('course/tarot/','Таро'),('course/ritual-magic/','Ритуальная магия'),('course/atlas/','Схемы'),('course/reading/','Читаем Зоар'),('course/glossary/','Словарь'),('course/notebook/','Моя тетрадь')])
  catalog_script=f'<script defer src="{prefix}assets/course/reading-catalog.js"></script>' if path=='/course/reading/catalog/' else ''
  html=f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#122e3b"><title>{E(title)} | Элиора Вейра</title><meta name="description" content="{E(description,quote=True)}"><meta name="author" content="Элиора Вейра"><meta name="robots" content="{'noindex,follow' if noindex else 'index,follow,max-image-preview:large'}"><link rel="canonical" href="{url}"><meta property="og:type" content="{'article' if L else 'website'}"><meta property="og:locale" content="ru_RU"><meta property="og:site_name" content="Каббала и Таро"><meta property="og:title" content="{E(title,quote=True)}"><meta property="og:description" content="{E(description,quote=True)}"><meta property="og:url" content="{url}"><meta property="og:image" content="{ORIGIN}/assets/beginning.jpg"><meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="{prefix}assets/course/course.css"><link rel="icon" href="{prefix}assets/course/icon.svg"><script type="application/ld+json">{jsonsafe(schema)}</script></head><body><a class="skip" href="#main">Перейти к содержанию</a><header class="top"><div class="top-inner"><a class="wordmark" href="{prefix or './'}" aria-label="Каббала и Таро — главная">Каббала<span><i>и</i> Таро</span></a><nav aria-label="Разделы курса">{nav}</nav><a class="author" href="{prefix}author/">Элиора Вейра</a></div></header><main class="wrap" id="main">{body}</main><footer class="footer"><div>Каббала и Таро · Элиора Вейра · 2026<br>Знакомиться можно постепенно. Возвращаться — сколько угодно.</div><div><a href="{prefix}author/">Об авторе и курсе</a><a href="{prefix}course/reading/#sources">Источники</a><a href="{prefix}course/notebook/">Тетрадь и перенос записей</a></div></footer><script id="course-data" type="application/json">{jsonsafe(payload)}</script><script defer src="{prefix}assets/course/state.js"></script><script defer src="{prefix}assets/course/readings-data.js"></script><script defer src="{prefix}assets/course/app.js"></script><script defer src="{prefix}assets/course/extensions.js"></script>{catalog_script}</body></html>'''
  if path.startswith('/course/yetzirah/'):
@@ -139,6 +145,8 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
   html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/study-tools.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/study-tools-core.js"></script><script defer src="{prefix}assets/course/study-tools.js?v=2"></script></body>')
  if path in ('/course/tarot-pairs/','/course/tarot-triples/'):
   html=html.replace('</body>',f'<script defer src="{prefix}assets/course/reasoning-prompts.js?v=2"></script></body>')
+ if path.startswith('/course/hekate/'):
+  html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/hekate.css?v=1"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/hekate-core.js?v=1"></script><script defer src="{prefix}assets/course/hekate.js?v=1"></script></body>')
  out=ROOT/path.strip('/')/'index.html' if path!='/' else ROOT/'index.html';out.parent.mkdir(parents=True,exist_ok=True);out.write_text(html+'\n')
  if not noindex:routes.append(path)
 def crumbs(prefix,title=None):return '<nav class="crumb" aria-label="Путь к странице"><span><a href="'+prefix+'">Главная</a></span><span><a href="'+prefix+'course/">Курс</a></span>'+(('<span>'+E(title)+'</span>') if title else '')+'</nav>'
@@ -215,6 +223,7 @@ court_relations.build(page,crumbs)
 mixed_reading.build(page,crumbs)
 reversal_study.build(page,crumbs)
 spread_dynamics.build(page,crumbs)
+hekate.build(page,crumbs)
 # Glossary
 body=crumbs('../../','Словарь')+'<header class="hero-small"><p class="eyebrow">Слово можно просто посмотреть</p><h1>Словарь без спешки</h1><p class="lead">Если термин забылся, вернитесь сюда. Короткое объяснение поможет вспомнить урок, а подробности найдутся в самом тексте.</p><label for="term-search">Какое слово ищем?</label><br><input id="term-search" class="search" type="search" data-search="terms" placeholder="Например, тиккун"><span class="status-text" data-search-status="terms" aria-live="polite"></span></header>'
 body+='<div class="books-reminder"><p>Нужно подробнее о Торе, Талмуде или Зоаре? Для них есть отдельное введение с примерами.</p><a href="../books/">Открыть знакомство с книгами →</a></div>'
@@ -255,7 +264,7 @@ s=s[:start]+'''<article><h2 id="essay-title">Можно начать с прос
 <p class="invitation">Начните со знакомства с книгами. Возможно, дальше Вас поведёт уже собственный вопрос.</p>
 <p><a href="course/books/">Тора, Талмуд, Зоар — что это за книги? →</a></p>
 <p><a href="course/">Перейти к курсу каббалы и Таро →</a></p>
-<p><a href="course/yetzirah/">Сефер Йецира: читаем, собираем схемы, сравниваем редакции →</a></p><p><a href="course/book-studies/">Новые модули: Гикатила, Форчун и Кроули →</a></p><div class="signature">Элиора Вейра<span>Автор проекта</span></div></article>'''+s[end+len('</article>'):]
+<p><a href="course/yetzirah/">Сефер Йецира: читаем, собираем схемы, сравниваем редакции →</a></p><p><a href="course/book-studies/">Новые модули: Гикатила, Форчун и Кроули →</a></p><p><a href="course/ritual-magic/">Ритуальная магия: тексты, символы и история →</a></p><p><a href="course/hekate/">Геката: 28 занятий со связями с каббалой и Таро →</a></p><div class="signature">Элиора Вейра<span>Автор проекта</span></div></article>'''+s[end+len('</article>'):]
 s=re.sub(r'<link rel="canonical"[^>]*>','',s)
 s=re.sub(r'<meta (?:name="robots"|property="og:url")[^>]*>','',s)
 s=re.sub(r'<script type="application/ld\+json">.*?</script>','',s,flags=re.S)

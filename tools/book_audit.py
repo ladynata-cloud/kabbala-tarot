@@ -30,3 +30,13 @@ def assessment(lesson):
             out += '<blockquote>' + E(anchor['text']) + '</blockquote><p>' + E(anchor['comment']) + '</p>'
         out += '</details>'
     return out + '</section>'
+
+
+def reading_guide(lesson):
+    guide = lesson.get('readingGuide')
+    if not guide:
+        return ''
+    out = '<section class="book-reading-guide"><h2>Три остановки в тексте</h2><p>Прочитайте короткий фрагмент выше. Для каждого вопроса сначала сформулируйте свою фразу, затем откройте ориентир. Можно записать ответы в черновике ниже. Если понадобилась опора, после объяснения закройте её и повторите ответ.</p><ol>'
+    for item in guide:
+        out += '<li><p>' + E(item['question']) + '</p><details><summary>Ориентир для сверки</summary><p>' + E(item['answer']) + '</p></details></li>'
+    return out + '</ol></section>'

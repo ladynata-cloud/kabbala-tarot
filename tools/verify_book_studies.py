@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-slugs=['shaarei-orah','mystical-qabalah','book-of-thoth','pardes-rimmonim','tanya','etz-chaim','book-t','daat-tevunot','tarot-bohemians','nefesh-hachaim','levi-dogma-ritual','shaarei-kedusha','pictorial-key','derekh-hashem','mathers-tarot']
+slugs=['shaarei-orah','mystical-qabalah','book-of-thoth','pardes-rimmonim','tanya','etz-chaim','book-t','daat-tevunot','tarot-bohemians','nefesh-hachaim','levi-dogma-ritual','shaarei-kedusha','pictorial-key','derekh-hashem','mathers-tarot','kalach-pitchei-chokhmah','kabbalah-unveiled']
 sitemap=(ROOT/'sitemap.xml').read_text()
 types=set();answers=[]
 for slug in slugs:
@@ -13,7 +13,7 @@ for slug in slugs:
  for l in d['lessons']:
   assert l['refs'] and all(r['url'].startswith('https://') for r in l['refs'])
   assert len(l['sections'])>=2 and sum(len(t.split()) for s in l['sections'] for t in s['text'])>=130
-  if slug in ('etz-chaim','book-t','daat-tevunot','tarot-bohemians','nefesh-hachaim','levi-dogma-ritual','shaarei-kedusha','pictorial-key','derekh-hashem','mathers-tarot'):
+  if slug in ('etz-chaim','book-t','daat-tevunot','tarot-bohemians','nefesh-hachaim','levi-dogma-ritual','shaarei-kedusha','pictorial-key','derekh-hashem','mathers-tarot','kalach-pitchei-chokhmah','kabbalah-unveiled'):
    assert len(l['sections'])>=3
    assert sum(len(t.split()) for section in l['sections'] for t in section['text'])>=230
    assert len(l['pedagogy']['worked']['steps'])==3 and len(l['pedagogy']['hints'])==2
@@ -28,22 +28,32 @@ for slug in slugs:
    for stage in k['stages']:
     assert len(stage['options'])==3 and sum(o['correct'] for o in stage['options'])==1
     assert all(o['feedback'] for o in stage['options'])
-  if slug in ('daat-tevunot','tarot-bohemians','nefesh-hachaim','levi-dogma-ritual','shaarei-kedusha','pictorial-key','derekh-hashem','mathers-tarot'):
+  if slug in ('daat-tevunot','tarot-bohemians','nefesh-hachaim','levi-dogma-ritual','shaarei-kedusha','pictorial-key','derekh-hashem','mathers-tarot','kalach-pitchei-chokhmah','kabbalah-unveiled'):
    assert l['pedagogy']['fade']==('model' if l['id']<=2 else 'complete' if l['id']<=5 else 'independent')
   if k['type']=='audit':
    assert len(k['steps'])==3 and k['claim']
    for step in k['steps']:
     assert len(step['options'])==3 and step['answer'] in range(3)
     assert all(o['text'] and o['feedback'] for o in step['options'])
-  if slug in ('derekh-hashem','mathers-tarot'):
+  if slug in ('derekh-hashem','mathers-tarot','kalach-pitchei-chokhmah','kabbalah-unveiled'):
    assert len(l['assessment']['criteria'])==3
    assert all(len(c['levels'])==3 for c in l['assessment']['criteria'])
    assert len(l['assessment']['anchors'])==(2 if l['id'] in (4,8) else 0)
+  if slug in ('kalach-pitchei-chokhmah','kabbalah-unveiled'):
+   assert len(l['readingGuide'])==3
+   assert all(x['question'] and x['answer'] for x in l['readingGuide'])
+   assert sum(len(t.split()) for section in l['sections'] for t in section['text'])>=280
+   if k['type']=='audit':
+    for step in k['steps']:
+     for index,option in enumerate(step['options']):
+      if index != step['answer']:
+       assert 1 <= option['revisit']['section'] <= len(l['sections'])
+       assert option['revisit']['cue']
   if k['type']=='evidence':
    assert len(k['items'])==4 and len(k['categories'])>=3
    assert len(set(k['categories']))==len(k['categories'])
    assert all(i['answer'] in k['categories'] and i['feedback'] for i in k['items'])
-  if slug in ('shaarei-kedusha','pictorial-key','derekh-hashem','mathers-tarot'):
+  if slug in ('shaarei-kedusha','pictorial-key','derekh-hashem','mathers-tarot','kalach-pitchei-chokhmah','kabbalah-unveiled'):
    assert all(l['closeReading'][key] for key in ('original','translation','focus','lang','ref'))
   if k['type']=='match':
    for row in k['items']:assert row['options'].count(row['answer'])==1

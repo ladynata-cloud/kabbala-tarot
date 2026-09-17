@@ -21,6 +21,13 @@
       out.className = ok ? 'sy-correct' : 'sy-retry';
       out.textContent = !option ? 'Выберите решение для этого шага.' :
         (ok ? 'Верно. ' : 'Проверьте переход. ') + option.feedback;
+      if (!ok && option?.revisit) {
+        const link = document.createElement('a');
+        link.href = '#explanation-' + option.revisit.section;
+        link.className = 'book-revisit';
+        link.textContent = 'Вернуться к объяснению: ' + option.revisit.cue;
+        out.append(document.createTextNode(' '), link);
+      }
     });
     result.textContent = answered < groups.length
       ? 'Выбрано ' + answered + ' из ' + groups.length + '. Завершите все три шага; уже выбранные решения проверены.'

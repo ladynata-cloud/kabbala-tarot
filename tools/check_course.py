@@ -39,6 +39,37 @@ for l in d['lessons']:
  assert len(l['quiz'])==3
  assert all(len(q['options'])==3 and q['answer'] in range(3) and q['why'] for q in l['quiz'])
  assert all(k in d['sources'] for k in l['sourceIds'])
+# Course v3 (SPEC §2–§5): addressed feedback per option, a hint, the header and stage-4 fields, lab data per kind.
+LAB_DATA={'sort':['instruction','shelves','items'],'timeline':['events'],'tree':['mode'],'worlds':['tasks'],'letters':['tasks'],'rose':['steps'],'luria':['mode'],'soul':[],'deck':['cards'],'hermit':['card','checklist'],'observe':['card'],'pair':['a','b'],'gematria':['example']}
+def check_lab(kind,data,where):
+ assert kind in LAB_DATA or kind in ('study','permutations','permutations-alef','river','balance'), f'{where}: unknown lab kind {kind}'
+ for k in LAB_DATA.get(kind,[]):assert isinstance(data,dict) and data.get(k) not in (None,'',[]), f'{where}: labData.{k} missing for {kind}'
+ if kind=='sort':assert 2<=len(data['shelves'])<=4 and all(0<=it['shelf']<len(data['shelves']) and it.get('text') and it.get('hint') and it.get('explain') for it in data['items']), where
+ if kind=='timeline':assert 4<=len(data['events'])<=6 and all(e.get('what') for e in data['events']), where
+ if kind=='deck':assert len(data['cards'])==12 and all(c['card'] in {x['id'] for x in t['cards']} and c['type'] in (0,1,2) for c in data['cards']), where
+ if kind=='hermit':assert len(data['checklist'])==6 and sum(not x['present'] for x in data['checklist'])==2, where
+ if kind=='pair':assert {data['a'],data['b']}<={x['id'] for x in t['cards']}, where
+ if kind=='tree':assert data['mode'] in ('explore','find','place') and all(1<=len(x['answer'])<=2 and all(0<=n<=9 for n in x['answer']) for x in data.get('tasks',[])), where
+V3=[l for l in d['lessons'] if l.get('quizVersion')==3]
+for l in V3:
+ w=f"lesson {l['id']}"
+ for q in l['quiz']:
+  assert isinstance(q.get('feedback'),list) and len(q['feedback'])==3 and all(isinstance(f,str) and f.strip() for f in q['feedback']), w+': feedback ×3'
+  assert isinstance(q.get('hint'),str) and q['hint'].strip(), w+': hint'
+  assert q.get('hintSection') is None or q['hintSection'] in range(len(l['sections'])), w+': hintSection'
+ for k in ['aim','keyword','prompt','sample']:assert isinstance(l.get(k),str) and l[k].strip(), f'{w}: {k}'
+ assert ' ' not in l['keyword'].strip(), w+': keyword is one word'
+ assert l['module'] in range(len(d['modules'])), w+': module'
+ assert not l.get('scaffold') or (isinstance(l['scaffold'],list) and 2<=len(l['scaffold'])<=4), w+': scaffold 2–4'
+ check_lab(l['lab'],l.get('labData'),w)
+ for x in l.get('extraLabs',[]):check_lab(x['lab'],x.get('labData') or {},w+' extra')
+if V3:
+ assert all(l.get('quizVersion')==3 for l in d['lessons']), 'mixed quiz versions'
+ order=d.get('programOrder')
+ assert isinstance(order,list) and sorted(order)==list(range(1,46)), 'programOrder must be a permutation of 1..45'
+ if d.get('firstCircle'):
+  fc=d['firstCircle']['items'];assert all(x['kind'] in ('intro','lesson','reading') for x in fc)
+  assert all(x['ref'] in range(1,46) for x in fc if x['kind']=='lesson') and all(x['ref'] in range(1,89) for x in fc if x['kind']=='reading')
 assert [x['id'] for x in r['readings']]==list(range(1,89))
 assert len({(x['group'],x['paragraph']) for x in r['readings']})==88
 assert all(sum(x['group']==g['id'] for x in r['readings'])==8 for g in r['groups'])
@@ -58,6 +89,7 @@ for p,h in parsers.items():
 print('\n'.join(errors[:30]))
 assert not errors, f'{len(errors)} link/HTML errors'
 print(f'{len(parsers)} HTML files: internal links and anchors passed. 45 lessons, 135 questions, 88 readings, 78 cards verified.')
+if V3:print(f'Course v3: {len(V3)} lessons with 3×3 addressed feedback and hints, program order a permutation of 1..45, lab data valid per kind.')
 
 
 full=json.loads((P/'content/readings888.json').read_text())

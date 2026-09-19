@@ -1,17 +1,47 @@
 'use strict';
 (()=>{
-const DATA=JSON.parse(document.querySelector('#course-data').textContent), META=DATA.lessons||[],KEY='eliora-course-v2';
+const DATA=JSON.parse(document.querySelector('#course-data').textContent),META=DATA.lessons||[],KEY='eliora-course-v2';
+const BY=Object.fromEntries(META.map(l=>[l.id,l]));
+// Program (navigation) order; ids and the numbers the learner sees stay the same.
+const PROG=((DATA.order||[]).length===META.length?DATA.order.map(id=>BY[id]).filter(Boolean):META.slice());
+const CIRCLE=DATA.circle||[],PAGES=DATA.pages||{};
 let state=CourseState.empty(),storageOK=true;
 try{const saved=JSON.parse(localStorage.getItem(KEY)||'null');state=CourseState.normalize(saved,META);}catch(e){storageOK=false;}
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>Array.from(r.querySelectorAll(s));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const link=l=>DATA.root+'course/'+l.slug+'/';
+const abs=h=>DATA.root+String(h).replace(/^\//,'');
+const plural=(n,one,few,many)=>{const a=n%10,b=n%100;return a===1&&b!==11?one:a>=2&&a<=4&&(b<12||b>14)?few:many;};
 function warn(){let el=$('#storage-warning');if(!el){el=document.createElement('div');el.id='storage-warning';el.className='storage-warning';el.setAttribute('role','status');document.body.prepend(el);}el.textContent='Браузер не разрешает сохранение. Записи пока доступны в открытой вкладке — экспортируйте тетрадь перед закрытием.';}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){storageOK=false;warn();}updateProgress();updateReadings();}
-function record(id){return state.lessons[id]||(state.lessons[id]={score:0,checked:false,done:false,stage:0,reflection:false,answers:{}});}
-function updateProgress(){const done=META.filter(l=>state.lessons[l.id]?.done).length;$$('[data-progress-text]').forEach(el=>el.textContent=done+' из '+META.length+' уроков завершено');$$('[data-progress-fill]').forEach(el=>el.style.width=(100*done/META.length)+'%');$$('[data-lesson-status]').forEach(el=>el.textContent=state.lessons[el.dataset.lessonStatus]?.done?'✓':'');const next=META.find(l=>!state.lessons[l.id]?.done)||META[0];$$('[data-resume]').forEach(el=>{el.href=link(next);el.textContent=done?'Продолжить: урок '+next.id:'Начать первый урок';});$$('[data-all-done]').forEach(el=>el.hidden=done!==META.length);}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){storageOK=false;warn();}updateProgress();updateReadings();updateCircle();}
+function record(id){const qv=BY[id]?.qv;return state.lessons[id]||(state.lessons[id]={score:0,checked:false,done:false,stage:0,reflection:false,answers:{},res:{},miss:{},...(Number.isInteger(qv)?{qv}:{})});}
+const isDone=id=>state.lessons[id]?.done===true;
+function updateProgress(){
+ const done=META.filter(l=>isDone(l.id)).length;
+ $$('[data-progress-text]').forEach(el=>el.textContent=done+' из '+META.length+' '+plural(META.length,'урока','уроков','уроков')+' завершено');
+ $$('[data-progress-fill]').forEach(el=>el.style.width=(100*done/META.length)+'%');
+ $$('[data-lesson-status]').forEach(el=>{const ok=isDone(el.dataset.lessonStatus);el.textContent=ok?'✓':'';el.setAttribute('aria-label',ok?'пройден':'');});
+ const next=PROG.find(l=>!isDone(l.id))||PROG[0];
+ $$('[data-resume]').forEach(el=>{if(!next)return;el.href=link(next);el.textContent=done?'Продолжить: урок '+next.id:'Начать первый урок';});
+ $$('[data-module-count]').forEach(el=>{const m=Number(el.dataset.moduleCount),ls=PROG.filter(l=>l.module===m),k=ls.filter(l=>isDone(l.id)).length;el.textContent=k?'✓ '+k+' из '+ls.length+' · ':'';});
+ $$('[data-all-done]').forEach(el=>el.hidden=done!==META.length);
+}
+// First circle: progress derived from lesson done flags, readings[id].done and the books intro tick.
+function circleDone(key){if(key==='intro')return state.intro===true;if(key[0]==='l')return isDone(Number(key.slice(1)));if(key[0]==='r')return state.readings[Number(key.slice(1))]?.done===true;return false;}
+function circleState(){const done=CIRCLE.filter(x=>circleDone(x.key)).length;return {done,total:CIRCLE.length,next:CIRCLE.find(x=>!circleDone(x.key))};}
+function updateCircle(){
+ if(!CIRCLE.length)return;const c=circleState();
+ $$('[data-circle-count]').forEach(el=>el.textContent=c.done+' из '+c.total);
+ $$('[data-circle-fill]').forEach(el=>el.style.width=(100*c.done/c.total)+'%');
+ $$('[data-circle-mark]').forEach(el=>{const ok=circleDone(el.dataset.circleMark);el.textContent=ok?'✓':'';el.closest('li')?.classList.toggle('is-done',ok);});
+ $$('[data-circle-item]').forEach(el=>el.classList.toggle('is-next',!!c.next&&el.dataset.circleItem===c.next.key));
+ $$('[data-circle-resume]').forEach(el=>{if(c.next){el.href=abs(c.next.href);el.textContent=c.done?(PAGES.circleContinue||'Продолжить круг →'):(PAGES.circleStart||'Начать первую встречу →');}else{el.href='#circle-after';el.textContent='Первый круг пройден: что дальше ↓';}});
+ $$('[data-circle-after]').forEach(el=>{if(!c.next&&!el.dataset.opened){el.open=true;el.dataset.opened='1';}});
+}
 if(!storageOK)warn();if(state.large){document.documentElement.style.setProperty('--body-size','19px');$$('[data-font-size]').forEach(b=>b.textContent='Обычный текст');}if(window.matchMedia('(max-width:760px)').matches)$$('.toc').forEach(el=>el.open=false);
 $$('[data-font-size]').forEach(b=>b.addEventListener('click',()=>{state.large=!state.large;document.documentElement.style.setProperty('--body-size',state.large?'19px':'17px');b.textContent=state.large?'Обычный текст':'Крупнее текст';save();}));
+// Books introduction = the first meeting of the circle.
+$$('[data-intro-done]').forEach(cb=>{cb.checked=state.intro===true;cb.addEventListener('change',()=>{state.intro=cb.checked;save();const s=$('[data-intro-status]');if(s){s.hidden=false;s.className='feedback'+(cb.checked?' good':'');s.textContent=cb.checked?'Отмечено: первая встреча круга пройдена. Дальше — урок 1.':'Отметка снята.';}});});
 // Semantic, keyboard accessible diagram interactions.
 function setupLab(el){const kind=el.dataset.lab;
  const detail=(title,text)=>{const d=$('[data-detail]',el);if(d)d.innerHTML='<h4>'+esc(title)+'</h4><p>'+esc(text)+'</p>';};
@@ -37,27 +67,85 @@ function setupLab(el){const kind=el.dataset.lab;
  if(kind==='hermit'){const t=[['Наблюдение','Фигура, фонарь и посох — детали учебной схемы. Найдите их и опишите без предсказаний.'],['Уэйт о карте','В тексте Уэйта фонарь связан в том числе со светом, указывающим путь другим. Полное объяснение — в источнике к уроку.'],['Ваш вопрос','Что я могу прояснить перед следующим шагом? Запишите свой отклик отдельно от слов Уэйта.']];const bs=$$('[data-hermit]',el);bs.forEach((b,i)=>b.addEventListener('click',()=>{active(bs,i);detail(...t[i]);}));bs[0]?.click();}
 }
 $$('[data-lab]').forEach(setupLab);
-// Guided lesson, quiz and reflection.
-if(DATA.lesson){const L=DATA.lesson,r=record(L.id);document.body.classList.add('guided');const stages=$$('[data-stage]'),steps=$$('[data-go-stage]');
+// Guided lesson: quiz v3 (per-question check, addressed feedback, hint ladder), own note, completion.
+if(DATA.lesson){const L=DATA.lesson,r=record(L.id),Q=L.quiz||[];document.body.classList.add('guided');const stages=$$('[data-stage]'),steps=$$('[data-go-stage]');
+ r.answers=r.answers||{};r.res=r.res||{};r.miss=r.miss||{};if(Number.isInteger(L.qv))r.qv=L.qv;
  function stage(i,focus=false){i=Math.max(0,Math.min(3,i));r.stage=i;stages.forEach((s,n)=>{s.classList.toggle('active',n===i);s.setAttribute('aria-hidden',n===i?'false':'true');});steps.forEach(b=>b.setAttribute('aria-current',Number(b.dataset.goStage)===i?'step':'false'));save();if(focus)stages[i].focus({preventScroll:false});}
  steps.forEach(b=>b.addEventListener('click',()=>stage(Number(b.dataset.goStage),true)));stage(r.stage||0);
- function result(){const f=$('#quiz-summary');f.textContent=r.checked?'Верно '+r.score+' из '+L.quiz.length+'. '+(r.score===L.quiz.length?'Можно переходить к собственной записи.':'Перечитайте пояснения и попробуйте ещё раз.'):'Ответьте на все три вопроса.';f.className='feedback '+(r.checked?(r.score===L.quiz.length?'good':'bad'):'');}
- $$('input[data-question]').forEach(input=>{input.checked=String(r.answers?.[input.dataset.question])===input.value;input.addEventListener('change',()=>{r.answers[input.dataset.question]=Number(input.value);r.checked=false;r.score=0;save();$$('[data-q-feedback]').forEach(f=>f.textContent='');result();});});
- $('#check-quiz').addEventListener('click',()=>{const answers=L.quiz.map((q,i)=>$('input[name="q'+i+'"]:checked'));if(answers.some(a=>!a)){$('#quiz-summary').textContent='Пока ответ выбрали не везде. Завершите все три вопроса.';return;}r.score=0;r.answers={};const graded=CourseState.grade(L.quiz,answers.map(a=>Number(a.value)));L.quiz.forEach((q,i)=>{const a=Number(answers[i].value),ok=graded[i];r.answers[i]=a;if(ok)r.score++;const f=$('[data-q-feedback="'+i+'"]');f.className='feedback '+(ok?'good':'bad');f.textContent=(ok?'Верно. ':'Пока нет. ')+q.why;});r.checked=true;save();result();});result();
- const note=$('#reflection'),status=$('#note-status'),check=$('#reflection-check');note.value=state.notes[L.id]||'';check.checked=!!r.reflection;
- note.addEventListener('input',()=>{state.notes[L.id]=note.value;save();status.textContent=storageOK?'Сохранено в этом браузере':'Пока хранится в открытой вкладке';});check.addEventListener('change',()=>{r.reflection=check.checked;save();});
- function completed(){const box=$('#completion-result');box.hidden=!r.done;if(r.done)box.innerHTML='<h3>Урок завершён</h3><p>Вы проверили понимание и обдумали итог. К записи и заданиям можно вернуться в любое время.</p>'+(L.id===META.length?'<a class="button" href="'+DATA.root+'course/notebook/">Открыть итоговую тетрадь</a>':'<a class="button" href="'+link(META.find(l=>l.id===L.id+1))+'">Перейти к уроку '+(L.id+1)+' →</a>');}
- $('#complete-lesson').addEventListener('click',()=>{const f=$('#completion-status');if(!r.checked||r.score!==L.quiz.length){f.textContent='Сначала ответьте верно на три вопроса шага «Проверить». Все пояснения доступны, число попыток не ограничено.';return;}if(!CourseState.canComplete(r,note.value,check.checked,L.quiz.length)){f.textContent='Запишите хотя бы одну мысль или отметьте, что обдумали вопрос самостоятельно.';return;}r.done=true;r.reflection=check.checked;save();f.textContent='Результат сохранён.';completed();});completed();
+ // «↑» links from a hint back to the section of stage 1
+ document.addEventListener('click',e=>{const a=e.target.closest('[data-go-section]');if(!a)return;e.preventDefault();stage(0);const t=document.getElementById('sec-'+a.dataset.goSection);if(t){t.scrollIntoView({block:'start'});t.setAttribute('tabindex','-1');t.focus({preventScroll:true});}});
+ const resolvedN=()=>Q.filter((q,i)=>r.res[i]>0).length;
+ function sync(){r.score=resolvedN();r.checked=r.score===Q.length;}
+ function drawQ(i){
+  const q=Q[i],fs=$('[data-quiz-item="'+i+'"]'),fb=$('[data-q-feedback="'+i+'"]');if(!fs||!fb)return;
+  const a=r.answers[i],res=r.res[i]||0,labels=$$('[data-option]',fs);
+  $$('input',fs).forEach(inp=>inp.checked=Number(inp.value)===a);
+  labels.forEach((lab,n)=>{lab.classList.toggle('is-right',n===a&&n===q.answer);lab.classList.toggle('is-wrong',n===a&&n!==q.answer);lab.classList.toggle('is-revealed',res===2&&n===q.answer);});
+  fs.classList.toggle('is-resolved',res>0);fs.classList.toggle('via-hint',res===2);
+  let h='';
+  if(a!==undefined){const text=(q.feedback&&q.feedback[a])||q.why;h+=a===q.answer?'<p class="feedback good"><b>Верно.</b> '+esc(text)+'</p>':'<p class="feedback bad"><b>Пока нет.</b> '+esc(text)+'</p>';}
+  if(res===2){
+   const sec=Number.isInteger(q.hintSection)?' <a href="#sec-'+(q.hintSection+1)+'" data-go-section="'+(q.hintSection+1)+'">↑ Вернуться к этому разделу</a>':'';
+   h+='<div class="q-hint"><p><b>Подсказка.</b> '+esc(q.hint||'')+sec+'</p><p class="feedback good"><b>Верный ответ:</b> '+esc(q.options[q.answer])+'. '+esc(q.why)+'</p><p class="q-badge">Вопрос разобран с подсказкой — это ничего не отнимает.</p></div>';
+  }else if(res===0&&(r.miss[i]||0)>=1)h+='<p class="fine">Выберите другой вариант. Если и он не подойдёт, откроется подсказка и верный ответ.</p>';
+  fb.innerHTML=h;
+ }
+ function summary(){const f=$('#quiz-summary');if(!f)return;const n=resolvedN(),hinted=Q.filter((q,i)=>r.res[i]===2).length;
+  f.className='feedback'+(n===Q.length?' good':'');
+  f.textContent=n===Q.length?'Все '+Q.length+' '+plural(Q.length,'вопрос','вопроса','вопросов')+' разобраны'+(hinted?' (с подсказкой — '+hinted+')':'')+'. Можно переходить к своей записи.':n?'Разобрано '+n+' из '+Q.length+'. Остальные вопросы ждут — порядок не важен.':'Выберите ответ — он проверится сразу.';}
+ $$('input[data-question]').forEach(input=>input.addEventListener('change',()=>{
+  const i=Number(input.dataset.question),v=Number(input.value),q=Q[i];r.answers[i]=v;
+  if(!(r.res[i]>0)){if(v===q.answer)r.res[i]=1;else{r.miss[i]=Math.min(2,(r.miss[i]||0)+1);if(r.miss[i]>=2)r.res[i]=2;}}
+  sync();save();drawQ(i);summary();completionHint();
+ }));
+ Q.forEach((q,i)=>drawQ(i));summary();
+ // Stage 4: scaffold fields ↔ one note string of labelled lines; the one-word memo is the last label.
+ const scaffold=L.scaffold||[],fields=$$('[data-scaffold-field]'),note=$('#reflection'),status=$('#note-status'),check=$('#reflection-check'),oneBox=$('[data-one-word]'),one=$('#one-word');
+ const labels=CourseState.scaffoldLabels([...scaffold,'Запомнилось']);
+ const parsed=CourseState.parseNote(labels,state.notes[L.id]||'');
+ fields.forEach((f,n)=>f.value=parsed.values[n]||'');if(one)one.value=parsed.values[labels.length-1]||'';note.value=parsed.free;check.checked=!!r.reflection;
+ const composed=()=>CourseState.joinNote(labels,[...fields.map(f=>f.value),one?one.value:''],note.value);
+ function sample(){const open=!!composed().trim()||check.checked;const s=$('[data-sample]'),lock=$('[data-sample-locked]');if(s)s.hidden=!open;if(lock)lock.hidden=open;if(oneBox)oneBox.hidden=!check.checked;}
+ function write(){state.notes[L.id]=composed();save();status.textContent=storageOK?'Сохранено в этом браузере':'Пока хранится в открытой вкладке';sample();completionHint();}
+ [...fields,note,...(one?[one]:[])].forEach(el=>el.addEventListener('input',write));
+ check.addEventListener('change',()=>{r.reflection=check.checked;save();sample();completionHint();});sample();
+ function completionHint(){const f=$('#completion-status');if(!f||r.done)return;const n=resolvedN();f.className='feedback';f.textContent=n<Q.length?'Осталось разобрать '+(Q.length-n)+' '+plural(Q.length-n,'вопрос','вопроса','вопросов')+' на шаге «Проверим» — с подсказкой тоже считается.':(composed().trim()||check.checked)?'Всё готово: можно завершить урок.':'Осталось записать хотя бы одну строку или отметить, что Вы обдумали вопрос без записи.';}
+ function completed(focus=false){const box=$('#completion-result');box.hidden=!r.done;if(!r.done)return;
+  const mod=PROG.filter(l=>l.module===L.module),k=mod.filter(l=>isDone(l.id)).length,modName=(DATA.modules||[])[L.module]||'';
+  let h='<h3>'+esc(PAGES.completionTitle||'Урок завершён')+'</h3>'+(L.aim?'<p class="done-aim">✓ Теперь Вы можете: '+esc(L.aim)+'</p>':'')+(L.keyword?'<p>Главное слово урока: <b>'+esc(L.keyword)+'</b></p>':'')+'<p>Раздел '+(L.module+1)+(modName?' «'+esc(modName)+'»':'')+': '+k+' из '+mod.length+'</p>';
+  const inCircle=CIRCLE.some(x=>x.key==='l'+L.id);
+  if(inCircle){const c=circleState();h+='<p>Первый круг: '+c.done+' из '+c.total+(c.next?'. Следующая встреча — <a href="'+esc(abs(c.next.href))+'">'+esc(c.next.title)+'</a> ('+esc(c.next.label.toLowerCase())+', '+esc(c.next.minutes)+' мин)':'. Круг пройден — <a href="'+DATA.root+'course/#circle-after">что дальше</a>')+'.</p>';}
+  const idx=PROG.findIndex(l=>l.id===L.id),nx=PROG[idx+1];
+  h+=nx?'<a class="button" href="'+link(nx)+'">Дальше по программе: урок '+nx.id+' · '+esc(nx.title)+' · '+esc(nx.time||'10–20 минут')+' →</a>':'<a class="button" href="'+DATA.root+'course/notebook/">Открыть итоговую тетрадь →</a>';
+  h+='<p class="fine">К записи и вопросам можно вернуться в любое время.</p>';
+  box.innerHTML=h;if(focus)box.focus();}
+ $('#complete-lesson').addEventListener('click',()=>{const f=$('#completion-status');
+  if(!CourseState.resolved(r,Q.length)){f.className='feedback bad';f.textContent='Сначала разберите все три вопроса шага «Проверим». Ошибки ничего не стоят: после второй попытки откроется подсказка, и вопрос тоже будет считаться разобранным.';return;}
+  if(!CourseState.canComplete(r,composed(),check.checked,Q.length)){f.className='feedback bad';f.textContent='Запишите хотя бы одну строку или отметьте, что обдумали вопрос без записи.';return;}
+  r.done=true;r.reflection=check.checked;save();f.className='feedback good';f.textContent='Результат сохранён.';completed(true);});
+ if(r.done){const f=$('#completion-status');if(f){f.className='feedback good';f.textContent='Урок уже завершён. Можно перечитать и дописать запись.';}}else completionHint();
+ completed();
 }
 $$('[data-search]').forEach(inp=>inp.addEventListener('input',()=>{const query=inp.value.toLocaleLowerCase('ru').trim(),target=inp.dataset.search;let n=0;$$('[data-search-item="'+target+'"]').forEach(el=>{const ok=el.textContent.toLocaleLowerCase('ru').includes(query);el.hidden=!ok;if(ok)n++;});if(target==='lessons')$$('.module').forEach(m=>{m.hidden=!$$('[data-search-item]',m).some(x=>!x.hidden);if(query)m.open=true;});const msg=$('[data-search-status="'+target+'"]');if(msg)msg.textContent=n?'Найдено: '+n:'Ничего не найдено. Попробуйте другое слово.';}));
 function download(text,name,type){const u=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 $$('[data-export]').forEach(b=>b.addEventListener('click',()=>{const payload={...state,course:'eliora-kabbalah-v2',exportedAt:new Date().toISOString()};download(JSON.stringify(payload,null,2),'eliora-veira-notebook.json','application/json');}));
-$$('[data-export-text]').forEach(b=>b.addEventListener('click',()=>{const txt=['Каббала и Таро · Элиора Вейра','Моя учебная тетрадь','',...META.flatMap(l=>[l.id+'. '+l.title,state.lessons[l.id]?.done?'Урок завершён':'В работе',state.notes[l.id]||'(Записи пока нет)','']), 'Мои встречи с Зоаром', ...READING_META.filter(r=>state.readings[r.id]?.note||state.readings[r.id]?.done).flatMap(r=>[r.id+'. '+r.title,state.readings[r.id]?.done?'Прочитано':'В работе',state.readings[r.id]?.note||'', ''])].join('\n');download(txt,'eliora-veira-notebook.txt','text/plain;charset=utf-8');}));
+$$('[data-export-text]').forEach(b=>b.addEventListener('click',()=>{const txt=['Каббала и Таро · Элиора Вейра','Моя учебная тетрадь','',...PROG.flatMap(l=>[l.id+'. '+l.title,isDone(l.id)?'Урок завершён':'В работе',state.notes[l.id]||'(Записи пока нет)','']), 'Мои встречи с Зоаром', ...READING_META.filter(r=>state.readings[r.id]?.note||state.readings[r.id]?.done).flatMap(r=>[r.id+'. '+r.title,state.readings[r.id]?.done?'Прочитано':'В работе',state.readings[r.id]?.note||'', ''])].join('\n');download(txt,'eliora-veira-notebook.txt','text/plain;charset=utf-8');}));
 const imp=$('[data-import]');if(imp)imp.addEventListener('change',async()=>{const msg=$('#import-status'),file=imp.files[0];if(!file)return;try{if(file.size>16000000)throw Error('Файл слишком большой.');const raw=JSON.parse(await file.text());const merged=CourseState.merge(state,raw,META);state=merged;save();msg.textContent='Импорт завершён. Уже существовавшие записи сохранены; отличающиеся добавлены ниже.';renderNotebook();renderReadingNotebook();updateReadings();}catch(e){msg.textContent='Импорт не выполнен: '+e.message;}finally{imp.value='';}});
-function renderNotebook(){const container=$('#notebook-items');if(!container)return;container.innerHTML=META.map(l=>'<section class="notebook-item"><h3><a href="'+link(l)+'">'+l.id+'. '+esc(l.title)+'</a></h3><small>'+(state.lessons[l.id]?.done?'✓ Урок завершён':'Урок ещё не завершён')+'</small><label class="reflection-label" for="note-'+l.id+'">Моя запись к уроку '+l.id+'</label><textarea class="note" maxlength="20000" id="note-'+l.id+'" data-notebook-note="'+l.id+'">'+esc(state.notes[l.id]||'')+'</textarea><small data-saved-status="'+l.id+'"></small></section>').join('');$$('[data-notebook-note]').forEach(el=>el.addEventListener('input',()=>{state.notes[el.dataset.notebookNote]=el.value;save();$('[data-saved-status="'+el.dataset.notebookNote+'"]').textContent=storageOK?'Сохранено':'Экспортируйте запись перед закрытием';}));}
-
+// Notebook: lessons that were started or finished come first; the rest open with «Показать все».
+let showAll=false;
+const started=l=>{const x=state.lessons[l.id];return !!(state.notes[l.id]||'').trim()||!!x&&(x.done||x.stage>0||Object.keys(x.answers||{}).length>0);};
+function renderNotebook(){const container=$('#notebook-items');if(!container)return;
+ const list=showAll?PROG:PROG.filter(started),n=PROG.filter(started).length;
+ const sum=$('[data-notebook-summary]');if(sum)sum.textContent=showAll?'Показаны все '+PROG.length+' уроков в порядке программы.':n?'Начато или пройдено: '+n+' из '+PROG.length+'. Остальные уроки — по кнопке ниже.':'Пока нет начатых уроков. Первый круг начинается на странице курса; записи появятся здесь сами.';
+ const btnAll=$('[data-notebook-all]');if(btnAll){btnAll.textContent=showAll?'Показать только начатые':'Показать все '+PROG.length+' уроков';btnAll.setAttribute('aria-expanded',showAll?'true':'false');}
+ container.innerHTML=list.map(l=>'<section class="notebook-item"><h3><a href="'+link(l)+'">'+l.id+'. '+esc(l.title)+'</a></h3><small>'+(isDone(l.id)?'✓ Урок завершён':'Урок ещё не завершён')+'</small><label class="reflection-label" for="note-'+l.id+'">Моя запись к уроку '+l.id+'</label><textarea class="note" maxlength="20000" id="note-'+l.id+'" data-notebook-note="'+l.id+'">'+esc(state.notes[l.id]||'')+'</textarea><small data-saved-status="'+l.id+'"></small></section>').join('');
+ $$('[data-notebook-note]').forEach(el=>el.addEventListener('input',()=>{state.notes[el.dataset.notebookNote]=el.value;save();$('[data-saved-status="'+el.dataset.notebookNote+'"]').textContent=storageOK?'Сохранено':'Экспортируйте запись перед закрытием';}));}
+$$('[data-notebook-all]').forEach(b=>b.addEventListener('click',()=>{showAll=!showAll;renderNotebook();}));
 function readingRecord(id){return state.readings[id]||(state.readings[id]={note:'',done:false});}
-function updateReadings(){$$('[data-reading-progress]').forEach(el=>{const limit=Number(el.dataset.readingLimit||88),n=READING_META.filter(r=>r.id<=limit&&state.readings[r.id]?.done).length;el.textContent='Прочитано '+n+' из '+limit;});}
+function updateReadings(){
+ $$('[data-reading-progress]').forEach(el=>{const limit=Number(el.dataset.readingLimit||88),n=READING_META.filter(r=>r.id<=limit&&state.readings[r.id]?.done).length;el.textContent='Прочитано '+n+' из '+limit;});
+ $$('[data-reading-first]').forEach(el=>{const n=[1,2,3,4,5,6,7,8].filter(i=>state.readings[i]?.done).length;el.textContent='Первые 8 встреч с Зоаром: '+n+' из 8';});
+}
 function wireReadingNotes(root=document){
  $$('[data-reading-note]',root).forEach(el=>{const id=el.dataset.readingNote;el.value=state.readings[id]?.note||'';el.addEventListener('input',()=>{readingRecord(id).note=el.value;save();const status=$('[data-reading-status="'+id+'"]',root);if(status)status.textContent=storageOK?'Сохранено в этом браузере':'Экспортируйте запись перед закрытием';});});
  $$('[data-reading-done]',root).forEach(el=>{const id=el.dataset.readingDone;el.checked=state.readings[id]?.done===true;el.addEventListener('change',()=>{readingRecord(id).done=el.checked;save();});});
@@ -69,6 +157,5 @@ function renderReadingNotebook(){const box=$('#reading-notebook');if(!box)return
 }
 wireReadingNotes();renderReadingNotebook();updateReadings();
 
-renderNotebook();updateProgress();
+renderNotebook();updateProgress();updateCircle();
 })();
-

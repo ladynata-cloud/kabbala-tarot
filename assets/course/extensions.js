@@ -20,6 +20,9 @@
  search.addEventListener('input',filter);group.addEventListener('change',filter);rank.addEventListener('change',filter);$('[data-clear-card-filters]').addEventListener('click',()=>{search.value='';group.value='all';rank.value='all';filter();});
  const selectors=$$('[data-compare]'),result=$('[data-compare-result]');function compare(){result.replaceChildren();selectors.forEach(s=>{const source=cards.find(c=>c.id==='card-'+s.value);if(!source)return;const copy=source.cloneNode(true);copy.removeAttribute('id');copy.hidden=false;copy.removeAttribute('data-search-item');result.append(copy);});}
  selectors.forEach(s=>s.addEventListener('change',compare));$('[data-swap-cards]').addEventListener('click',()=>{const a=selectors[0].value;selectors[0].value=selectors[1].value;selectors[1].value=a;compare();});compare();
+ // A lesson can link to a preset filter: /course/tarot/?rank=5#cards or ?group=c#cards.
+ const qs=new URLSearchParams(location.search),pick=(sel,v)=>{if(v&&[...sel.options].some(o=>o.value===v)){sel.value=v;return true;}return false;};
+ if(pick(rank,qs.get('rank'))|pick(group,qs.get('group'))){filter();if(location.hash==='#cards')$('#cards')?.scrollIntoView({block:'start'});}
  // A link to a card should reveal it even after filters have been used.
  function revealHash(){const id=location.hash.slice(1),c=cards.find(x=>x.id===id);if(c){search.value='';group.value='all';rank.value='all';filter();c.scrollIntoView({block:'start'});}}
  addEventListener('hashchange',revealHash);if(location.hash)revealHash();

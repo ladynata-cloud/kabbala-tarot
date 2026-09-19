@@ -165,7 +165,7 @@ def landing(s):
 
 # ---------------------------------------------------------------- shared assets
 def _slim(s):return re.sub(r'\n{2,}','\n',re.sub(r'^[ \t]+','',re.sub(r'/\*[\s\S]*?\*/','',s),flags=re.M)).strip()
-DESIGN_CSS=['visual.css','tarot-view.css']
+DESIGN_CSS=['visual.css','tarot-view.css','engine.css']
 def course_css(fonts,style):
  parts=DESIGN_CSS+sorted(p.name for p in (ROOT/'assets/course/design').glob('diagrams-*.css'))
  c=externalize_fonts(fonts,'../fonts/')+'\n'+style

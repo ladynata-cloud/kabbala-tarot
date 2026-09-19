@@ -5,17 +5,21 @@ from urllib.parse import urlsplit,unquote
 import json,collections
 P=Path(__file__).resolve().parents[1]
 class HTML(HTMLParser):
- def __init__(self):super().__init__();self.ids=[];self.links=[];self.js=[]
+ def __init__(self):super().__init__();self.ids=[];self.links=[];self.js=[];self.uses=[]
  def handle_starttag(self,tag,attrs):
   a=dict(attrs)
   if 'id' in a:self.ids.append(a['id'])
+  # images (src and every srcset candidate) must resolve; <use href="file.svg#id"> must name an existing symbol
+  if tag=='img' and a.get('src'):self.links.append(a['src'])
+  if tag in ['img','source'] and a.get('srcset'):self.links+=[c.strip().split()[0] for c in a['srcset'].split(',') if c.strip()]
+  if tag=='use' and (a.get('href') or a.get('xlink:href')):self.uses.append(a.get('href') or a.get('xlink:href'))
   if tag=='a' and 'href' in a:self.links.append(a['href'])
   if tag in ['script','link']:
    u=a.get('src') or a.get('href')
    if u:self.links.append(u)
 parsers={};errors=[]
 for p in P.rglob('*.html'):
- if '.git' in p.parts or 'content' in p.relative_to(P).parts:continue
+ if '.git' in p.parts or {'content','tools'}&set(p.relative_to(P).parts):continue
  h=HTML();h.feed(p.read_text());parsers[p.resolve()]=h
  duplicate=[k for k,v in collections.Counter(h.ids).items() if v>1]
  if duplicate:errors.append(f'{p.relative_to(P)} duplicate ids {duplicate}')
@@ -41,6 +45,16 @@ assert all(sum(x['group']==g['id'] for x in r['readings'])==8 for g in r['groups
 assert len(t['cards'])==78 and len({c['id'] for c in t['cards']})==78
 assert {c['id'] for c in t['cards'] if c['group']=='major'}=={str(i) for i in range(22)}
 for s in 'wcsp':assert {c['rank'] for c in t['cards'] if c['group']==s}==set(range(1,15))
+import re
+symbols={}
+for p,h in parsers.items():
+ for ref in h.uses:
+  u=urlsplit(ref)
+  if u.scheme or u.netloc:errors.append(f'{p.relative_to(P)} -> external <use> {ref}');continue
+  dest=(((P/u.path.lstrip('/')) if u.path.startswith('/') else p.parent/u.path) if u.path else p).resolve()
+  if not dest.exists():errors.append(f'{p.relative_to(P)} -> missing <use> file {ref}');continue
+  if dest not in symbols:symbols[dest]=set(re.findall(r'<(?:symbol|svg|g|path)\b[^>]*\bid="([^"]+)"',dest.read_text()))|set(parsers[dest].ids if dest in parsers else [])
+  if u.fragment and u.fragment not in symbols[dest]:errors.append(f'{p.relative_to(P)} -> missing symbol {ref}')
 print('\n'.join(errors[:30]))
 assert not errors, f'{len(errors)} link/HTML errors'
 print(f'{len(parsers)} HTML files: internal links and anchors passed. 45 lessons, 135 questions, 88 readings, 78 cards verified.')
@@ -99,3 +113,24 @@ print('Book modules: 24 lessons, 48 questions, three note fields, independent ro
 # The book laboratory must not trigger the existing general gematria initializer.
 gem=(P/'course/bahir/letters-and-number/index.html').read_text()
 assert 'data-book-gematria' in gem and ' data-gematria>' not in gem
+
+# Design layer: self-hosted cards and fonts, emblems, deck page, offline mode (tools/design.py).
+out=[q for q in P.rglob('*') if q.is_file() and q.suffix in ('.html','.css','.js','.json','.xml','.webmanifest','.svg') and not {'.git','tools','tests'}&set(q.relative_to(P).parts)]
+wm=[str(q.relative_to(P)) for q in out if 'thumb.wikimedia.org' in q.read_text(errors='ignore')]
+assert not wm, f'Wikimedia thumbnails still referenced: {wm[:10]}'
+fonts=[str(q.relative_to(P)) for q in out if 'data:font' in q.read_text(errors='ignore')]
+assert not fonts, f'embedded fonts (data:font) in {fonts[:10]}'
+for c in t['cards']:
+ slug={'major':'major','w':'wands','c':'cups','s':'swords','p':'pentacles'}[c['group']]+'-%02d'%c['rank']
+ assert c['image']=='/assets/tarot/'+slug+'-240.webp', c['id']
+ assert c['imageSource'].startswith('https://commons.wikimedia.org/wiki/File:'), c['id']
+ for w in (240,480,960):assert (P/'assets/tarot'/f'{slug}-{w}.webp').exists(), f'{slug}-{w}.webp'
+tv=(P/'assets/course/tarot-view.js').read_text()
+assert '/*__CARDS_JSON__*/' not in tv and tv.count('"slug":')==78
+html_out=[q for q in out if q.suffix=='.html' and q.relative_to(P).parts[0]!='content']
+assert (P/'sw.js').exists() and all('sw-register.js' in q.read_text() for q in html_out), 'offline mode is not wired on every page'
+assert 'data:image/jpeg;base64' not in (P/'index.html').read_text(), 'landing still embeds the hero image'
+assert '/course/tarot/deck/' in sitemap and len(re.findall('class="deck-card"',(P/'course/tarot/deck/index.html').read_text()))==78
+course_css=(P/'assets/course/course.css').read_text()
+assert all('/* === upgrade: '+f.name+' === */' in course_css for f in (P/'assets/course/design').glob('*.css'))
+print(f'Design: {len(html_out)} pages with offline mode, 78 cards × 3 sizes, no Wikimedia thumbnails or embedded fonts, images and emblem symbols resolve.')

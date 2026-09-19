@@ -19,7 +19,8 @@
 - Основной адрес, подпись и дата изменения: `content/site.json`.
 - Генератор статических страниц: `tools/build_course.py`.
 - Оформление: `assets/course/style.css`; поведение: `app.js`; сохранение и перенос: `state.js`.
-- Главная страница сохраняет самостоятельное книжное оформление и встроенную иллюстрацию.
+- Главная страница сохраняет самостоятельное книжное оформление; иллюстрация подключается как WebP из `assets/img/`.
+- Оформление поверх страниц (карты, шрифты, эмблемы, схемы, колода, офлайн-режим): `tools/design.py` и `tools/design/`, см. раздел «Оформление» ниже.
 
 После изменения содержимого:
 
@@ -30,6 +31,19 @@ node tests/state.test.cjs
 ```
 
 Готовые HTML, `course.css`, `robots.txt` и `sitemap.xml` хранятся в репозитории. GitHub Pages публикует корень ветки main. Никакого сервера приложений и внешних JavaScript-библиотек не требуется. Тексты уроков доступны без JavaScript; он нужен для упражнений и тетради.
+
+## Оформление
+
+Слой оформления применяет `tools/design.py`; его вызывает `build_course.py` при каждой сборке, повторная сборка не даёт изменений.
+
+- Карты Таро хранятся на сайте: `assets/tarot/<major|wands|cups|swords|pentacles>-NN-{240,480,960}.webp` (78 × 3). В `content/tarot.json` поле `image` — `/assets/tarot/<slug>-240.webp`, `imageSource` ведёт на страницу файла в Wikimedia Commons. У `<img>` карт сборка добавляет `srcset` 240w/480w.
+- Шрифты — файлы `assets/fonts/*.woff` (`assets/course/fonts.css`), без base64. `course.css` = `fonts.css` + `style.css` + `assets/course/design/*.css`.
+- Эмблемы: спрайт `assets/emblems/emblems.svg` (разделы и линии на `/course/`, маршруты на главной, колода).
+- Схемы: улучшенные SVG в `tools/design/diagrams/`. Схемы `build_course.py` (Древо, реки, роза, душа, триада, Отшельник, Лурия) генератор выводит сразу; схемы других сборщиков заменяются по `aria-label` (`manifest.json`).
+- Колода крупно: `/course/tarot/deck/` (строит `design.build_deck()`), в карте сайта; просмотр карт — `assets/course/tarot-view.js`, собирается из `tools/design/tarot-view.template.js`.
+- Офлайн-режим: `sw.js` в корне (из `tools/design/sw.template.js`, версия кэша меняется вместе с файлами оболочки) и `assets/course/sw-register.js` на каждой странице. Выключить: заменить шаблон содержимым `tools/design/sw-remove.js` и пересобрать.
+- Контакт автора: `content/site.json` → `"contact": {"email": "", "telegram": ""}`. Пока оба поля пустые, на сайте ничего не появляется; адрес почты собирает в браузере `assets/course/contact.js`.
+- Проверки: `tools/check_course.py` (изображения и `srcset`, символы эмблем, нет миниатюр Wikimedia и встроенных шрифтов) и `node tests/design.test.cjs`.
 
 ## SEO и HTTPS
 

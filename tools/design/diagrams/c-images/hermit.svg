@@ -1,0 +1,47 @@
+<svg class="c-images-hermit" viewBox="0 0 280 352" role="img" aria-label="Учебная схема мотива Отшельника: фигура с фонарём и посохом">
+<defs>
+<linearGradient id="c-images-hermit-night" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f4859"/><stop offset=".6" stop-color="#163948"/><stop offset="1" stop-color="#112b37"/></linearGradient>
+<radialGradient id="c-images-hermit-glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#f6dc9a" stop-opacity=".55"/><stop offset=".35" stop-color="#e8c47c" stop-opacity=".22"/><stop offset="1" stop-color="#e8c47c" stop-opacity="0"/></radialGradient>
+<radialGradient id="c-images-hermit-glass" cx=".5" cy=".5" r=".62"><stop offset="0" stop-color="#fff6dc"/><stop offset=".45" stop-color="#f3d690"/><stop offset="1" stop-color="#c79a4f"/></radialGradient>
+<linearGradient id="c-images-hermit-robe" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e6ebe7"/><stop offset=".42" stop-color="#c5d0cd"/><stop offset="1" stop-color="#7f9598"/></linearGradient>
+<linearGradient id="c-images-hermit-sleeve" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eef1ec"/><stop offset="1" stop-color="#b3c1bf"/></linearGradient>
+<linearGradient id="c-images-hermit-summit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9eeeb"/><stop offset="1" stop-color="#a9bbba"/></linearGradient>
+<linearGradient id="c-images-hermit-staff" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e6cf98"/><stop offset="1" stop-color="#a98546"/></linearGradient>
+</defs>
+<path d="M30 330V120A110 110 0 0 1 250 120V326Q250 330 246 330H34Q30 330 30 326Z" fill="url(#c-images-hermit-night)"/>
+<path d="M37.5 322.5V120A102.5 102.5 0 0 1 242.5 120V322.5Z" fill="none" stroke="#dfc18c" stroke-opacity=".42" stroke-width=".8"/>
+<circle class="c-images-hermit-halo" cx="90" cy="146" r="48" fill="url(#c-images-hermit-glow)"/>
+<path d="M38 322V300C62 292 92 285 118 283C132 282 146 281 158 282C186 284 216 292 242 302V322Z" fill="url(#c-images-hermit-summit)"/>
+<path d="M58 305q22 -7 44 -9M150 291q32 2 62 12M82 314q30 -8 62 -9M172 308q24 4 46 11M112 296q14 -2 26 -2" fill="none" stroke="#7f9799" stroke-width=".8" stroke-linecap="round"/>
+<ellipse cx="144" cy="293" rx="54" ry="3.6" fill="#122e3b" fill-opacity=".2"/>
+<path d="M150 98C165 104 172 124 170 146C176 190 184 246 192 292C170 297 120 298 94 292C100 256 106 220 110 190C112 174 115 160 118 150C117 130 122 112 134 104C140 100 145 98 150 98Z" fill="url(#c-images-hermit-robe)" stroke="#0e2632" stroke-opacity=".55" stroke-width="1"/>
+<g fill="none" stroke="#5c767a" stroke-width=".8" stroke-linecap="round" stroke-opacity=".85">
+<path d="M122 196C120 230 114 262 106 290M136 186C136 224 134 260 130 294M150 178C152 214 154 256 156 295M163 172C168 210 174 252 180 293M150 98C156 108 160 126 158 146"/>
+</g>
+<path d="M136 108C126 111 121 121 120 134C123 145 132 149 141 146C145 132 143 117 136 108Z" fill="#33505a"/>
+<path d="M137 113C131 113 127 117 126 121L122 126L126 127.5C126 131 127.5 134.5 131 136L138 136Z" fill="#e8d6b8"/>
+<path d="M129.5 120.5h3.2" stroke="#6b5a45" stroke-width=".9" stroke-linecap="round"/>
+<path d="M160 150C172 152 186 157 198 161L200 176C188 180 174 182 162 178Z" fill="#a4b4b3" stroke="#0e2632" stroke-opacity=".4" stroke-width=".8"/>
+<path d="M170 157C176 164 184 170 194 174" fill="none" stroke="#5c767a" stroke-width=".7" stroke-opacity=".7" stroke-linecap="round"/>
+<path class="c-images-hermit-staff" d="M205.5 106L197.5 302" stroke="url(#c-images-hermit-staff)" stroke-width="3.6" stroke-linecap="round"/>
+<path d="M204.3 110L196.9 296" stroke="#f1e2bb" stroke-opacity=".5" stroke-width=".8" stroke-linecap="round"/>
+<g class="c-images-hermit-hand"><path d="M198.6 162.4C201.2 160 205.6 159.4 208 161.5C209.4 162.9 209.5 165.5 208.7 166.9C209.5 168.5 209.5 171.1 208.5 172.5C206.9 175.3 202.4 176.4 199.4 175.2Z" fill="#dcc8a6" stroke="#7d6446" stroke-opacity=".75" stroke-width=".6" stroke-linejoin="round"/><path d="M200.4 162.2C202.8 160.9 206 161.1 206.9 163.5M203.4 166.9H208M203.2 170.1H208.2" fill="none" stroke="#8f7454" stroke-width=".6" stroke-linecap="round"/></g>
+<g class="c-images-hermit-lantern" transform="translate(1 5.8)">
+<path class="c-images-hermit-bail" d="M83.6 119.9C82.6 110.4 85.8 105.1 89 104.5C92.2 105.1 95.4 110.4 94.4 119.9" fill="none" stroke="#dfc18c" stroke-width="1.1" stroke-linecap="round"/>
+<path d="M80 122L89 115.5L98 122Z" fill="#b28b4e" stroke="#dfc18c" stroke-width=".8" stroke-linejoin="round"/>
+<rect x="78" y="122" width="22" height="3.5" rx=".8" fill="#caa767"/>
+<rect x="79.5" y="125.5" width="19" height="30" fill="url(#c-images-hermit-glass)" stroke="#dfc18c" stroke-width="1.2"/>
+<path d="M84.3 125.5v30M93.7 125.5v30" stroke="#b28b4e" stroke-width=".6" stroke-opacity=".75"/>
+<path class="c-images-hermit-star" transform="translate(79.4 130.9) scale(.3)" d="M32 9 37 27 55 32 37 37 32 55 27 37 9 32 27 27Z" fill="#fffaf0" stroke="#b28b4e" stroke-width="2.2" stroke-linejoin="round"/>
+<rect x="77.5" y="155.5" width="23" height="3.5" rx=".8" fill="#caa767"/>
+<path d="M83 159h12l-2 3h-8Z" fill="#b28b4e"/>
+</g>
+<g class="c-images-hermit-hand"><path d="M100 104.6C96.8 101.8 91.2 101.6 88.2 103.6C86.2 105 85.6 107.8 86.4 109.8C87.2 112 90 113.2 92.8 112.8C96.4 112.4 100.6 113.6 103.4 116.2Z" fill="#e5d1b1" stroke="#7d6446" stroke-opacity=".75" stroke-width=".6" stroke-linejoin="round"/><path d="M96.6 104.9C94.3 104.3 92 105.3 91.6 107.4M86.5 107.1H89.8M86.9 110H90.2" fill="none" stroke="#8f7454" stroke-width=".6" stroke-linecap="round"/></g>
+<path d="M148 150C132 134 114 118 97 107L104 120C110 134 116 148 124 160C134 166 144 170 152 170Z" fill="url(#c-images-hermit-sleeve)" stroke="#0e2632" stroke-opacity=".45" stroke-width=".8"/>
+<path d="M112 126C118 138 124 150 132 160M122 124C128 134 136 146 144 156" fill="none" stroke="#6f878a" stroke-width=".7" stroke-opacity=".75" stroke-linecap="round"/>
+<path d="M97 107L104 120" stroke="#6f878a" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M126 131C120 146 120 168 129 188C133 176 138 158 139 136C135 137 130 135 126 131Z" fill="#f1ece0"/>
+<path d="M127 141C126 155 127 168 130 180M132 140C132 154 133 166 133 176M136 139C136 150 136 160 135 168" fill="none" stroke="#b3ac9c" stroke-width=".6" stroke-linecap="round"/>
+
+<text class="c-images-hermit-caption" x="140" y="347" text-anchor="middle" font-size="12.5" fill="#526c78">Учебная схема, мотив Отшельника</text>
+</svg>

@@ -1,0 +1,40 @@
+/* b-light — light, vessels and flow: Lurianic sequence, rivers and sea, soul levels, kav, Pardes glass, coal and flame.
+   The replacement SVGs (diagrams/b-light/*.svg) are self-contained: each carries its own <defs> with ids
+   "b-light-<file>-…"; no shared defs are injected. Line system across the family: primary outline 1.6–1.8,
+   engraved hairline .7–.8, light = gold core 3–5 with a soft warm halo. State changes are instant (no motion). */
+
+/* Lurianic sequence (course/atlas, tzimtzum, breaking-vessels): ink arch plate, a little larger than before */
+.lab[data-lab="luria"] .luria-symbol{min-height:210px}
+.lab[data-lab="luria"] .luria-symbol svg.b-light-luria{width:228px;height:210px;max-width:100%;filter:drop-shadow(0 6px 10px rgba(18,46,59,.16))}
+
+/* Rivers and sea; soul levels: labels stay ≥ 11px on phones without oversizing on desktop */
+.lab[data-lab="river"] svg.b-light-river,
+.lab[data-lab="soul"] svg.b-light-soul{max-width:min(100%,600px);margin-inline:auto}
+/* selected soul level: gold frame (app.js sets inline opacity 1 on the chosen group, .3 on the others) */
+.lab[data-lab="soul"] svg.b-light-soul [data-shape][style*="opacity: 1"] rect:first-of-type{stroke:#987438;stroke-width:2.4}
+.lab[data-lab="soul"] svg.b-light-soul [data-shape][style*="opacity: 1"] rect:nth-of-type(2){stroke:#dcc190}
+
+/* Kav (course/etz-chaim/kav): CSS only, no url() references. book-workshops.js toggles the opacity ATTRIBUTES of
+   the two line segments, so opacity is never set here. Warm light outside the boundary; the kav itself is a gold line. */
+.kav-figure svg > circle:first-of-type{fill:#fcfcfb;stroke:#5f8796;stroke-width:2;filter:drop-shadow(0 0 14px rgba(226,191,122,.95)) drop-shadow(0 0 4px rgba(232,204,146,.9))}
+.kav-figure svg > [data-kav-line],
+.kav-figure svg > [data-kav-bottom]{stroke:#a07a3c;stroke-width:4;stroke-linecap:round;filter:drop-shadow(0 0 2px #f3d9a2) drop-shadow(0 0 6px rgba(240,207,140,.9))}
+.kav-figure svg > circle:nth-of-type(2){fill:#e6c689;stroke:#8d6c34;stroke-width:1.4;filter:drop-shadow(0 0 5px rgba(240,207,140,.95))}
+.kav-figure svg text{font:17px Golos,Arial,sans-serif;fill:#173f4f}
+
+/* Print: the ink plate becomes an outlined arch on paper, and the light-on-dark lines are redrawn in ink and gold,
+   so only the one visible image prints and it costs no toner block. The bl-* classes exist only for this. */
+@media print{
+  .lab[data-lab="luria"] .luria-symbol svg.b-light-luria{filter:none}
+  svg.b-light-luria .bl-plate{fill:none;stroke:#122e3b;stroke-width:1}
+  svg.b-light-luria .bl-frame{stroke:#987438;stroke-opacity:.6}
+  svg.b-light-luria .bl-void{fill:#fff}
+  svg.b-light-luria .bl-gold{stroke:#987438;stroke-opacity:1}
+  svg.b-light-luria .bl-line,
+  svg.b-light-luria .bl-edge{stroke:#4d7888}
+  svg.b-light-luria .bl-fine{stroke:#4d7888;stroke-opacity:.35}
+  svg.b-light-luria .bl-ray{stroke:#b28b4e}
+  svg.b-light-luria .bl-hl{display:none}
+  svg.b-light-luria .bl-spark{fill:#987438}
+  svg.b-light-luria .bl-arc{stroke:#4f8472}
+}

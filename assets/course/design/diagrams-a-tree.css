@@ -1,7 +1,7 @@
 /* a-tree — Древо сефирот и родственные схемы.
    1. svg.tree-visual — интерактивное учебное Древо (atlas, ein-sof, shekhinah, ten-sefirot, your-map); состояния ставит app.js (.active, фокус).
    2. svg.tp-tree — атлас 22 путей (pathways/*); классы ставит pathways.js (.tp-active).
-   3. svg «Щедрость, Мера, Согласование» (atlas); прозрачность групп ставит app.js, выбор — кнопки [data-symbol-step].active.
+   3. svg «Щедрость, Мера, Согласование» (atlas, урок 6): три круга на одной линии; выбор ставит labs.js (.is-on).
    4. .tr-tree-map — HTML-схема десяти позиций (tree-reading/*, spread-workshop/*); столпы названы в тексте этих занятий.
    Градиенты и фильтры: #a-tree-* в diagrams/a-tree/defs.html. */
 
@@ -92,27 +92,18 @@ svg.tp-tree .tp-node.tp-active .tp-node-number{fill:#dfc18c}
   svg.tp-tree .tp-node .tp-node-number{font-size:18.5px}
 }
 
-/* ---------- 3. Щедрость, Мера, Согласование (замена: diagrams/a-tree/balance-triad.svg) ---------- */
-/* Плоские ступени без рамки и тени, с верхней «проступью»: схема не должна выглядеть как второй ряд кнопок под ней. */
-svg[aria-label="Щедрость, Мера, Согласование"] rect{stroke:none;filter:none}
-svg[aria-label="Щедрость, Мера, Согласование"] .a-tree-tread{stroke:#8fa9b3;stroke-width:3}
-svg[aria-label="Щедрость, Мера, Согласование"] text{fill:#122e3b;font-family:Golos,Arial,sans-serif}
-@supports selector(:has(*)){
-  /* Выбор передаёт цвет плитки; подписи остальных шагов остаются читаемыми (app.js ставит им opacity .3). */
-  .lab svg[aria-label="Щедрость, Мера, Согласование"] g[data-shape]{opacity:.8!important}
-  .lab:has([data-symbol-step="0"].active) svg[aria-label="Щедрость, Мера, Согласование"] g[data-shape="0"],
-  .lab:has([data-symbol-step="1"].active) svg[aria-label="Щедрость, Мера, Согласование"] g[data-shape="1"],
-  .lab:has([data-symbol-step="2"].active) svg[aria-label="Щедрость, Мера, Согласование"] g[data-shape="2"]{opacity:1!important}
-  .lab:has([data-symbol-step="0"].active) svg[aria-label="Щедрость, Мера, Согласование"] g[data-shape="0"] rect,
-  .lab:has([data-symbol-step="1"].active) svg[aria-label="Щедрость, Мера, Согласование"] g[data-shape="1"] rect,
-  .lab:has([data-symbol-step="2"].active) svg[aria-label="Щедрость, Мера, Согласование"] g[data-shape="2"] rect{fill:#1b495b}
-  .lab:has([data-symbol-step="0"].active) svg[aria-label="Щедрость, Мера, Согласование"] g[data-shape="0"] .a-tree-tread,
-  .lab:has([data-symbol-step="1"].active) svg[aria-label="Щедрость, Мера, Согласование"] g[data-shape="1"] .a-tree-tread,
-  .lab:has([data-symbol-step="2"].active) svg[aria-label="Щедрость, Мера, Согласование"] g[data-shape="2"] .a-tree-tread{stroke:#c9a467}
-  .lab:has([data-symbol-step="0"].active) svg[aria-label="Щедрость, Мера, Согласование"] g[data-shape="0"] text,
-  .lab:has([data-symbol-step="1"].active) svg[aria-label="Щедрость, Мера, Согласование"] g[data-shape="1"] text,
-  .lab:has([data-symbol-step="2"].active) svg[aria-label="Щедрость, Мера, Согласование"] g[data-shape="2"] text{fill:#fff}
-}
+/* ---------- 3. Щедрость, Мера, Согласование (diagrams/a-tree/balance-triad.svg; урок 6 и атлас) ---------- */
+/* Три круга на одной линии, Тиферет между Гвурой и Хесед — как на Древе (Хесед справа). labs.js ставит выбранной группе
+   .is-on (золотое кольцо, как у выбранной сефиры) и приглушает остальные инлайн-прозрачностью. */
+svg.a-tree-triad{max-width:min(100%,520px);margin:6px auto 4px}
+svg.a-tree-triad circle{fill:url(#a-tree-disc) #f7fafb;stroke:#9ab3bd;stroke-width:1.4;filter:url(#a-tree-lift)}
+svg.a-tree-triad text{font-family:Golos,Arial,sans-serif}
+svg.a-tree-triad .t-word{fill:#122e3b;font-size:17px}
+svg.a-tree-triad .t-name{fill:#526c78;font-size:15px;letter-spacing:.02em}
+.lab svg.a-tree-triad g.is-on circle{fill:url(#a-tree-disc-on) #1b495b;stroke:#c9a467;stroke-width:2.5;filter:url(#a-tree-glow)}
+.lab svg.a-tree-triad g.is-on .t-word{fill:#fff}
+.lab svg.a-tree-triad g.is-on .t-name{fill:#7a5a22}
+@media (max-width:520px){svg.a-tree-triad .t-name{font-size:17px}}
 
 /* ---------- 4. HTML-схема десяти позиций (tree-reading.css) ---------- */
 .tr-tree-panel .tr-columns{margin-top:22px;color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase;line-height:1.5}
@@ -152,7 +143,7 @@ svg[aria-label="Щедрость, Мера, Согласование"] text{fill
 
 /* ---------- Общее ---------- */
 @media print{
-  .tree-visual .tree-node circle,svg.tp-tree .tp-node circle,svg[aria-label="Щедрость, Мера, Согласование"] rect{filter:none}
+  .tree-visual .tree-node circle,svg.tp-tree .tp-node circle,svg.a-tree-triad circle{filter:none}
   svg.tp-tree .tp-edge.tp-active{stroke:#122e3b}
   .tr-tree-panel .tr-node{box-shadow:none;padding:6px;min-height:45px}
 }

@@ -3,7 +3,7 @@
    Оформление, шрифты, эмблемы, карты: из кэша, с тихим обновлением в фоне.
    Чтобы выключить офлайн-режим, замените этот файл содержимым tools/design/sw-remove.js
    (sw.js пишет tools/design.py из tools/design/sw.template.js; VERSION меняется вместе с файлами оболочки). */
-const VERSION = 'kt-d6428e9fcb';
+const VERSION = 'kt-28a9f95aad';
 const SHELL = `${VERSION}-shell`;
 const PAGES = `${VERSION}-pages`;
 const MEDIA = `${VERSION}-media`;
@@ -13,7 +13,7 @@ const MAX_MEDIA = 400;
 const PRECACHE = [
   '/', '/course/', '/course/tarot/', '/course/tarot/deck/', '/course/notebook/',
   '/assets/course/course.css', '/assets/course/state.js', '/assets/course/app.js', '/assets/course/extensions.js',
-  '/assets/course/tarot-view.js',
+  '/assets/course/tarot-view.js', '/assets/course/labs.js',
   '/assets/fonts/Cormorant-400-normal.woff', '/assets/fonts/Cormorant-400-italic.woff', '/assets/fonts/Golos-400-normal.woff',
   '/assets/emblems/emblems.svg', '/assets/icons/icon-192.png', '/site.webmanifest',
 ];

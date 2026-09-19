@@ -66,7 +66,7 @@ function setupLab(el){const kind=el.dataset.lab;
  if(kind==='deck'){const tests=[['Королева кубков',1,'Придворная карта масти кубков.'],['Отшельник',0,'Старший аркан.'],['Туз жезлов',2,'Числовая карта младших арканов.'],['Рыцарь мечей',1,'Придворная карта масти мечей.']];let i=0;const draw=()=>{$('[data-deck-card]',el).textContent=tests[i][0];$('[data-deck-feedback]',el).textContent='Выберите группу карты.';};$$('[data-deck-type]',el).forEach(b=>b.addEventListener('click',()=>{const ok=Number(b.dataset.deckType)===tests[i][1],f=$('[data-deck-feedback]',el);f.className='feedback '+(ok?'good':'bad');f.textContent=(ok?'Верно. ':'Посмотрите на ранг и название. ')+tests[i][2];}));$('[data-deck-next]',el).addEventListener('click',()=>{i=(i+1)%tests.length;draw();});draw();}
  if(kind==='hermit'){const t=[['Наблюдение','Фигура, фонарь и посох — детали учебной схемы. Найдите их и опишите без предсказаний.'],['Уэйт о карте','В тексте Уэйта фонарь связан в том числе со светом, указывающим путь другим. Полное объяснение — в источнике к уроку.'],['Ваш вопрос','Что я могу прояснить перед следующим шагом? Запишите свой отклик отдельно от слов Уэйта.']];const bs=$$('[data-hermit]',el);bs.forEach((b,i)=>b.addEventListener('click',()=>{active(bs,i);detail(...t[i]);}));bs[0]?.click();}
 }
-$$('[data-lab]').forEach(setupLab);
+$$('[data-lab]:not([data-lab3])').forEach(setupLab);
 // Guided lesson: quiz v3 (per-question check, addressed feedback, hint ladder), own note, completion.
 if(DATA.lesson){const L=DATA.lesson,r=record(L.id),Q=L.quiz||[];document.body.classList.add('guided');const stages=$$('[data-stage]'),steps=$$('[data-go-stage]');
  r.answers=r.answers||{};r.res=r.res||{};r.miss=r.miss||{};if(Number.isInteger(L.qv))r.qv=L.qv;

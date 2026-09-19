@@ -22,6 +22,7 @@ import build_spread_dynamics as spread_dynamics
 import build_spread_workshop as spread_workshop
 import build_hekate as hekate
 import design
+import build_labs as labs
 ROOT=Path(__file__).resolve().parents[1]
 D=json.loads((ROOT/'content/course.json').read_text());CFG=json.loads((ROOT/'content/site.json').read_text());ORIGIN=CFG['origin'].rstrip('/')
 LESSONS=D['lessons'];routes=[]
@@ -30,6 +31,7 @@ BYID={l['id']:l for l in LESSONS}
 ORDER=D.get('programOrder') or [l['id'] for l in LESSONS]
 assert sorted(ORDER)==sorted(BYID), 'programOrder must be a permutation of the lesson ids'
 PROGRAM=[BYID[i] for i in ORDER]
+labs.init(D)
 def in_module(i):return [l for l in PROGRAM if l['module']==i]
 PAGE_DEFAULTS={'courseLead':'Первый круг: книги и карты вперемешку — 8 встреч по 10–20 минут. Вся программа — 45 уроков — ниже.','circleStart':'Начать первую встречу →','circleContinue':'Продолжить круг →','courseLibraryTitle':'После первого круга · библиотека','courseLibraryLead':'Книги, фрагменты Зоара и мастерская раскладов. Сюда не нужно заходить, пока идёт первый круг, — всё останется на месте.','circleDoneTitle':'Первый круг пройден','circleDoneText':'','landingSecondLink':'Начать с карты →','tarotFirstBlockTitle':'Можно начать отсюда: одна карта, потом вся колода','tarotFirstBlockText':'','notebookIntro':'Записи и прогресс хранятся только в этом браузере на этом устройстве и никуда не отправляются. Перед очисткой браузера или сменой устройства сохраните файл тетради.','booksIntroDone':'Я познакомился(-ась) с книгами','quizIntro':'Ошибиться здесь не страшно: ответ проверяется сразу, а подсказки ничего не отнимают — ни баллов, ни отметок.','completionTitle':'Урок завершён'}
 PAGES={**PAGE_DEFAULTS,**(D.get('pages') or {})}
@@ -82,10 +84,13 @@ def symbols(kind):
  if kind=='rose':return design.diagram('c-images/rose.svg')
  if kind=='hermit':return design.diagram('c-images/hermit.svg')
  return design.diagram('b-light/soul.svg' if kind=='soul' else 'a-tree/balance-triad.svg')
-def lab(kind,L=None):
+def lab(kind,L=None,data=None):
+ """Stage-2 lab. Kinds with v3 data (SPEC §4) come from build_labs; the atlas keeps the old explorers below."""
+ d=data if data is not None else ((L or {}).get('labData') or {})
  if kind=="study":return expansion.study(L)
- if kind=="gematria":return expansion.gematria()
- if kind in ('sort','observe','pair'):return lab_static(kind,L)
+ if kind=="gematria":return expansion.gematria(d)
+ v3=labs.render(kind,L,d)
+ if v3:return v3
  titles={'tree':'Посмотрите, как связаны сефирот','worlds':'Четыре мира, десять сефирот','timeline':'Поставим события на свои места','letters':'Из чего складываются 32 пути','permutations':'Соберите шесть сочетаний','river':'Проследите путь от рек к морю','rose':'Рассмотрим образ по слоям','soul':'Три уровня и их связь','balance':'Щедрость, мера и согласование','luria':'Пройдём по рассказу шаг за шагом','layers':'Чья это мысль?','context':'Книга, толкование и поступок','deck':'Найдите место карты в колоде','hermit':'Посмотрим внимательно','permutations-alef':'Соберите шесть порядков'}
  s=f'<div class="lab" data-lab="{kind}"><h3>{titles[kind]}</h3>'
  detail='<div class="lab-detail" data-detail aria-live="polite"></div>'
@@ -100,25 +105,14 @@ def lab(kind,L=None):
   s+=symbols(kind)+chips(names,'data-symbol-step')+detail
  elif kind=='luria':
   s+='<p>Выберите номер. Следите, какой вопрос появляется после предыдущего шага.</p><div class="lab-stepper">'+''.join(f'<button type="button" data-luria="{i}" aria-label="{E(t[0])}">{i+1}</button>' for i,t in enumerate(D['luria']))+'</div><div class="luria-symbol">'
-  for i in range(6):s+=re.sub(r'aria-label="[^"]*"','aria-label="Условный образ: '+E(D['luria'][i][0])+'"',design.diagram(f'b-light/luria-{i}.svg'),count=1)
+  for i in range(6):s+=labs.luria_svg(i)
   s+='</div>'+detail
  elif kind=='layers':s+='<p>Отличите слова текста, пояснение редакции и собственный отклик.</p><p class="sort-prompt" data-sort-prompt></p><div class="chips">'+''.join(f'<button type="button" data-sort="{i}">{t}</button>' for i,t in enumerate(['Наблюдение','Пояснение источника','Личная ассоциация']))+'</div><p class="feedback" data-sort-feedback aria-live="polite"></p>'+btn('Другая фраза','data-sort-next',True)
  elif kind=='context':s+=chips(['Писание','Толкование','Практика'],'data-context')+detail
  elif kind=='deck':s+='<div class="formula">22 + 4 × 14 = 78</div><div class="deck-grid">'+''.join(f'<div class="deck-unit"><b>{sym}</b><span>{name}<br>10 + 4 карты</span></div>' for sym,name in [('Ⅰ','Жезлы'),('Ⅱ','Кубки'),('Ⅲ','Мечи'),('Ⅳ','Пентакли')])+'</div><h4 data-deck-card></h4><div class="chips">'+''.join(f'<button type="button" data-deck-type="{i}">{t}</button>' for i,t in enumerate(['Старший аркан','Придворная','Числовая']))+'</div><p class="feedback" data-deck-feedback aria-live="polite"></p>'+btn('Следующая карта','data-deck-next',True)
  elif kind=='hermit':s+='<div class="lab-split">'+symbols('hermit')+detail+'</div>'+chips(['Сначала вижу','Читаю Уэйта','Задаю свой вопрос'],'data-hermit')
+ if kind in ('permutations','permutations-alef') and d.get('instruction'):s=re.sub(r'<p>.*?</p>','<p>'+E(d['instruction'])+'</p>',s,count=1)
  return s+'<noscript><p>Чтобы переключать схему и выполнять это упражнение, включите JavaScript. Текст урока и источники доступны без него.</p></noscript></div>'
-def lab_static(kind,L,data=None):
- """Readable placeholder for the new §4 lab kinds (sort, observe, pair) until their interactive engine lands:
- the task and its material are shown as text, so the lesson stays usable without the widget."""
- d=data if data is not None else (L.get('labData') or {})
- titles={'sort':'Разложим по полкам','observe':'Сначала — только то, что видно','pair':'Две карты в двух порядках'}
- s=f'<div class="lab lab-static" data-lab-static="{kind}"><h3>{titles[kind]}</h3>'+(para(d['instruction']) if d.get('instruction') else '')
- if kind=='sort':
-  s+='<p class="fine">Полки: '+' · '.join(E(x) for x in d.get('shelves',[]))+'</p><ol class="sort-static">'+''.join(f'<li>{E(it["text"])}<details><summary>Подсказка</summary><p>{E(it.get("hint",""))}</p></details></li>' for it in d.get('items',[]))+'</ol>'
- elif kind in ('observe','pair'):
-  ids=[d.get('card')] if kind=='observe' else [d.get('a'),d.get('b')]
-  s+='<div class="tarot-grid lesson-cards">'+''.join(expansion.card(expansion.CARDS[i],observe=True,anchor=False) for i in ids if i in expansion.CARDS)+'</div>'
- return s+'</div>'
 def lessonlist(items,prefix,current=0):
  return '<ol class="lesson-list">'+''.join(f'<li data-search-item="lessons"><a href="{prefix}course/{l["slug"]}/" {"aria-current=page" if current==l["id"] else ""}><span class="num">{l["id"]:02d}</span><span>{E(l["title"])}</span><span class="done-mark" data-lesson-status="{l["id"]}"></span></a></li>' for l in items)+'</ol>'
 def progress():return '<div class="progress-line" role="presentation"><i data-progress-fill></i></div><small data-progress-text>0 из 45 уроков завершено</small>'
@@ -146,6 +140,7 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
  jsonsafe=lambda x:json.dumps(x,ensure_ascii=False,separators=(',',':')).replace('<','\\u003c')
  nav=''.join(f'<a href="{prefix}{loc}" {"aria-current=page" if path=="/"+loc else ""}>{txt}</a>' for loc,txt in [('course/','Курс'),('course/books/','О книгах'),('course/tarot/','Таро'),('course/atlas/','Схемы'),('course/reading/','Читаем Зоар'),('course/glossary/','Словарь'),('course/notebook/','Моя тетрадь')])
  catalog_script=f'<script defer src="{prefix}assets/course/reading-catalog.js"></script>' if path=='/course/reading/catalog/' else ''
+ if 'data-lab3=' in body:catalog_script+=f'<script defer src="{prefix}assets/course/labs.js"></script>'
  html=f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#122e3b"><title>{E(title)} | Элиора Вейра</title><meta name="description" content="{E(description,quote=True)}"><meta name="author" content="Элиора Вейра"><meta name="robots" content="{'noindex,follow' if noindex else 'index,follow,max-image-preview:large'}"><link rel="canonical" href="{url}"><meta property="og:type" content="{'article' if L else 'website'}"><meta property="og:locale" content="ru_RU"><meta property="og:site_name" content="Каббала и Таро"><meta property="og:title" content="{E(title,quote=True)}"><meta property="og:description" content="{E(description,quote=True)}"><meta property="og:url" content="{url}"><meta property="og:image" content="{ORIGIN}/assets/beginning.jpg"><meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="{prefix}assets/course/course.css"><link rel="icon" href="{prefix}assets/course/icon.svg"><script type="application/ld+json">{jsonsafe(schema)}</script></head><body><a class="skip" href="#main">Перейти к содержанию</a><header class="top"><div class="top-inner"><a class="wordmark" href="{prefix or './'}" aria-label="Каббала и Таро — главная">Каббала<span><i>и</i> Таро</span></a><nav aria-label="Разделы курса">{nav}</nav><a class="author" href="{prefix}author/">Элиора Вейра</a></div></header><main class="wrap" id="main">{body}</main><footer class="footer"><div>Каббала и Таро · Элиора Вейра · 2026<br>Знакомиться можно постепенно. Возвращаться — сколько угодно.</div><div><a href="{prefix}author/">Об авторе и курсе</a><a href="{prefix}course/reading/#sources">Источники</a><a href="{prefix}course/notebook/">Тетрадь и перенос записей</a></div></footer><script id="course-data" type="application/json">{jsonsafe(payload)}</script><script defer src="{prefix}assets/course/state.js"></script><script defer src="{prefix}assets/course/readings-data.js"></script><script defer src="{prefix}assets/course/app.js"></script><script defer src="{prefix}assets/course/extensions.js"></script>{catalog_script}</body></html>'''
  if path.startswith('/course/yetzirah/'):
   html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/yetzirah.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/yetzirah-state.js"></script><script defer src="{prefix}assets/course/yetzirah.js"></script></body>')
@@ -258,7 +253,7 @@ GLOSS={g['term'].lower() for g in D['glossary']}
 def term_link(t,p):
  # a term the glossary does not (yet) define stays plain text instead of a dead anchor
  return f'<a href="{p}course/glossary/#{E(t.lower().replace(" ","-"))}">{E(t)}</a>' if t.lower() in GLOSS else f'<span class="term-plain">{E(t)}</span>'
-def extra_lab(x,L):return lab_static(x['lab'],L,x.get('labData') or {}) if x['lab'] in ('sort','observe','pair') else lab(x['lab'],L)
+def extra_lab(x,L):return lab(x['lab'],L,x.get('labData') or {})
 def stage4(L):
  h='<section class="stage" data-stage="3" tabindex="-1" aria-label="Собственная запись"><h2>А как бы Вы это объяснили?</h2>'+para(L['prompt'])
  if L.get('checklist'):h+='<div class="note-checklist"><p class="fine">Перед тем как писать, держите в уме:</p><ul>'+''.join(f'<li>{E(c)}</li>' for c in L['checklist'])+'</ul></div>'

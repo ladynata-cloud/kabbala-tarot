@@ -50,6 +50,28 @@ def check_lab(kind,data,where):
  if kind=='hermit':assert len(data['checklist'])==6 and sum(not x['present'] for x in data['checklist'])==2, where
  if kind=='pair':assert {data['a'],data['b']}<={x['id'] for x in t['cards']}, where
  if kind=='tree':assert data['mode'] in ('explore','find','place') and all(1<=len(x['answer'])<=2 and all(0<=n<=9 for n in x['answer']) for x in data.get('tasks',[])), where
+ # per-kind shape of the v3 labs (tools/build_labs.py, assets/course/labs.js)
+ txt=lambda x,*ks:all(isinstance(x.get(k),str) and x[k].strip() for k in ks)
+ cards={x['id']:x for x in t['cards']}
+ if kind=='sort':assert 5<=len(data['items'])<=8 and txt(data,'instruction','success'), where+': sort needs 5–8 items, instruction, success'
+ if kind=='timeline':assert all(txt(e,'what','when') for e in data['events']) and txt(data,'success'), where+': timeline events need what/when'
+ if kind=='tree':
+  assert data.get('group') in (None,'top','mercy','malkhut') and (data.get('start') is None or data['start'] in range(10)), where+': tree group/start'
+  if data['mode']=='find':assert data.get('tasks') and all(txt(x,'prompt','hint','explain') and len(set(x['answer']))==len(x['answer']) for x in data['tasks']), where+': tree find tasks'
+ if kind=='worlds':assert all(txt(x,'prompt','hint','explain') and x['world'] in range(4) and x['sefira'] in range(10) for x in data['tasks']), where+': worlds tasks'
+ if kind=='letters':assert all(txt(x,'prompt','hint','explain') and x['answer'] and set(x['answer'])<=set('אבגדהוזחטיכלמנסעפצקרשת') for x in data['tasks']), where+': letters tasks'
+ if kind=='rose':assert 3<=len(data['steps'])<=4 and all(txt(x,'label','text') and x.get('shape') in ('image','red','white','center') for x in data['steps']), where+': rose steps'
+ if kind=='luria':
+  assert data['mode'] in ('explore','order') and (data.get('notes') is None or len(data['notes'])==6), where+': luria mode/notes'
+  if data['mode']=='order':o=data.get('order') or [];assert len(o)>=2 and len(set(o))==len(o) and all(i in range(6) for i in o), where+': luria order'
+ if kind=='river' and data:assert len(data.get('steps',[]))==3 and all(len(x)==2 and all(isinstance(y,str) and y for y in x) for x in data['steps']), where+': river steps'
+ if kind=='deck':assert all(c['type']==(0 if cards[c['card']]['group']=='major' else 1 if cards[c['card']]['rank']>10 else 2) for c in data['cards']) and {0,1,2}<={c['type'] for c in data['cards']}, where+': deck types must match the cards'
+ if kind=='hermit':assert data['card'] in cards and all(txt(x,'text') and isinstance(x['present'],bool) for x in data['checklist']) and data.get('waite') and data.get('question',{}).get('bad'), where+': hermit'
+ if kind=='observe':assert data['card'] in cards and isinstance(data.get('fields',5),int) and 1<=data.get('fields',5)<=8, where+': observe'
+ if kind=='pair':assert data.get('detailsA') and data.get('detailsB') and txt(data,'instruction','success'), where+': pair details'
+ if kind=='gematria':
+  vals=dict(zip('אבגדהוזחטיכלמנסעפצקרשת',list(range(1,10))+list(range(10,100,10))+list(range(100,500,100))));vals.update({'ך':20,'ם':40,'ן':50,'ף':80,'ץ':90})
+  ex=data['example'];assert sum(vals[c] for c in ex['word'])==ex['value'], where+': gematria example value'
 V3=[l for l in d['lessons'] if l.get('quizVersion')==3]
 for l in V3:
  w=f"lesson {l['id']}"

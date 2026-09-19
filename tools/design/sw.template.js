@@ -13,7 +13,7 @@ const MAX_MEDIA = 400;
 const PRECACHE = [
   '/', '/course/', '/course/tarot/', '/course/tarot/deck/', '/course/notebook/',
   '/assets/course/course.css', '/assets/course/state.js', '/assets/course/app.js', '/assets/course/extensions.js',
-  '/assets/course/tarot-view.js',
+  '/assets/course/tarot-view.js', '/assets/course/labs.js',
   '/assets/fonts/Cormorant-400-normal.woff', '/assets/fonts/Cormorant-400-italic.woff', '/assets/fonts/Golos-400-normal.woff',
   '/assets/emblems/emblems.svg', '/assets/icons/icon-192.png', '/site.webmanifest',
 ];

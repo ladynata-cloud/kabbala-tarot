@@ -11,8 +11,15 @@
 .lab[data-lab="river"] svg.b-light-river,
 .lab[data-lab="soul"] svg.b-light-soul{max-width:min(100%,600px);margin-inline:auto}
 /* selected soul level: gold frame (app.js sets inline opacity 1 on the chosen group, .3 on the others) */
-.lab[data-lab="soul"] svg.b-light-soul [data-shape][style*="opacity: 1"] rect:first-of-type{stroke:#987438;stroke-width:2.4}
-.lab[data-lab="soul"] svg.b-light-soul [data-shape][style*="opacity: 1"] rect:nth-of-type(2){stroke:#dcc190}
+.lab[data-lab="soul"] svg.b-light-soul [data-shape]:is([style*="opacity: 1"],.is-on) rect:first-of-type{stroke:#987438;stroke-width:2.4}
+.lab[data-lab="soul"] svg.b-light-soul [data-shape]:is([style*="opacity: 1"],.is-on) rect:nth-of-type(2){stroke:#dcc190}
+/* lesson lab (labs.js): the other levels are muted by colour, not transparency — their names keep ≥ 4:1 */
+.lab3[data-lab3="soul"] svg.b-light-soul [data-shape].is-dim rect:first-of-type{fill:#f3f6f7;stroke:#c9d8de}
+.lab3[data-lab3="soul"] svg.b-light-soul [data-shape].is-dim rect:nth-of-type(2){stroke:#e3eaed}
+.lab3[data-lab3="soul"] svg.b-light-soul [data-shape].is-dim text{fill:#5f7985}
+.lab3[data-lab3="soul"] svg.b-light-soul [data-shape].is-dim path{stroke:#b9cbd2}
+.lab3[data-lab3="soul"] svg.b-light-soul [data-shape].is-dim circle{fill:#b9cbd2}
+.lab3[data-lab3="river"] svg [data-shape].is-dim{opacity:.3}
 
 /* Kav (course/etz-chaim/kav): CSS only, no url() references. book-workshops.js toggles the opacity ATTRIBUTES of
    the two line segments, so opacity is never set here. Warm light outside the boundary; the kav itself is a gold line. */

@@ -12,7 +12,25 @@
  root.CourseGematria={calculate};
  if(typeof document==='undefined')return;
  const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>Array.from(r.querySelectorAll(s));
- const gem=$('[data-gematria]');if(gem){const input=$('#gematria-word',gem),out=$('[data-gematria-output]',gem);const draw=()=>{const r=calculate(input.value);out.replaceChildren();if(r.error){out.textContent=r.error;return;}const word=document.createElement('bdi');word.lang='he';word.dir='rtl';word.textContent=r.word;out.append(word,document.createTextNode(': '+r.terms.map(t=>t.value).join(' + ')+' = '+r.total));};input.addEventListener('input',draw);$$('[data-gematria-example]',gem).forEach(b=>b.addEventListener('click',()=>{input.value=b.dataset.gematriaExample;draw();}));draw();}
+ const gem=$('[data-gematria]');if(gem){
+  const input=$('#gematria-word',gem),out=$('[data-gematria-output]',gem),ask=$('[data-gematria-ask]',gem),guess=$('[data-gematria-guess]',gem),askLabel=$('[data-gematria-ask-label]',gem);let pending='';
+  const heb=w=>{const b=document.createElement('bdi');b.lang='he';b.dir='rtl';b.textContent=w;return b;};
+  const draw=(prefix)=>{const r=calculate(input.value);out.replaceChildren();if(r.error){out.textContent=r.error;return;}if(prefix)out.append(document.createTextNode(prefix));out.append(heb(r.word),document.createTextNode(': '+r.terms.map(t=>t.value).join(' + ')+' = '+r.total));};
+  const closeAsk=()=>{pending='';if(ask)ask.hidden=true;};
+  input.addEventListener('input',()=>{closeAsk();draw();});
+  $$('[data-gematria-example]',gem).forEach(b=>b.addEventListener('click',()=>{closeAsk();input.value=b.dataset.gematriaExample;draw();}));
+  // Practice words: the learner's own sum first, the breakdown after (no ready number on screen).
+  $$('[data-gematria-practice]',gem).forEach(b=>b.addEventListener('click',()=>{pending=b.dataset.gematriaPractice;input.value='';out.replaceChildren();out.textContent='Сначала — Ваша сумма.';askLabel.replaceChildren(document.createTextNode('Ваша сумма для '),heb(pending));guess.value='';ask.hidden=false;guess.focus();}));
+  const check=()=>{if(!pending)return;const v=guess.value.trim();if(!/^\d{1,5}$/.test(v)){out.textContent='Введите число — сумму, которую Вы получили по таблице.';guess.focus();return;}
+   const r=calculate(pending),n=Number(v);input.value=pending;closeAsk();
+   draw(n===r.total?'Совпало: ':'У Вас '+n+', по таблице — '+r.total+'. ');
+   if(n!==r.total)out.append(document.createElement('br'),document.createTextNode('Проверьте каждую букву по таблице — особенно те, что стоят после девятой: там значения идут десятками.'));};
+  $('[data-gematria-check]',gem)?.addEventListener('click',check);guess?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();check();}});
+  // On-screen letters: the table cells type into the field.
+  $$('[data-gematria-letter]',gem).forEach(b=>b.addEventListener('click',()=>{closeAsk();if(input.value.length<100)input.value+=b.dataset.gematriaLetter;draw();}));
+  $('[data-gematria-back]',gem)?.addEventListener('click',()=>{closeAsk();input.value=[...input.value].slice(0,-1).join('');draw();});
+  $('[data-gematria-clear]',gem)?.addEventListener('click',()=>{closeAsk();input.value='';out.textContent='Поле пустое: нажимайте буквы в таблице или выберите пример.';});
+  draw();}
  const catalogue=$('[data-card-catalogue]');if(!catalogue)return;
  const cards=$$('.tarot-card',catalogue),search=$('[data-card-search]'),group=$('[data-card-filter]'),rank=$('[data-rank-filter]');
  const normalize=s=>s.toLocaleLowerCase('ru').replaceAll('ё','е');

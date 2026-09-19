@@ -221,3 +221,80 @@ svg.c-images-rose[data-focus="white"] .is-white .c-images-rose-body{stroke:#9c7c
   .sort3-hint{display:block!important}
   .hermit3-card{position:static}
 }
+
+/* ==== QA round (2026-09-20): legibility, phone layout, one visual language ==== */
+.lab3 [hidden]{display:none!important}
+/* hints are advice, not reproach: gold, one size */
+.lab3 .feedback.bad{background:#fbf7ef;border-left-color:#b28b4e;color:var(--ink)}
+.lab3 .feedback.bad strong,.lab3 .feedback.bad b{color:#7a5a22}
+.lab3 .feedback,.lab3 .feedback *{font-size:15px!important;line-height:1.6}
+.lab3 .feedback .lab3-badge{font-size:13px!important}
+/* formulas in the display face */
+.lab3 .lab3-formula{font:400 44px/1.1 Cormorant,Georgia,serif;letter-spacing:.02em;font-variant-numeric:lining-nums}
+.lab3 .lab3-formula .op{color:#987438}
+/* Tarot cards in labs look like the cards elsewhere on the site */
+.lab3-card img,.deck3-card img{border-radius:6px;box-shadow:0 0 0 1px rgba(178,139,78,.42),0 1px 2px rgba(18,46,59,.1),0 8px 18px -9px rgba(18,46,59,.38)}
+.deck3-grid>li{display:flex}
+.deck3-card{height:100%;background:white}
+.deck3-after{justify-content:flex-end;margin-top:6px}
+/* balance: dimmed by colour; «Согласование» fits its circle */
+.lab3 svg.a-tree-triad g.is-dim circle{fill:#f7fafb;stroke:#c9d8de;filter:none}
+.lab3 svg.a-tree-triad g.is-dim .t-word,.lab3 svg.a-tree-triad g.is-dim .t-name{fill:#5f7985}
+.lab3 svg.a-tree-triad g.is-on circle{fill:url(#a-tree-disc-on) #1b495b;stroke:#c9a467;stroke-width:2.5}
+.lab3 svg.a-tree-triad g.is-on .t-word{fill:#fff}
+.lab3 svg.a-tree-triad g[data-shape="2"] .t-word{font-size:15px}
+/* Древо: «согласование» sits under Тиферет only while the name there is hidden */
+
+.tree3-svg:not(.is-hidden-labels) .tree-tri-labels .tri-mid,.tree3-svg .tree-node[data-node="5"]:is(.is-found,.is-shown)~.tree-tri-labels .tri-mid{display:none}
+.tree3-panel:not(:has(.tree3-names button:not([hidden]))) .tree3-names-label{display:none}
+.tree3[data-tree-mode="find"] .tree3-panel .lab3-feedback{margin:0 0 12px}
+/* worlds: the key line replaces the column subtitles on a phone */
+.w3-key{display:none}
+/* order: one line of arrows on a wide screen, a thread through the numbers */
+.order3{position:relative}
+.order3::before{content:'';position:absolute;left:26px;top:22px;bottom:22px;border-left:1px solid #d8c3a0}
+.order3-item{position:relative}
+.order3-item::before{position:relative;z-index:1}
+.order3-moves button{display:grid;place-items:center;color:#7a5a22}
+.order3-moves button:disabled{color:#b7c8cf}
+.order3-img .bl-label{display:none}
+@media (min-width:761px){.order3-moves{flex-direction:row}}
+/* soul: two clauses, the comma stays with its word; a quiet select arrow */
+.lab3 .soul3-line{gap:8px 10px}
+.soul3-clause{display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px}
+.soul3-comma{margin-left:-8px}
+.soul3-slot select{appearance:none;-webkit-appearance:none;padding-right:30px;background:white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23b28b4e' stroke-width='1.5'/%3E%3C/svg%3E") right 10px center/12px no-repeat}
+/* hermit: the box and its line stay together */
+.hermit3-item{flex-wrap:nowrap;align-items:flex-start;gap:10px;font-size:15px}
+.hermit3-item>input{flex:none;margin-top:5px}
+.hermit3-item>span{flex:1;min-width:0}
+.hermit3-mark{flex:none;align-self:center}
+/* observe: a flagged field */
+.observe3-row input.is-flagged{border-color:#b28b4e;box-shadow:inset 3px 0 0 #b28b4e;background:#fffaf0}
+/* sort: after «Готово» the tools go away; the shelf target is 44 px */
+.sort3-shelf .sort3-hint-btn{min-height:44px}
+.lab3.is-solved .sort3-hint-btn,.lab3.is-solved .sort3-put small{display:none}
+@media (max-width:760px){
+  .hermit3 .lab3-card img,.observe3 .lab3-card img{width:min(200px,60vw);max-width:none}
+  .deck3-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .deck3-card img{max-width:150px}
+  .deck3-panel{padding:4px 0 6px}
+  .deck3-panel .lab3-label{text-transform:none;letter-spacing:0;font-size:13px!important;margin:0 0 4px}
+  .deck3-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .deck3-groups .button{padding:6px 4px;font-size:13px;white-space:normal;line-height:1.2}
+  .deck3-panel .lab3-feedback{max-height:16vh}
+  .lab3 .lab3-formula{font-size:36px}
+}
+@media (max-width:600px){
+  .w3-head small{display:none}
+  .w3-key{display:block;margin-top:8px}
+}
+@media (max-width:520px){
+  .tree3-svg .tree-node .tree-slot{font-size:15px}
+  .sort3-item{grid-template-columns:minmax(0,1fr) 44px}
+  .sort3-hint-btn{padding:0;font-size:0;width:44px}
+  .sort3-hint-btn::before{content:'?';font:18px Cormorant,Georgia,serif;color:#7a5a22}
+  .sort3-shelf .sort3-item{grid-template-columns:minmax(0,1fr)}
+  .lab3-steps{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .lab3-steps button{width:100%;margin:0}
+}

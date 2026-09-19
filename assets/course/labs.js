@@ -3,11 +3,49 @@
    name the answer → the answer after the second error on the same item → «N из M» → a short success text.
    Markup comes from tools/build_labs.py; each [data-lab3] block carries its data in an inline JSON script.
    Nothing here is saved: labs are practice. Old explorers without data (the atlas) stay in app.js. */
-(()=>{
+(function(root){
+const norm=s=>String(s||'').toLocaleLowerCase('ru').replace(/ё/g,'е');
+const reEsc=w=>w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+const hasWord=(v,w)=>new RegExp('(^|[^а-яa-z])'+reEsc(w),'i').test(v);
+/* Hermit, pass 3: a question the card can answer is about the asker's own next action. Questions about the future,
+   about fate or about another person's head are turned back — whatever the lesson data lists, these always are. */
+const Q_FUTURE=['когда','точно','обязательно','ждет','ждут','будет','будут','случится','произойдет','суждено','судьба','стоит ли','получится ли','выйдет ли','удастся ли','скоро','ждать','предстоит'];
+const Q_MIND=['сможет ли','думает','думают','чувствует','чувствуют','на самом деле','любит ли','полюбит','вернется','хочет ли','скрывает','задумал'];
+const Q_START=/^(что|чем|с чего|как|какие|какой|какую|каким|какое|где|на что|о чем|куда|кому|в чем)(?=[^а-яa-z]|$)/;
+const Q_ME=/(^|[^а-яa-z])(я|мне|меня|мой|моя|мое|мои|моих|моим|мною|нам|мы|нас|себе|себя)(?=[^а-яa-z]|$)/;
+function questionVerdict(text,extraBad){
+ const v=norm(text).replace(/^\s*(мой\s+)?вопрос\s*[:：-]?\s*/,'').replace(/^[\s«"„“]+/,'').trim();
+ if(!v)return {ok:false,kind:'empty',words:[]};
+ const future=[...new Set([...(extraBad||[]).map(norm),...Q_FUTURE])].filter(w=>hasWord(v,w)),mind=Q_MIND.filter(w=>hasWord(v,w));
+ if(future.length||mind.length)return {ok:false,kind:mind.length&&!future.length?'mind':'future',words:[...future,...mind]};
+ if(!Q_START.test(v)||!Q_ME.test(v))return {ok:false,kind:'start',words:[]};
+ return {ok:true,kind:'ok',words:[]};
+}
+/* Observe: a label («гармония») is not an observation; an action line needs a verb. */
+const LABELS=['гармони','терпени','баланс','спокойстви','равновеси','умеренност','покой','умиротвор','мудрост','любов','надежд','счасть','успока','гармониз'];
+function obsVerdict(text,labels){
+ const v=norm(text).replace(/^\s*вижу\s*[:：-]?\s*/,'').replace(/[«»"„“.!?,;:]/g,' ').trim();
+ if(!v)return {ok:false,kind:'empty'};
+ const lab=[...(labels||[]).map(norm),...LABELS].find(w=>hasWord(v,w));
+ if(lab)return {ok:false,kind:'label',word:v.split(/\s+/).find(x=>x.startsWith(lab))||lab};
+ if(/(^|[^а-яa-z])(будет|будут|скоро)(?=[^а-яa-z]|$)/.test(v))return {ok:false,kind:'future',word:v};
+ if(v.split(/\s+/).length<2)return {ok:false,kind:'one',word:v};
+ return {ok:true,kind:'ok'};
+}
+const VERB=/[а-я](ть|ться|ти|чь|ет|ит|ут|ют|ат|ят|тся|ется|ится)(?=[^а-яa-z]|$)/;
+function verbVerdict(text,labels){
+ const v=norm(text).trim();if(!v)return {ok:false,kind:'empty'};
+ const lab=[...(labels||[]).map(norm),...LABELS].find(w=>hasWord(v,w));if(lab)return {ok:false,kind:'label',word:lab};
+ return VERB.test(v)?{ok:true,kind:'ok'}:{ok:false,kind:'noverb'};
+}
+/* Pair: a detail word matches its own forms, not the start of a longer word («город» ≠ «городской»). */
+const stem=w=>{w=norm(w);return w.length>5?w.slice(0,-2):w.length>3?w.slice(0,-1):w;};
+function hasDetail(text,list){const v=norm(text);return (list||[]).some(w=>{const n=norm(w).trim();if(!n)return false;const st=reEsc(stem(n));return new RegExp('(^|[^а-яa-z])'+(n.length<=5?st+'[а-я]{0,3}(?=[^а-яa-z]|$)':st)).test(v);});}
+root.CourseLabs={questionVerdict,obsVerdict,verbVerdict,hasDetail};
+if(typeof document==='undefined')return;
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>Array.from(r.querySelectorAll(s));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const plural=(n,one,few,many)=>{const a=n%10,b=n%100;return a===1&&b!==11?one:a>=2&&a<=4&&(b<12||b>14)?few:many;};
-const norm=s=>String(s||'').toLocaleLowerCase('ru').replace(/ё/g,'е');
 let COURSE={};try{COURSE=JSON.parse($('#course-data').textContent);}catch(e){}
 const SEF=COURSE.sefirot||[],WORLDS=COURSE.worlds||[],LURIA=COURSE.luria||[];
 const press=(b,on)=>{b.setAttribute('aria-pressed',on?'true':'false');b.classList.toggle('active',!!on);};
@@ -105,7 +143,7 @@ function orderLab(el,d,u,isTimeline){
   u.say(h,'bad');
  });
  el.addEventListener('click',e=>{if(!e.target.closest('[data-order-reveal]')||solved)return;all().sort((a,b)=>a.dataset.i-b.dataset.i).forEach(li=>list.append(li));finish(true);list.focus?.();});
- label();u.count('Переставляйте кнопками ↑ и ↓');
+ label();u.count('Переставляйте кнопками «выше» и «ниже» справа от строки');
 }
 KINDS.timeline=(el,d,u)=>orderLab(el,d,u,true);
 KINDS['luria-order']=(el,d,u)=>orderLab(el,d,u,false);
@@ -240,9 +278,10 @@ function stepsLab(el,d,u,onSelect,winOnAll=true){
  bs.forEach((b,i)=>b.addEventListener('click',()=>select(i)));
  if(M)select(0);
 }
-const shapeFocus=(el,dim='.3')=>i=>$$('svg [data-shape]',el).forEach(n=>{const on=Number(n.dataset.shape)===i;n.style.opacity=on?'1':dim;n.classList.toggle('is-on',on);});
+// The chosen shape gets .is-on, the others .is-dim: the CSS mutes them by colour, so their names keep 4:1 contrast.
+const shapeFocus=el=>i=>$$('svg [data-shape]',el).forEach(n=>{const on=Number(n.dataset.shape)===i;n.classList.toggle('is-on',on);n.classList.toggle('is-dim',!on);});
 KINDS.rose=(el,d,u)=>{const svg=$('svg.c-images-rose',el);stepsLab(el,d,u,i=>{if(svg)svg.dataset.focus=(d.shapes||[])[i]||'image';});};
-KINDS.balance=(el,d,u)=>stepsLab(el,d,u,shapeFocus(el,'.55'));
+KINDS.balance=(el,d,u)=>stepsLab(el,d,u,shapeFocus(el));
 KINDS.river=(el,d,u)=>stepsLab(el,d,u,shapeFocus(el));
 KINDS.soul=(el,d,u)=>{
  stepsLab(el,d,u,shapeFocus(el),false);
@@ -276,19 +315,21 @@ KINDS['luria-explore']=(el,d,u)=>{
 const TYPES=['Старший аркан','Придворная','Числовая'];
 const WHY=[[ '', 'В подписи есть звание и масть, а у старших арканов масти нет.','У старших арканов нет масти, а в подписи этой карты масть есть.'],
  ['Звания — паж, рыцарь, королева, король — в подписи нет, и масти тоже нет.','','Масть есть, но звания нет: число и туз — не звания.'],
- ['Римская цифра вверху ещё не делает карту числовой: у числовых карт в подписи есть масть.','Посмотрите на подпись: паж, рыцарь, королева и король — это звания, а не числа.','']];
+ ['Римская цифра вверху ещё не делает карту числовой: у числовой карты есть масть — ряд одинаковых предметов на рисунке, а подписи внизу нет. Здесь внизу стоит имя, и масти в нём нет.','Посмотрите на подпись: паж, рыцарь, королева и король — это звания, а не числа.','']];
 KINDS.deck=(el,d,u)=>{
  const cards=$$('[data-card3]',el),groups=$$('[data-type3]',el),cur=$('[data-deck-current]',el),M=cards.length,miss=new Array(M).fill(0),done=new Array(M).fill(0);
- let sel=-1;const name=i=>$('.deck3-name',cards[i]).textContent;
- function select(i){sel=i;cards.forEach((c,j)=>press(c,j===i));cur.textContent=i<0?'Выберите карту':'Выбрана карта: '+name(i)+'. К какой группе она относится?';}
+ let sel=-1;const name=i=>cards[i].dataset.name||$('.deck3-name',cards[i]).textContent,label=i=>$('.deck3-name',cards[i]).textContent;
+ // Russian names would give the group away: until a card is placed it is «Карта N», the name comes after.
+ const named=i=>{const n=$('.deck3-name',cards[i]);if(cards[i].dataset.name)n.textContent=cards[i].dataset.name;cards[i].setAttribute('aria-label',name(i));};
+ function select(i){sel=i;cards.forEach((c,j)=>press(c,j===i));cur.textContent=i<0?'Выберите карту':'Выбрана '+label(i).replace(/^Карта/,'карта')+'. К какой группе она относится?';}
  const counter=()=>{const n=done.filter(Boolean).length,h=done.filter(x=>x===2).length;u.count('Разложено: '+n+' из '+M+(h?' (с подсказкой — '+h+')':''));return n;};
  cards.forEach((c,i)=>c.addEventListener('click',()=>{if(done[i]){u.say('«'+esc(name(i))+'» уже разложена: '+TYPES[d.cards[i].type].toLowerCase()+'.');return;}select(i);u.say('');}));
  groups.forEach(g=>g.addEventListener('click',()=>{
   if(sel<0){u.say('Сначала выберите карту, затем группу.');return;}
   const i=sel,want=d.cards[i].type,got=Number(g.dataset.type3),mark=$('[data-card3-mark]',cards[i]);
-  if(got===want){done[i]=miss[i]?2:1;cards[i].classList.add('is-done');mark.textContent='✓ '+TYPES[want];u.say('<b>Верно:</b> «'+esc(name(i))+'» — '+esc(TYPES[want].toLowerCase())+'.','good');}
+  if(got===want){done[i]=miss[i]?2:1;cards[i].classList.add('is-done');named(i);mark.textContent='✓ '+TYPES[want];u.say('<b>Верно:</b> «'+esc(name(i))+'» — '+esc(TYPES[want].toLowerCase())+'.','good');}
   else{miss[i]++;
-   if(miss[i]>=2){done[i]=2;cards[i].classList.add('is-done','is-shown');mark.textContent=TYPES[want];u.say('<b>Это '+esc(TYPES[want].toLowerCase())+'.</b> '+esc(WHY[got][want])+BADGE,'good');}
+   if(miss[i]>=2){done[i]=2;cards[i].classList.add('is-done','is-shown');named(i);mark.textContent=TYPES[want];u.say('<b>Это '+esc(TYPES[want].toLowerCase())+'.</b> '+esc(WHY[got][want])+BADGE,'good');}
    else{u.say('<b>Пока нет.</b> '+esc(WHY[got][want])+'<br>Подсказка: '+esc(d.hint||'')+' <span class="fine">Если и вторая попытка не подойдёт, группа откроется.</span>','bad');return;}}
   const n=counter();
   if(n===M){select(-1);cur.textContent='Все карты разложены';u.win('');return;}
@@ -309,16 +350,19 @@ KINDS.hermit=(el,d,u)=>{
   if(seenOK)return;const wrong=boxes.filter((b,i)=>b.checked&&!d.checklist[i].present).length,missing=boxes.filter((b,i)=>!b.checked&&d.checklist[i].present).length;
   if(!wrong&&!missing){seenOK=true;marks();say(0,'<b>Верно.</b> Вы отметили только то, что нарисовано. Две строки — из других колод или из воображения: их на этой карте нет.','good');finish();return;}
   miss++;
-  const parts=[];const NUM=['','одна','две','три','четыре','пять','шесть'];if(wrong)parts.push(wrong===1?'одна из отмеченных деталей отсутствует на карте':(NUM[wrong]||wrong)+' из отмеченных деталей отсутствуют на карте');if(missing)parts.push('не отмечено то, что на карте есть: '+missing);
-  const text=parts.join('; ');
+  const NUM=['','одна','две','три','четыре','пять','шесть'],DET=n=>plural(n,'деталь','детали','деталей'),parts=[];
+  if(wrong)parts.push(wrong===1?'одна отмеченная деталь на карте отсутствует':(NUM[wrong]||wrong)+' отмеченные '+DET(wrong)+' на карте отсутствуют');
+  if(missing)parts.push(missing===1?'одна деталь, которая на карте есть, не отмечена':(NUM[missing]||missing)+' '+DET(missing)+', которые на карте есть, не отмечены');
+  const text=parts.join(', а ');
   if(miss>=2){seenOK=true;marks();say(0,'<b>'+esc(text[0].toUpperCase()+text.slice(1))+'.</b> Теперь у каждой строки отмечено, есть ли она на карте.'+BADGE,'good');finish();return;}
   say(0,'<b>Пока нет: '+esc(text)+'.</b> Каких именно — не скажем. Подсказка: откройте карту крупнее (нажмите на неё) и проверьте каждую строку — можно ли показать эту деталь пальцем?','bad');
  });
- const badIn=v=>bad.filter(w=>new RegExp('(^|[^а-яa-z])'+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i').test(norm(v)));
- qf.addEventListener('input',()=>{const b=badIn(qf.value);warn.textContent=b.length?'В вопросе есть «'+b.join('», «')+'»: так спрашивают о будущем, а карта на это не отвечает. Спросите о действии — что прояснить, с чего начать.':'';});
+ const TRY=' Попробуйте начать с «Что я могу…», «С чего мне начать…» или «Какие сведения мне собрать…».';
+ qf.addEventListener('input',()=>{const r=questionVerdict(qf.value,bad);warn.textContent=r.words.length?'В вопросе есть «'+r.words.join('», «')+'»: '+(r.kind==='mind'?'так спрашивают о чужих мыслях и чувствах':'так спрашивают о будущем')+', а карта на это не отвечает.':'';});
  ask.addEventListener('click',()=>{
   const v=qf.value.trim();if(!v){say(1,'Сначала запишите свой вопрос.');qf.focus();return;}
-  const b=badIn(v);if(b.length){askOK=false;say(1,'<b>Вопрос пока о будущем:</b> в нём есть «'+esc(b.join('», «'))+'». Переформулируйте так, чтобы ответом было действие: что прояснить, какие сведения собрать, с чего начать.','bad');counter();return;}
+  const r=questionVerdict(v,bad);
+  if(!r.ok){askOK=false;const head=r.kind==='start'?'<b>Вопрос пока не о Вашем действии.</b> Карта не объясняет причин и не отвечает за других людей; она помогает выбрать, что сделать Вам.':'<b>Похоже, это вопрос '+(r.kind==='mind'?'о чужих мыслях или чувствах':'о будущем')+'</b> (в нём есть «'+esc(r.words.join('», «'))+'») — карта на него не отвечает.';say(1,head+esc(TRY),'bad');counter();return;}
   askOK=true;say(1,'<b>Вопрос годится:</b> на него можно ответить действием.'+(seenOK?'':' Осталось проверить детали в первом проходе.'),'good');finish();
  });
  counter();
@@ -328,13 +372,21 @@ KINDS.hermit=(el,d,u)=>{
 KINDS.observe=(el,d,u)=>{
  const fields=$$('[data-obs]',el),verbBtns=$$('[data-obs-verb]',el),verbs=$$('[data-obs-verbtext]',el),n=fields.length,needVerbs=d.verbs?Math.min(2,n):0;
  const strip=v=>String(v||'').replace(/^\s*вижу\s*[:：-]?\s*/i,'').trim();
- verbBtns.forEach((b,i)=>b.addEventListener('click',()=>{const box=verbs[i].closest('.observe3-verb'),open=box.hidden;box.hidden=!open;b.setAttribute('aria-expanded',String(open));if(open){if(!verbs[i].value)verbs[i].value=strip(fields[i].value);verbs[i].focus();}}));
- const count=()=>{const f=fields.filter(x=>strip(x.value)).length,v=verbs.filter((x,i)=>!x.closest('.observe3-verb').hidden&&x.value.trim()&&norm(x.value.trim())!==norm(strip(fields[i].value))).length;u.count('Наблюдений: '+f+' из '+n+(needVerbs?' · глаголов: '+Math.min(v,needVerbs)+' из '+needVerbs:''));return [f,v];};
- [...fields,...verbs].forEach(x=>x.addEventListener('input',count));
+ const labels=d.labels||[],open=i=>!verbs[i].closest('.observe3-verb').hidden;
+ // «В глагол» opens an empty action field next to the observation: the learner writes the verb, nothing is copied.
+ verbBtns.forEach((b,i)=>b.addEventListener('click',()=>{const box=verbs[i].closest('.observe3-verb'),o=box.hidden;box.hidden=!o;b.setAttribute('aria-expanded',String(o));if(o)verbs[i].focus();}));
+ const flag=(x,on)=>{x.classList.toggle('is-flagged',!!on);if(on)x.setAttribute('aria-invalid','true');else x.removeAttribute('aria-invalid');};
+ const count=()=>{const f=fields.filter(x=>strip(x.value)).length,v=verbs.filter((x,i)=>open(i)&&verbVerdict(x.value,labels).ok&&norm(x.value.trim())!==norm(strip(fields[i].value))).length;u.count('Наблюдений: '+f+' из '+n+(needVerbs?' · глаголов: '+Math.min(v,needVerbs)+' из '+needVerbs:''));return [f,v];};
+ [...fields,...verbs].forEach(x=>x.addEventListener('input',()=>{flag(x,false);count();}));
  u.check.addEventListener('click',()=>{
-  const [f,v]=count();
+  const [f,v]=count();[...fields,...verbs].forEach(x=>flag(x,false));
   if(f<n){u.say('<b>Пока записано '+f+' из '+n+'.</b> Подсказка: пройдите по рисунку сверху вниз — голова, руки, предметы, ноги, земля и фон. Только то, на что можно указать пальцем.','bad');return;}
-  if(v<needVerbs){u.say('<b>Наблюдений достаточно.</b> Теперь выберите '+(needVerbs-v===1?'ещё одно':'два')+' и нажмите «В глагол»: перепишите строку так, чтобы в ней было действие — кто что делает.','bad');return;}
+  for(const x of fields){const r=obsVerdict(x.value,labels);if(r.ok)continue;flag(x,true);x.focus();
+   const w='«'+esc(strip(x.value))+'»';
+   u.say(r.kind==='label'?'<b>'+w+' — это ярлык:</b> на него нельзя указать пальцем. Отложите его и запишите, что именно нарисовано: руки, вода, ноги, свет?':r.kind==='future'?'<b>'+w+' — это не наблюдение, а ожидание.</b> Карта ничего не обещает; запишите, что на ней видно.':'<b>'+w+' — пока одно слово.</b> Допишите, что именно видно: где это, что делает, что держит?','bad');return;}
+  for(let i=0;i<verbs.length;i++){if(!open(i)||!verbs[i].value.trim())continue;const r=verbVerdict(verbs[i].value,labels);if(r.ok)continue;flag(verbs[i],true);verbs[i].focus();
+   u.say(r.kind==='label'?'<b>В действии снова ярлык.</b> Глагол должен описывать то, что делают на рисунке: «переливать», «стоять», «держать».':'<b>Здесь пока нет глагола.</b> Запишите действие: кто что делает — «переливает», «стоит одной ногой в воде».','bad');return;}
+  if(v<needVerbs){u.say('<b>Наблюдений достаточно.</b> Теперь выберите '+(needVerbs-v===1?'ещё одно':'два')+' и нажмите «В глагол»: запишите в новом поле действие — кто что делает.','bad');return;}
   u.win('');
  });
  count();
@@ -343,8 +395,7 @@ KINDS.observe=(el,d,u)=>{
 /* ---------------------------------------------------------------- pair: two orders, details of both cards */
 KINDS.pair=(el,d,u)=>{
  const fields=$$('[data-pair]',el),miss=[0,0];let solved=false;
- const stem=w=>{w=norm(w);return w.length>5?w.slice(0,-2):w.length>3?w.slice(0,-1):w;};
- const has=(v,list)=>(list||[]).some(w=>new RegExp('(^|[^а-яa-z])'+stem(w)).test(norm(v)));
+ const has=hasDetail;
  const names=[[d.nameA,d.nameB],[d.nameB,d.nameA]];
  u.check.addEventListener('click',()=>{
   if(solved)return;const msgs=[];let ok=0;
@@ -367,4 +418,4 @@ function setup(el){
  fn(el,d,ui(el,d));
 }
 $$('[data-lab3]').forEach(setup);
-})();
+})(typeof module==='object'?module.exports:globalThis);

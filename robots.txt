@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+# design sources and tests are published with the repository but are not pages
+Disallow: /tools/
+Disallow: /tests/
 
 Sitemap: https://kabbala-tarot.online/sitemap.xml

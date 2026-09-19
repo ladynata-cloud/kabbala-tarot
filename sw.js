@@ -3,7 +3,7 @@
    Оформление, шрифты, эмблемы, карты: из кэша, с тихим обновлением в фоне.
    Чтобы выключить офлайн-режим, замените этот файл содержимым tools/design/sw-remove.js
    (sw.js пишет tools/design.py из tools/design/sw.template.js; VERSION меняется вместе с файлами оболочки). */
-const VERSION = 'kt-28a9f95aad';
+const VERSION = 'kt-b7c1eff722';
 const SHELL = `${VERSION}-shell`;
 const PAGES = `${VERSION}-pages`;
 const MEDIA = `${VERSION}-media`;
@@ -66,7 +66,15 @@ async function staleWhileRevalidate(request, cacheName, max) {
 self.addEventListener('message', event => {
   const d = event.data;
   if (d && d.type === 'cache-page' && typeof d.url === 'string' && d.url.startsWith('/')) {
-    event.waitUntil(caches.open(PAGES).then(c => c.add(d.url).catch(() => {})).then(() => trim(PAGES, MAX_PAGES)));
+    // …together with the images, styles and scripts that page already loaded (they came before the worker, too).
+    const assets = (Array.isArray(d.assets) ? d.assets : []).filter(u => typeof u === 'string' && u.startsWith('/assets/')).slice(0, 80);
+    const isMedia = u => u.startsWith('/assets/tarot/') || u.startsWith('/assets/img/');
+    const put = (name, list) => list.length ? caches.open(name).then(c => Promise.all(list.map(u => c.match(u).then(hit => hit || c.add(u)).catch(() => {})))) : Promise.resolve();
+    event.waitUntil(Promise.all([
+      caches.open(PAGES).then(c => c.add(d.url).catch(() => {})).then(() => trim(PAGES, MAX_PAGES)),
+      put(MEDIA, assets.filter(isMedia)).then(() => trim(MEDIA, MAX_MEDIA)),
+      put(SHELL, assets.filter(u => !isMedia(u))),
+    ]));
   }
 });
 

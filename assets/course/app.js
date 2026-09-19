@@ -37,11 +37,23 @@ function updateCircle(){
  $$('[data-circle-item]').forEach(el=>el.classList.toggle('is-next',!!c.next&&el.dataset.circleItem===c.next.key));
  $$('[data-circle-resume]').forEach(el=>{if(c.next){el.href=abs(c.next.href);el.textContent=c.done?(PAGES.circleContinue||'Продолжить круг →'):(PAGES.circleStart||'Начать первую встречу →');}else{el.href='#circle-after';el.textContent='Первый круг пройден: что дальше ↓';}});
  $$('[data-circle-after]').forEach(el=>{if(!c.next&&!el.dataset.opened){el.open=true;el.dataset.opened='1';}});
+ $$('[data-circle-after-title]').forEach(el=>el.textContent=c.next?'Что будет после круга':(PAGES.circleDoneTitle||'Первый круг пройден'));
+ $$('[data-circle-meeting]').forEach(el=>{const ok=circleDone(el.dataset.circleMeeting);el.classList.toggle('is-done',ok);const m=$('[data-circle-meeting-state]',el);if(m)m.textContent=ok?'Встреча отмечена.':'';});
+}
+// A circle meeting that is a Zohar reading: a plaque on the reading card says where it sits and what comes next.
+function circlePlaques(){
+ CIRCLE.forEach((x,n)=>{if(x.kind!=='reading')return;const card=document.getElementById('reading-'+String(x.key.slice(1)).padStart(2,'0'));if(!card||$('[data-circle-meeting]',card))return;
+  const nx=CIRCLE[n+1],p=document.createElement('p');p.className='circle-plaque';p.dataset.circleMeeting=x.key;
+  p.innerHTML='<b>Первый круг · встреча '+(n+1)+' из '+CIRCLE.length+'.</b> Прочитайте цитату и пояснение, ответьте на вопрос и отметьте внизу «Я прочитал(а)…». <span data-circle-meeting-state></span> '+(nx?'Дальше по кругу: <a href="'+esc(abs(nx.href))+'">'+esc(nx.title)+' →</a>':'<a href="'+DATA.root+'course/#circle-after">Что дальше →</a>');
+  const h=$('h2',card);(h?h:card.firstChild).before(p);});
 }
 if(!storageOK)warn();if(state.large){document.documentElement.style.setProperty('--body-size','19px');$$('[data-font-size]').forEach(b=>b.textContent='Обычный текст');}if(window.matchMedia('(max-width:760px)').matches)$$('.toc').forEach(el=>el.open=false);
 $$('[data-font-size]').forEach(b=>b.addEventListener('click',()=>{state.large=!state.large;document.documentElement.style.setProperty('--body-size',state.large?'19px':'17px');b.textContent=state.large?'Обычный текст':'Крупнее текст';save();}));
 // Books introduction = the first meeting of the circle.
-$$('[data-intro-done]').forEach(cb=>{cb.checked=state.intro===true;cb.addEventListener('change',()=>{state.intro=cb.checked;save();const s=$('[data-intro-status]');if(s){s.hidden=false;s.className='feedback'+(cb.checked?' good':'');s.textContent=cb.checked?'Отмечено: первая встреча круга пройдена. Дальше — урок 1.':'Отметка снята.';}});});
+function introStatus(on,changed){const s=$('[data-intro-status]');if(!s)return;if(!on&&!changed){s.hidden=true;return;}s.hidden=false;s.className='feedback'+(on?' good':'');
+ if(!on){s.textContent='Отметка снята.';return;}const c=CIRCLE.length?circleState():null;
+ s.innerHTML='Отмечено: первая встреча круга'+(c?' · первый круг: '+c.done+' из '+c.total:'')+'. '+(c&&c.next?'Дальше — <a href="'+esc(abs(c.next.href))+'">'+esc(c.next.label)+': '+esc(c.next.title)+' →</a>':c?'Круг пройден — <a href="'+DATA.root+'course/#circle-after">что дальше →</a>':'');}
+$$('[data-intro-done]').forEach(cb=>{cb.checked=state.intro===true;introStatus(cb.checked,false);cb.addEventListener('change',()=>{state.intro=cb.checked;save();introStatus(cb.checked,true);});});
 // Semantic, keyboard accessible diagram interactions.
 function setupLab(el){const kind=el.dataset.lab;
  const detail=(title,text)=>{const d=$('[data-detail]',el);if(d)d.innerHTML='<h4>'+esc(title)+'</h4><p>'+esc(text)+'</p>';};
@@ -76,6 +88,7 @@ if(DATA.lesson){const L=DATA.lesson,r=record(L.id),Q=L.quiz||[];document.body.cl
  document.addEventListener('click',e=>{const a=e.target.closest('[data-go-section]');if(!a)return;e.preventDefault();stage(0);const t=document.getElementById('sec-'+a.dataset.goSection);if(t){t.scrollIntoView({block:'start'});t.setAttribute('tabindex','-1');t.focus({preventScroll:true});}});
  const resolvedN=()=>Q.filter((q,i)=>r.res[i]>0).length;
  function sync(){r.score=resolvedN();r.checked=r.score===Q.length;}
+ const peek={};
  function drawQ(i){
   const q=Q[i],fs=$('[data-quiz-item="'+i+'"]'),fb=$('[data-q-feedback="'+i+'"]');if(!fs||!fb)return;
   const a=r.answers[i],res=r.res[i]||0,labels=$$('[data-option]',fs);
@@ -88,13 +101,17 @@ if(DATA.lesson){const L=DATA.lesson,r=record(L.id),Q=L.quiz||[];document.body.cl
    const sec=Number.isInteger(q.hintSection)?' <a href="#sec-'+(q.hintSection+1)+'" data-go-section="'+(q.hintSection+1)+'">↑ Вернуться к этому разделу</a>':'';
    h+='<div class="q-hint"><p><b>Подсказка.</b> '+esc(q.hint||'')+sec+'</p><p class="feedback good"><b>Верный ответ:</b> '+esc(q.options[q.answer])+'. '+esc(q.why)+'</p><p class="q-badge">Вопрос разобран с подсказкой — это ничего не отнимает.</p></div>';
   }else if(res===0&&(r.miss[i]||0)>=1)h+='<p class="fine">Выберите другой вариант. Если и он не подойдёт, откроется подсказка и верный ответ.</p>';
+  const pk=peek[i];if(res>0&&pk!==undefined&&pk!==a)h+='<p class="q-peek"><b>Пояснение к варианту «'+esc(q.options[pk])+'».</b> '+esc((q.feedback&&q.feedback[pk])||'')+' <span class="fine">Засчитанный ответ не меняется.</span></p>';
   fb.innerHTML=h;
  }
  function summary(){const f=$('#quiz-summary');if(!f)return;const n=resolvedN(),hinted=Q.filter((q,i)=>r.res[i]===2).length;
   f.className='feedback'+(n===Q.length?' good':'');
   f.textContent=n===Q.length?'Все '+Q.length+' '+plural(Q.length,'вопрос','вопроса','вопросов')+' разобраны'+(hinted?' (с подсказкой — '+hinted+')':'')+'. Можно переходить к своей записи.':n?'Разобрано '+n+' из '+Q.length+'. Остальные вопросы ждут — порядок не важен.':'Выберите ответ — он проверится сразу.';}
  $$('input[data-question]').forEach(input=>input.addEventListener('change',()=>{
-  const i=Number(input.dataset.question),v=Number(input.value),q=Q[i];r.answers[i]=v;
+  const i=Number(input.dataset.question),v=Number(input.value),q=Q[i];
+  // Resolved: reading another option's explanation must not overwrite the counted answer.
+  if(r.res[i]===1||(r.res[i]===2&&v!==q.answer)){peek[i]=v;drawQ(i);return;}
+  delete peek[i];r.answers[i]=v;
   if(!(r.res[i]>0)){if(v===q.answer)r.res[i]=1;else{r.miss[i]=Math.min(2,(r.miss[i]||0)+1);if(r.miss[i]>=2)r.res[i]=2;}}
   sync();save();drawQ(i);summary();completionHint();
  }));
@@ -112,13 +129,19 @@ if(DATA.lesson){const L=DATA.lesson,r=record(L.id),Q=L.quiz||[];document.body.cl
  function completionHint(){const f=$('#completion-status');if(!f||r.done)return;const n=resolvedN();f.className='feedback';f.textContent=n<Q.length?'Осталось разобрать '+(Q.length-n)+' '+plural(Q.length-n,'вопрос','вопроса','вопросов')+' на шаге «Проверим» — с подсказкой тоже считается.':(composed().trim()||check.checked)?'Всё готово: можно завершить урок.':'Осталось записать хотя бы одну строку или отметить, что Вы обдумали вопрос без записи.';}
  function completed(focus=false){const box=$('#completion-result');box.hidden=!r.done;if(!r.done)return;
   const mod=PROG.filter(l=>l.module===L.module),k=mod.filter(l=>isDone(l.id)).length,modName=(DATA.modules||[])[L.module]||'';
-  let h='<h3>'+esc(PAGES.completionTitle||'Урок завершён')+'</h3>'+(L.aim?'<p class="done-aim">✓ Теперь Вы можете: '+esc(L.aim)+'</p>':'')+(L.keyword?'<p>Главное слово урока: <b>'+esc(L.keyword)+'</b></p>':'')+'<p>Раздел '+(L.module+1)+(modName?' «'+esc(modName)+'»':'')+': '+k+' из '+mod.length+'</p>';
-  const inCircle=CIRCLE.some(x=>x.key==='l'+L.id);
-  if(inCircle){const c=circleState();h+='<p>Первый круг: '+c.done+' из '+c.total+(c.next?'. Следующая встреча — <a href="'+esc(abs(c.next.href))+'">'+esc(c.next.title)+'</a> ('+esc(c.next.label.toLowerCase())+', '+esc(c.next.minutes)+' мин)':'. Круг пройден — <a href="'+DATA.root+'course/#circle-after">что дальше</a>')+'.</p>';}
+  const aim=String(L.aim||'').replace(/^\s*После урока Вы сможете:?\s*/i,''),aimLow=aim.charAt(0).toLocaleLowerCase('ru')+aim.slice(1);
+  const inCircle=CIRCLE.some(x=>x.key==='l'+L.id),c=inCircle?circleState():null;
+  let h='<h3>'+esc(PAGES.completionTitle||'Урок завершён')+'</h3><p class="done-eyebrow">'+(c?'Первый круг: '+c.done+' из '+c.total+' · ':'')+'Раздел '+(L.module+1)+(modName?' «'+esc(modName)+'»':'')+': '+k+' из '+mod.length+'</p>'+(aim?'<p class="done-aim">✓ Теперь Вы можете: '+esc(aimLow)+'</p>':'')+(L.keyword?'<p>Главное слово урока: <b>'+esc(L.keyword)+'</b></p>':'');
   const idx=PROG.findIndex(l=>l.id===L.id),nx=PROG[idx+1];
-  h+=nx?'<a class="button" href="'+link(nx)+'">Дальше по программе: урок '+nx.id+' · '+esc(nx.title)+' · '+esc(nx.time||'10–20 минут')+' →</a>':'<a class="button" href="'+DATA.root+'course/notebook/">Открыть итоговую тетрадь →</a>';
+  const prog=nx?'Дальше по программе: урок '+nx.id+' · '+esc(nx.title)+' · '+esc(nx.time||'10–20 минут')+' →':'Открыть итоговую тетрадь →',progHref=nx?link(nx):DATA.root+'course/notebook/';
+  if(c){
+   // In the first circle the circle leads; the program is the second, quieter way on.
+   if(c.next)h+='<a class="button" href="'+esc(abs(c.next.href))+'">Дальше по кругу: встреча '+(CIRCLE.indexOf(c.next)+1)+' · '+esc(c.next.title)+' ('+esc(c.next.label.toLowerCase())+', '+esc(c.next.minutes)+' мин) →</a>';
+   else{const forks=(DATA.forks||[]).filter(f=>BY[f.id]);h+='<p>Первый круг пройден. Дальше — на выбор:</p>'+(forks.length?'<div class="actions">'+forks.map((f,n)=>'<a class="button'+(n?' secondary':'')+'" href="'+link(BY[f.id])+'">'+esc(f.title)+': урок '+f.id+' →</a>').join('')+'</div>':'<a class="button" href="'+DATA.root+'course/#circle-after">Что дальше →</a>');}
+   h+='<p class="fine"><a href="'+progHref+'">'+prog+'</a></p>';
+  }else h+='<a class="button" href="'+progHref+'">'+prog+'</a>';
   h+='<p class="fine">К записи и вопросам можно вернуться в любое время.</p>';
-  box.innerHTML=h;if(focus)box.focus();}
+  box.innerHTML=h;box.closest('.completion')?.classList.add('is-complete');if(focus)box.focus();}
  $('#complete-lesson').addEventListener('click',()=>{const f=$('#completion-status');
   if(!CourseState.resolved(r,Q.length)){f.className='feedback bad';f.textContent='Сначала разберите все три вопроса шага «Проверим». Ошибки ничего не стоят: после второй попытки откроется подсказка, и вопрос тоже будет считаться разобранным.';return;}
   if(!CourseState.canComplete(r,composed(),check.checked,Q.length)){f.className='feedback bad';f.textContent='Запишите хотя бы одну строку или отметьте, что обдумали вопрос без записи.';return;}
@@ -144,7 +167,9 @@ $$('[data-notebook-all]').forEach(b=>b.addEventListener('click',()=>{showAll=!sh
 function readingRecord(id){return state.readings[id]||(state.readings[id]={note:'',done:false});}
 function updateReadings(){
  $$('[data-reading-progress]').forEach(el=>{const limit=Number(el.dataset.readingLimit||88),n=READING_META.filter(r=>r.id<=limit&&state.readings[r.id]?.done).length;el.textContent='Прочитано '+n+' из '+limit;});
- $$('[data-reading-first]').forEach(el=>{const n=[1,2,3,4,5,6,7,8].filter(i=>state.readings[i]?.done).length;el.textContent='Первые 8 встреч с Зоаром: '+n+' из 8';});
+ const rs=CIRCLE.filter(x=>x.kind==='reading').map(x=>Number(x.key.slice(1)));
+ $$('[data-reading-first]').forEach(el=>{if(!rs.length){el.hidden=true;return;}const n=rs.filter(i=>state.readings[i]?.done).length;
+  el.textContent=rs.length===1?'Зоар в первом круге: фрагмент '+String(rs[0]).padStart(2,'0')+' — '+(n?'прочитан':'ещё не отмечен'):'Фрагменты Зоара из первого круга: '+n+' из '+rs.length;});
 }
 function wireReadingNotes(root=document){
  $$('[data-reading-note]',root).forEach(el=>{const id=el.dataset.readingNote;el.value=state.readings[id]?.note||'';el.addEventListener('input',()=>{readingRecord(id).note=el.value;save();const status=$('[data-reading-status="'+id+'"]',root);if(status)status.textContent=storageOK?'Сохранено в этом браузере':'Экспортируйте запись перед закрытием';});});
@@ -157,5 +182,5 @@ function renderReadingNotebook(){const box=$('#reading-notebook');if(!box)return
 }
 wireReadingNotes();renderReadingNotebook();updateReadings();
 
-renderNotebook();updateProgress();updateCircle();
+renderNotebook();circlePlaques();updateProgress();updateCircle();
 })();

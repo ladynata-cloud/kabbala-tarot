@@ -160,7 +160,7 @@ def landing(s):
  # second equal entrance next to «Открыть курс» (review, priority 1): straight to a card
  label=PAGES.get('landingSecondLink','Начать с карты →').rstrip(' →')
  second=f'<a class="read read-second" href="course/reading-the-hermit/">{label} <span aria-hidden="true">→</span></a>'
- s=re.sub(r'(<a class="read" href="course/">[^<]*<span aria-hidden="true">→</span></a>)(<a class="read read-second"[^>]*>[\s\S]*?</a>)?',lambda m:m.group(1)+second,s,count=1)
+ s=re.sub(r'(<a class="read" href="course/(?:#first-circle)?">[^<]*<span aria-hidden="true">→</span></a>)(<a class="read read-second"[^>]*>[\s\S]*?</a>)?',lambda m:m.group(1)+second,s,count=1)
  return finish('index.html',s)
 
 # ---------------------------------------------------------------- shared assets

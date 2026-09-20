@@ -1,0 +1,102 @@
+/* --- Маршруты в конце эссе: «С чего начать» --- */
+.routes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto;grid-auto-rows:1fr;gap:14px;margin:40px 0 14px}
+.routes .route{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:18px;min-height:104px;padding:20px 22px 20px 20px;border:1px solid #dde4e7;border-radius:6px;background:#fff;color:var(--ink);text-decoration:none;transition:border-color .25s ease,box-shadow .25s ease,background-color .25s ease}
+.routes .route-mark{display:grid;place-items:center;width:50px;height:58px;border:1px solid #e6dcc6;border-radius:25px 25px 4px 4px;background:#f8f4ea;transition:border-color .25s ease,background-color .25s ease}
+.routes .emblem{display:block;width:32px;height:32px;color:var(--ink);--em-accent:#b28b4e;overflow:visible}
+.routes .route-text{min-width:0}
+.routes .route-title{display:block;font-family:'Cormorant',Georgia,serif;font-weight:400;font-size:26px;line-height:1.12;letter-spacing:-.2px;color:var(--ink)}
+.routes .route-line{display:block;margin-top:6px;font:14px/1.5 'Golos',Arial,sans-serif;color:#5b6d78}
+.routes .route-go{font:20px/1 'Golos',Arial,sans-serif;color:#987438;transition:transform .25s ease,color .25s ease}
+.routes .route:hover{border-color:#c4a46a;box-shadow:0 16px 30px -24px rgba(16,35,48,.5)}
+.routes .route:hover .route-mark{border-color:#c4a46a;background:#f4ecd9}
+.routes .route:hover .route-go{color:#8d713c}
+.routes .route:focus-visible{outline:3px solid #b58b41;outline-offset:4px}
+.routes .route--lead{grid-column:1/-1;min-height:122px;padding:24px 30px 24px 24px;gap:22px;background:#fbf8f1;border-color:#e6dcc6}
+.routes .route--lead .route-mark{width:58px;height:68px;border-radius:29px 29px 4px 4px;background:#fff}
+.routes .route--lead .emblem{width:38px;height:38px}
+.routes .route--lead .route-title{font-size:33px;letter-spacing:-.4px}
+.routes .route--lead .route-line{font-size:15px}
+
+/* --- Полоса «Семьдесят восемь карт» перед подвалом --- */
+.deck-band{position:relative;overflow:hidden;background:var(--ink);color:#f7f5ee}
+.deck-band::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(48% 62% at 70% 52%,rgba(217,187,128,.11),rgba(217,187,128,0) 72%)}
+.deck-band + footer{border-top-color:transparent}
+.deck-band-inner{position:relative;max-width:1392px;margin:auto;padding:96px 56px 92px;display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr);align-items:center;gap:54px}
+.deck-band-text{min-width:0}
+.deck-band h2{margin:0 0 26px;font-family:'Cormorant',Georgia,serif;font-weight:400;font-size:clamp(48px,4.6vw,68px);line-height:1;letter-spacing:-1.2px;color:#f7f5ee;text-wrap:balance}
+.deck-band h2 em{font-style:italic;color:var(--gold)}
+.deck-band-lead{max-width:420px;margin:0 0 34px;font:18px/1.85 'Golos',Arial,sans-serif;color:#d6dfe1}
+.deck-band .emblem{color:#f7f5ee;--em-accent:var(--gold)}
+.deck-band .read{min-height:44px}
+
+.deck-fan{margin:0;min-width:0}
+.deck-fan-stage{--w:clamp(112px,11vw,140px);--h:calc(var(--w) * 1.72);--step:var(--w);--tilt:5.5deg;--drop:4px;--spread:1;--lift:0px;--base:40px;--top:34px;position:relative;display:block;height:calc(var(--h) + var(--base) + var(--top) + 46px);color:inherit;text-decoration:none}
+.deck-fan-arch{position:absolute;left:50%;top:var(--top);bottom:calc(var(--base) - 22px);width:calc(var(--w) * 2.5);transform:translateX(-50%);border:1px solid rgba(217,187,128,.36);border-bottom:0;border-radius:999px 999px 0 0;background:radial-gradient(closest-side at 50% 42%,rgba(217,187,128,.15),rgba(217,187,128,0))}
+.deck-fan-star{position:absolute;left:50%;top:var(--top);width:30px;height:30px;margin:-15px 0 0 -15px;fill:var(--gold)}
+.deck-fan .fan-card{position:absolute;left:50%;bottom:var(--base);width:var(--w);margin-left:calc(var(--w) / -2);z-index:calc(10 - var(--i) * var(--i));transform-origin:50% 100%;transform:translate(calc(var(--x) * var(--step) * var(--spread)),calc(var(--i) * var(--i) * var(--drop))) rotate(calc(var(--i) * var(--tilt) * var(--spread))) translateY(var(--lift));transition:transform .55s cubic-bezier(.2,.7,.2,1)}
+.deck-fan .fan-card img{display:block;width:100%;height:auto;aspect-ratio:240/413;object-fit:cover;border-radius:6px;background:#f3ede1;box-shadow:0 0 0 1px rgba(217,187,128,.32),0 24px 38px -16px rgba(0,0,0,.7)}
+.deck-fan figcaption{margin-top:22px;text-align:center}
+.deck-fan figcaption span{white-space:nowrap}
+.deck-fan figcaption .sep{white-space:pre}
+
+@media (hover:hover) and (prefers-reduced-motion:no-preference){
+  .routes .route:hover .route-go{transform:translateX(4px)}
+  .deck-fan-stage:hover{--spread:1.12}
+  .deck-fan .fan-card:hover{--lift:-14px}
+}
+@media (hover:hover) and (prefers-reduced-motion:no-preference){
+  .deck-band-inner:has(.read:hover) .deck-fan-stage{--spread:1.12}
+}
+@media (prefers-reduced-motion:no-preference){
+  .deck-band-inner:has(.read:focus-visible) .deck-fan-stage{--spread:1.12}
+}
+
+@media (min-width:1001px) and (max-width:1180px){
+  .deck-fan-stage{--step:calc(var(--w) * .92)}
+}
+@media (max-width:1000px){
+  .deck-band-inner{grid-template-columns:1fr;gap:26px;padding:72px 32px 80px;text-align:center}
+  .deck-band::before{background:radial-gradient(70% 38% at 50% 26%,rgba(217,187,128,.11),rgba(217,187,128,0) 72%)}
+  .deck-fan{order:-1}
+  .deck-band-lead{margin-left:auto;margin-right:auto}
+  .deck-band h2{font-size:58px}
+}
+@media (max-width:760px){
+  .routes{margin-top:34px}
+  .deck-band-inner{padding:52px 24px 64px;gap:36px}
+  .deck-band h2{font-size:clamp(44px,11.4vw,58px);letter-spacing:-.8px;margin-bottom:20px}
+  .deck-band-lead{font-size:17px;line-height:1.8;margin-bottom:28px}
+  .deck-fan-stage{--w:clamp(80px,24vw,112px);--step:calc(var(--w) * .94);--tilt:6deg;--drop:3px;--base:26px;--top:26px;height:calc(var(--h) + var(--base) + var(--top) + 30px)}
+  .deck-fan .fan-card--outer{display:none}
+  .deck-fan figcaption{margin-top:6px}
+  .deck-fan figcaption span{display:block}
+  .deck-fan figcaption .sep{display:none}
+  .deck-fan-star{width:24px;height:24px;margin:-12px 0 0 -12px}
+}
+@media (max-width:640px){
+  .routes{grid-template-columns:minmax(0,1fr);grid-auto-rows:auto;gap:10px}
+  .routes .route{min-height:88px;gap:14px;padding:16px 16px 16px 16px}
+  .routes .route-go{font-size:18px}
+  .routes .route-mark{width:44px;height:52px;border-radius:22px 22px 4px 4px}
+  .routes .emblem{width:28px;height:28px}
+  .routes .route-title{font-size:24px}
+  .routes .route--lead{min-height:104px;padding:20px 20px 20px 18px;gap:16px}
+  .routes .route--lead .route-mark{width:50px;height:60px;border-radius:25px 25px 4px 4px}
+  .routes .route--lead .emblem{width:34px;height:34px}
+  .routes .route--lead .route-title{font-size:29px}
+}
+@media (prefers-reduced-motion:reduce){
+  .routes .route,.routes .route-mark,.routes .route-go,.deck-fan .fan-card{transition:none}
+}
+@media print{
+  .deck-band{display:none !important}
+  .deck-band + footer{border-top-color:#d4dce0}
+  .routes .route{break-inside:avoid;box-shadow:none;background:none}
+  .routes .route-go{display:none}
+}
+
+/* второй равноправный вход рядом с «Открыть курс»: сразу к карте (урок 22) */
+.intro .read-second{margin-left:28px}
+@media (max-width:600px){
+  .intro .read-second{display:flex;width:fit-content;margin:10px 0 0}
+}

@@ -12,7 +12,29 @@
  root.CourseGematria={calculate};
  if(typeof document==='undefined')return;
  const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>Array.from(r.querySelectorAll(s));
- const gem=$('[data-gematria]');if(gem){const input=$('#gematria-word',gem),out=$('[data-gematria-output]',gem);const draw=()=>{const r=calculate(input.value);out.replaceChildren();if(r.error){out.textContent=r.error;return;}const word=document.createElement('bdi');word.lang='he';word.dir='rtl';word.textContent=r.word;out.append(word,document.createTextNode(': '+r.terms.map(t=>t.value).join(' + ')+' = '+r.total));};input.addEventListener('input',draw);$$('[data-gematria-example]',gem).forEach(b=>b.addEventListener('click',()=>{input.value=b.dataset.gematriaExample;draw();}));draw();}
+ const gem=$('[data-gematria]');if(gem){
+  const input=$('#gematria-word',gem),out=$('[data-gematria-output]',gem),ask=$('[data-gematria-ask]',gem),guess=$('[data-gematria-guess]',gem),askLabel=$('[data-gematria-ask-label]',gem);let pending='';
+  const heb=w=>{const b=document.createElement('bdi');b.lang='he';b.dir='rtl';b.textContent=w;return b;};
+  const draw=(prefix)=>{const r=calculate(input.value);out.replaceChildren();if(r.error){out.textContent=r.error;return;}if(prefix)out.append(document.createTextNode(prefix));out.append(heb(r.word),document.createTextNode(': '+r.terms.map(t=>t.value).join(' + ')+' = '+r.total));};
+  const closeAsk=()=>{pending='';if(ask)ask.hidden=true;};
+  input.addEventListener('input',()=>{closeAsk();draw();});
+  $$('[data-gematria-example]',gem).forEach(b=>b.addEventListener('click',()=>{closeAsk();input.value=b.dataset.gematriaExample;draw();}));
+  // Practice words: the learner's own sum first, the breakdown after (no ready number on screen).
+  $$('[data-gematria-practice]',gem).forEach(b=>b.addEventListener('click',()=>{pending=b.dataset.gematriaPractice;input.value='';out.replaceChildren();out.textContent='Сначала — Ваша сумма.';askLabel.replaceChildren(document.createTextNode('Ваша сумма для '),heb(pending));guess.value='';ask.hidden=false;guess.focus();}));
+  const check=()=>{if(!pending)return;const v=guess.value.trim();if(!/^\d{1,5}$/.test(v)){out.textContent='Введите число — сумму, которую Вы получили по таблице.';guess.focus();return;}
+   const r=calculate(pending),n=Number(v);input.value=pending;
+   // A wrong sum keeps the field open, so a corrected number can be checked again and confirmed:
+   // closing it left «У Вас 12» on screen for good, even after the learner had fixed the number.
+   if(n===r.total){closeAsk();draw('Совпало: ');}
+   else{draw('У Вас '+n+', по таблице — '+r.total+'. ');
+    out.append(document.createElement('br'),document.createTextNode('Проверьте каждую букву по таблице — особенно те, что стоят после девятой: там значения идут десятками. Исправьте число и нажмите «Сверить» ещё раз.'));
+    guess.focus();}};
+  $('[data-gematria-check]',gem)?.addEventListener('click',check);guess?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();check();}});
+  // On-screen letters: the table cells type into the field.
+  $$('[data-gematria-letter]',gem).forEach(b=>b.addEventListener('click',()=>{closeAsk();if(input.value.length<100)input.value+=b.dataset.gematriaLetter;draw();}));
+  $('[data-gematria-back]',gem)?.addEventListener('click',()=>{closeAsk();input.value=[...input.value].slice(0,-1).join('');draw();});
+  $('[data-gematria-clear]',gem)?.addEventListener('click',()=>{closeAsk();input.value='';out.textContent='Поле пустое: нажимайте буквы в таблице или выберите пример.';});
+  draw();}
  const catalogue=$('[data-card-catalogue]');if(!catalogue)return;
  const cards=$$('.tarot-card',catalogue),search=$('[data-card-search]'),group=$('[data-card-filter]'),rank=$('[data-rank-filter]');
  const normalize=s=>s.toLocaleLowerCase('ru').replaceAll('ё','е');
@@ -20,6 +42,9 @@
  search.addEventListener('input',filter);group.addEventListener('change',filter);rank.addEventListener('change',filter);$('[data-clear-card-filters]').addEventListener('click',()=>{search.value='';group.value='all';rank.value='all';filter();});
  const selectors=$$('[data-compare]'),result=$('[data-compare-result]');function compare(){result.replaceChildren();selectors.forEach(s=>{const source=cards.find(c=>c.id==='card-'+s.value);if(!source)return;const copy=source.cloneNode(true);copy.removeAttribute('id');copy.hidden=false;copy.removeAttribute('data-search-item');result.append(copy);});}
  selectors.forEach(s=>s.addEventListener('change',compare));$('[data-swap-cards]').addEventListener('click',()=>{const a=selectors[0].value;selectors[0].value=selectors[1].value;selectors[1].value=a;compare();});compare();
+ // A lesson can link to a preset filter: /course/tarot/?rank=5#cards or ?group=c#cards.
+ const qs=new URLSearchParams(location.search),pick=(sel,v)=>{if(v&&[...sel.options].some(o=>o.value===v)){sel.value=v;return true;}return false;};
+ if(pick(rank,qs.get('rank'))|pick(group,qs.get('group'))){filter();if(location.hash==='#cards')$('#cards')?.scrollIntoView({block:'start'});}
  // A link to a card should reveal it even after filters have been used.
  function revealHash(){const id=location.hash.slice(1),c=cards.find(x=>x.id===id);if(c){search.value='';group.value='all';rank.value='all';filter();c.scrollIntoView({block:'start'});}}
  addEventListener('hashchange',revealHash);if(location.hash)revealHash();

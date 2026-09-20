@@ -1,0 +1,53 @@
+{
+ "defsHtml": null,
+ "replacements": [
+  {
+   "ariaLabel": "Условный образ: Цимцум",
+   "file": "luria-0.svg",
+   "inGenerator": true
+  },
+  {
+   "ariaLabel": "Условный образ: След и луч",
+   "file": "luria-1.svg",
+   "inGenerator": true
+  },
+  {
+   "ariaLabel": "Условный образ: Свет и сосуды",
+   "file": "luria-2.svg",
+   "inGenerator": true
+  },
+  {
+   "ariaLabel": "Условный образ: Разбиение",
+   "file": "luria-3.svg",
+   "inGenerator": true
+  },
+  {
+   "ariaLabel": "Условный образ: Искры и оболочки",
+   "file": "luria-4.svg",
+   "inGenerator": true
+  },
+  {
+   "ariaLabel": "Условный образ: Тиккун",
+   "file": "luria-5.svg",
+   "inGenerator": true
+  },
+  {
+   "ariaLabel": "Реки наполняют море, море передаёт поток нижним ступеням",
+   "file": "rivers.svg",
+   "inGenerator": true
+  },
+  {
+   "ariaLabel": "Нефеш, Руах, Нешама",
+   "file": "soul.svg",
+   "inGenerator": true
+  },
+  {
+   "ariaLabel": "Учебная модель: источник света, окрашенное стекло и видимый цвет",
+   "file": "pardes.svg"
+  },
+  {
+   "ariaLabel": "Учебный образ: пламя связано с углём",
+   "file": "flame.svg"
+  }
+ ]
+}

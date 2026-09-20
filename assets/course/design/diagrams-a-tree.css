@@ -1,0 +1,149 @@
+/* a-tree — Древо сефирот и родственные схемы.
+   1. svg.tree-visual — интерактивное учебное Древо (atlas, ein-sof, shekhinah, ten-sefirot, your-map); состояния ставит app.js (.active, фокус).
+   2. svg.tp-tree — атлас 22 путей (pathways/*); классы ставит pathways.js (.tp-active).
+   3. svg «Щедрость, Мера, Согласование» (atlas, урок 6): три круга на одной линии; выбор ставит labs.js (.is-on).
+   4. .tr-tree-map — HTML-схема десяти позиций (tree-reading/*, spread-workshop/*); столпы названы в тексте этих занятий.
+   Градиенты и фильтры: #a-tree-* в diagrams/a-tree/defs.html. */
+
+/* ---------- 1. Учебное Древо ---------- */
+/* Вся графика и подписи лежат внутри viewBox 0 0 500 663; overflow:visible нужен только мягкому свечению выбранного круга. */
+.lab svg.tree-visual{overflow:visible}
+@media (min-width:1051px){.atlas-wide .lab svg.tree-visual{max-width:540px;margin-inline:auto}}
+
+.tree-visual .tree-edge{stroke:#b3c6cd;stroke-width:1.5;stroke-linecap:round}
+
+.tree-visual .tree-node{pointer-events:bounding-box;-webkit-tap-highlight-color:transparent}
+.tree-visual .tree-node circle{fill:url(#a-tree-disc) #f7fafb;stroke:#9ab3bd;stroke-width:1.25;filter:url(#a-tree-lift);transition:none}
+.tree-visual .tree-node text{fill:#122e3b;font-size:17px}
+.tree-visual .tree-node text:first-of-type{font-size:16px;fill:#526c78;letter-spacing:.02em}
+.tree-visual .tree-node .he{font-size:19px;fill:#27495a;transform:translateY(-2px)}
+.tree-visual .tree-node text:last-of-type{font-size:18px;fill:#122e3b;paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}
+/* Нижняя часть центрального столбца поднята: Йесод 505 → 476, Малхут 605 → 593.
+   Так подпись «Йесод» не упирается в круг Малхут, а подпись «Малхут» помещается в viewBox (низ ≈ 658 из 663).
+   Три связи к Йесод перенесены тем же сдвигом: диагонали — подобием (толщина линии почти не меняется),
+   вертикаль 9–10 — растяжением по y (толщина по x не меняется). Концы попадают точно в новые центры. */
+.tree-visual .tree-node[data-node="8"]{transform:translateY(-29px)}
+.tree-visual .tree-node[data-node="9"]{transform:translateY(-12px)}
+.tree-visual .tree-edge[x1="407"][y1="435"][x2="250"][y2="505"],
+.tree-visual .tree-edge[x1="93"][y1="435"][x2="250"][y2="505"],
+.tree-visual .tree-edge[x1="250"][y1="505"][x2="250"][y2="605"]{transform-box:view-box;transform-origin:0 0}
+.tree-visual .tree-edge[x1="407"][y1="435"][x2="250"][y2="505"]{transform:matrix(.9313,.15408,-.15408,.9313,94.9868,-32.82754)}
+.tree-visual .tree-edge[x1="93"][y1="435"][x2="250"][y2="505"]{transform:matrix(.9313,-.15408,.15408,.9313,-60.63708,44.21398)}
+.tree-visual .tree-edge[x1="250"][y1="505"][x2="250"][y2="605"]{transform:matrix(1,0,0,1.17,0,-114.85)}
+
+.tree-visual .tree-node:hover circle{stroke:#b28b4e;stroke-width:2}
+
+.tree-visual .tree-node.active circle{fill:url(#a-tree-disc-on) #1b495b;stroke:#c9a467;stroke-width:2.5;filter:url(#a-tree-glow)}
+.tree-visual .tree-node.active text:first-of-type{fill:#dfc18c}
+.tree-visual .tree-node.active .he{fill:#fff}
+.tree-visual .tree-node.active text:last-of-type{fill:#7a5a22}
+
+.tree-visual .tree-node:focus-visible{outline:none}
+.tree-visual .tree-node:focus-visible circle{filter:url(#a-tree-focus);stroke:#b58b41}
+
+/* Связи выбранной сефиры; при выборе группы — связи внутри группы. */
+.tree-visual:has(.tree-node.active ~ .tree-node.active) .tree-edge{stroke:#cbd9de}
+.tree-visual:not(:has(.tree-node.active ~ .tree-node.active)):has(.tree-node.active[data-node="0"]) .tree-edge:is([x1="250"][y1="45"],[x2="250"][y2="45"]),
+.tree-visual:not(:has(.tree-node.active ~ .tree-node.active)):has(.tree-node.active[data-node="1"]) .tree-edge:is([x1="407"][y1="145"],[x2="407"][y2="145"]),
+.tree-visual:not(:has(.tree-node.active ~ .tree-node.active)):has(.tree-node.active[data-node="2"]) .tree-edge:is([x1="93"][y1="145"],[x2="93"][y2="145"]),
+.tree-visual:not(:has(.tree-node.active ~ .tree-node.active)):has(.tree-node.active[data-node="3"]) .tree-edge:is([x1="407"][y1="265"],[x2="407"][y2="265"]),
+.tree-visual:not(:has(.tree-node.active ~ .tree-node.active)):has(.tree-node.active[data-node="4"]) .tree-edge:is([x1="93"][y1="265"],[x2="93"][y2="265"]),
+.tree-visual:not(:has(.tree-node.active ~ .tree-node.active)):has(.tree-node.active[data-node="5"]) .tree-edge:is([x1="250"][y1="335"],[x2="250"][y2="335"]),
+.tree-visual:not(:has(.tree-node.active ~ .tree-node.active)):has(.tree-node.active[data-node="6"]) .tree-edge:is([x1="407"][y1="435"],[x2="407"][y2="435"]),
+.tree-visual:not(:has(.tree-node.active ~ .tree-node.active)):has(.tree-node.active[data-node="7"]) .tree-edge:is([x1="93"][y1="435"],[x2="93"][y2="435"]),
+.tree-visual:not(:has(.tree-node.active ~ .tree-node.active)):has(.tree-node.active[data-node="8"]) .tree-edge:is([x1="250"][y1="505"],[x2="250"][y2="505"]),
+.tree-visual:not(:has(.tree-node.active ~ .tree-node.active)):has(.tree-node.active[data-node="9"]) .tree-edge:is([x1="250"][y1="605"],[x2="250"][y2="605"]),
+.tree-visual:has(.tree-node.active[data-node="0"]):has(.tree-node.active[data-node="1"]) .tree-edge[x1="250"][y1="45"][x2="407"][y2="145"],
+.tree-visual:has(.tree-node.active[data-node="0"]):has(.tree-node.active[data-node="2"]) .tree-edge[x1="250"][y1="45"][x2="93"][y2="145"],
+.tree-visual:has(.tree-node.active[data-node="1"]):has(.tree-node.active[data-node="3"]) .tree-edge[x1="407"][y1="145"][x2="407"][y2="265"],
+.tree-visual:has(.tree-node.active[data-node="2"]):has(.tree-node.active[data-node="4"]) .tree-edge[x1="93"][y1="145"][x2="93"][y2="265"],
+.tree-visual:has(.tree-node.active[data-node="3"]):has(.tree-node.active[data-node="5"]) .tree-edge[x1="407"][y1="265"][x2="250"][y2="335"],
+.tree-visual:has(.tree-node.active[data-node="4"]):has(.tree-node.active[data-node="5"]) .tree-edge[x1="93"][y1="265"][x2="250"][y2="335"],
+.tree-visual:has(.tree-node.active[data-node="5"]):has(.tree-node.active[data-node="6"]) .tree-edge[x1="250"][y1="335"][x2="407"][y2="435"],
+.tree-visual:has(.tree-node.active[data-node="5"]):has(.tree-node.active[data-node="7"]) .tree-edge[x1="250"][y1="335"][x2="93"][y2="435"],
+.tree-visual:has(.tree-node.active[data-node="6"]):has(.tree-node.active[data-node="8"]) .tree-edge[x1="407"][y1="435"][x2="250"][y2="505"],
+.tree-visual:has(.tree-node.active[data-node="7"]):has(.tree-node.active[data-node="8"]) .tree-edge[x1="93"][y1="435"][x2="250"][y2="505"],
+.tree-visual:has(.tree-node.active[data-node="8"]):has(.tree-node.active[data-node="9"]) .tree-edge[x1="250"][y1="505"][x2="250"][y2="605"]{stroke:#b28b4e;stroke-width:3.2}
+
+/* Телефон: крупнее подписи (≥ 11 px на экране при 360 px). Круги r = 40: ширина цели ≥ 44 px при 360 px,
+   а между подписью ряда и кругом следующего ряда остаётся ≈ 17 единиц видимой связи (≈ 10 px). */
+@media (max-width:520px){
+  .tree-visual .tree-node circle{r:40px}
+  .tree-visual .tree-node text:first-of-type{font-size:20px}
+  .tree-visual .tree-node .he{font-size:20px}
+  .tree-visual .tree-node text:last-of-type{font-size:20px}
+}
+
+/* ---------- 2. Атлас 22 путей ---------- */
+svg.tp-tree .tp-edge{stroke:#c4d3d8;stroke-width:1.8;opacity:1;stroke-linecap:round}
+svg.tp-tree .tp-edge.tp-active{stroke:#b28b4e;stroke-width:6.5;opacity:1}
+/* r 49 → 54: длинным именам («Тиферет», «Малхут») нужен запас до золотого кольца (≈ 8 px с каждой стороны при 375 px).
+   Самый узкий промежуток — Йесод–Малхут, 27 единиц. Без поддержки CSS-свойства r остаётся 49.
+   overflow:visible — только для свечения выбранного Кетера у верхнего края. */
+svg.tp-tree{overflow:visible}
+svg.tp-tree .tp-node circle{r:54px;fill:url(#a-tree-disc) #f7fafb;stroke:#9ab3bd;stroke-width:1.5;filter:url(#a-tree-lift)}
+svg.tp-tree .tp-node text{fill:#122e3b;font-family:Golos,Arial,sans-serif;font-size:19px;letter-spacing:-.015em}
+svg.tp-tree .tp-node .tp-node-number{fill:#526c78;font-size:16px;letter-spacing:.02em}
+svg.tp-tree .tp-node.tp-active circle{fill:url(#a-tree-disc-on) #1b495b;stroke:#c9a467;stroke-width:3;filter:url(#a-tree-glow)}
+svg.tp-tree .tp-node.tp-active text{fill:#fff}
+svg.tp-tree .tp-node.tp-active .tp-node-number{fill:#dfc18c}
+@media (max-width:500px){
+  svg.tp-tree .tp-node text{font-size:18.5px}
+  svg.tp-tree .tp-node .tp-node-number{font-size:18.5px}
+}
+
+/* ---------- 3. Щедрость, Мера, Согласование (diagrams/a-tree/balance-triad.svg; урок 6 и атлас) ---------- */
+/* Три круга на одной линии, Тиферет между Гвурой и Хесед — как на Древе (Хесед справа). labs.js ставит выбранной группе
+   .is-on (золотое кольцо, как у выбранной сефиры) и приглушает остальные инлайн-прозрачностью. */
+svg.a-tree-triad{max-width:min(100%,520px);margin:6px auto 4px}
+svg.a-tree-triad circle{fill:url(#a-tree-disc) #f7fafb;stroke:#9ab3bd;stroke-width:1.4;filter:url(#a-tree-lift)}
+svg.a-tree-triad text{font-family:Golos,Arial,sans-serif}
+svg.a-tree-triad .t-word{fill:#122e3b;font-size:17px}
+svg.a-tree-triad .t-name{fill:#526c78;font-size:15px;letter-spacing:.02em}
+.lab svg.a-tree-triad g.is-on circle{fill:url(#a-tree-disc-on) #1b495b;stroke:#c9a467;stroke-width:2.5;filter:url(#a-tree-glow)}
+.lab svg.a-tree-triad g.is-on .t-word{fill:#fff}
+.lab svg.a-tree-triad g.is-on .t-name{fill:#7a5a22}
+@media (max-width:520px){svg.a-tree-triad .t-name{font-size:17px}}
+
+/* ---------- 4. HTML-схема десяти позиций (tree-reading.css) ---------- */
+.tr-tree-panel .tr-columns{margin-top:22px;color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase;line-height:1.5}
+.tr-tree-panel .tr-columns span{display:flex;flex-direction:column;align-items:center}
+.tr-tree-panel .tr-columns span::after{content:"";width:1px;height:12px;margin-top:6px;background:rgba(163,137,89,.45)}
+.tr-tree-panel .tr-tree-map{margin-top:0;padding:14px 0;
+  background:
+    linear-gradient(rgba(152,116,56,.5),rgba(152,116,56,.5)) no-repeat calc((100% - 26px)/6) 0/1px 100%,
+    linear-gradient(rgba(152,116,56,.5),rgba(152,116,56,.5)) no-repeat 50% 0/1px 100%,
+    linear-gradient(rgba(152,116,56,.5),rgba(152,116,56,.5)) no-repeat calc(100% - (100% - 26px)/6) 0/1px 100%}
+.tr-tree-panel:has(#sg-tree-mode option[value="pillars"]:checked) .tr-tree-map{
+  background:
+    linear-gradient(#b28b4e,#b28b4e) no-repeat calc((100% - 26px)/6) 0/2px 100%,
+    linear-gradient(#b28b4e,#b28b4e) no-repeat 50% 0/2px 100%,
+    linear-gradient(#b28b4e,#b28b4e) no-repeat calc(100% - (100% - 26px)/6) 0/2px 100%}
+.tr-tree-panel .tr-node{justify-self:center;width:100%;max-width:236px;border:1px solid #ddd3bf;border-radius:999px;padding:14px 18px;min-height:77px;color:var(--ink);
+  background:linear-gradient(180deg,#fffefb 0%,#f8f3e8 100%);box-shadow:0 1px 2px rgba(18,46,59,.06),0 4px 12px -6px rgba(18,46,59,.12)}
+.tr-tree-panel .tr-node strong{font-family:Cormorant,Georgia,serif;font-weight:400;font-size:27px;line-height:1.1;overflow-wrap:normal;word-break:normal;hyphens:manual}
+.tr-tree-panel .tr-node span{color:var(--muted);font-size:13px;line-height:1.45;margin-top:4px}
+.tr-tree-panel .tr-node:hover,.tr-tree-panel .tr-node:focus-visible{border-color:#b28b4e;background:linear-gradient(180deg,#fffdf7 0%,#f4ead6 100%);box-shadow:0 1px 2px rgba(18,46,59,.08),0 6px 16px -8px rgba(152,116,56,.45)}
+@media (max-width:650px){
+  .tr-tree-panel .tr-tree-map{padding:10px 0;
+    background:
+      linear-gradient(rgba(152,116,56,.5),rgba(152,116,56,.5)) no-repeat calc((100% - 16px)/6) 0/1px 100%,
+      linear-gradient(rgba(152,116,56,.5),rgba(152,116,56,.5)) no-repeat 50% 0/1px 100%,
+      linear-gradient(rgba(152,116,56,.5),rgba(152,116,56,.5)) no-repeat calc(100% - (100% - 16px)/6) 0/1px 100%}
+  .tr-tree-panel:has(#sg-tree-mode option[value="pillars"]:checked) .tr-tree-map{
+    background:
+      linear-gradient(#b28b4e,#b28b4e) no-repeat calc((100% - 16px)/6) 0/2px 100%,
+      linear-gradient(#b28b4e,#b28b4e) no-repeat 50% 0/2px 100%,
+      linear-gradient(#b28b4e,#b28b4e) no-repeat calc(100% - (100% - 16px)/6) 0/2px 100%}
+  .tr-tree-panel .tr-columns{font-size:11px;letter-spacing:.06em}
+  .tr-tree-panel .tr-node{border-radius:18px;padding:10px 5px;min-height:70px}
+  .tr-tree-panel .tr-node strong{font-size:22px}
+  .tr-tree-panel .tr-node span{font-size:11px}
+}
+
+/* ---------- Общее ---------- */
+@media print{
+  .tree-visual .tree-node circle,svg.tp-tree .tp-node circle,svg.a-tree-triad circle{filter:none}
+  svg.tp-tree .tp-edge.tp-active{stroke:#122e3b}
+  .tr-tree-panel .tr-node{box-shadow:none;padding:6px;min-height:45px}
+}

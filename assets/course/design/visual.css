@@ -1,0 +1,295 @@
+/* ==========================================================================
+   visual.css — card frames, course navigation emblems, section ornament,
+   deck promo. Appended to course.css (module stylesheets load later, so
+   overrides of their <img> rules use a longer selector, not source order).
+   ========================================================================== */
+
+/* --- 1. Card frames ------------------------------------------------------
+   The ring and shadow sit on the wrapping link, never on the <img>:
+   reversed cards are rotated with .is-reversed / .sg-reversed, and a shadow
+   drawn by the image itself would turn upside down with the card. */
+.card-picture,
+.sg-static-cards figure > a,
+.pair-card-image > a,
+.triple-image > a,
+.sg-card-head > a,
+.cr-card > a,
+.tp-card > a{
+  display:block;
+  width:max-content;
+  max-width:100%;
+  border-radius:6px;
+  box-shadow:0 0 0 1px rgba(178,139,78,.42),0 1px 2px rgba(18,46,59,.1),0 8px 18px -9px rgba(18,46,59,.38);
+  transition:box-shadow .2s ease;
+}
+.card-picture:hover,.card-picture:focus-visible,
+.sg-static-cards figure > a:hover,.sg-static-cards figure > a:focus-visible,
+.sg-card-head > a:hover,.sg-card-head > a:focus-visible,
+.cr-card > a:hover,.cr-card > a:focus-visible,
+.tp-card > a:hover,.tp-card > a:focus-visible{
+  box-shadow:0 0 0 1px #b28b4e,0 2px 4px rgba(18,46,59,.12),0 14px 28px -12px rgba(18,46,59,.5);
+}
+/* the court and path widgets are stretch grids: keep the frame card-sized */
+.cr-card > a,
+.tp-card > a{align-self:start}
+
+/* pairs and triples sit on the dark tableau: light ring, deeper shadow */
+.pair-card .pair-card-image > a,
+.triple-card .triple-image > a{
+  box-shadow:0 0 0 1px rgba(223,193,140,.5),0 10px 24px -10px rgba(0,0,0,.7);
+}
+.pair-card .pair-card-image > a:hover,.pair-card .pair-card-image > a:focus-visible,
+.triple-card .triple-image > a:hover,.triple-card .triple-image > a:focus-visible{
+  box-shadow:0 0 0 1px #dfc18c,0 14px 30px -10px rgba(0,0,0,.8);
+}
+
+/* the picture itself: paper tone and rounded corners only (no transform) */
+.card-picture img,
+.sg-static-cards figure > a > img,
+.pair-card-image > a > img,
+.triple-image > a > img,
+.sg-card-head > a > img,
+.cr-card > a > img,
+.tp-card > a > img{
+  display:block;
+  border-radius:6px;
+  background:#f3ede1;
+  box-shadow:none;
+}
+
+/* static pictures that are never reversed: the frame can sit on the image */
+.book-observation figure > a > img,
+.hk-card-figure > img{
+  border-radius:6px;
+  background:#f3ede1;
+  box-shadow:0 0 0 1px rgba(178,139,78,.42),0 1px 2px rgba(18,46,59,.1),0 8px 18px -9px rgba(18,46,59,.38);
+  transition:box-shadow .2s ease;
+}
+/* width follows the set height, so the frame hugs the card without side bands */
+.book-observation figure > a > img{width:auto}
+.book-observation figure > a:first-child:hover > img,
+.book-observation figure > a:first-child:focus-visible > img{
+  box-shadow:0 0 0 1px #b28b4e,0 2px 4px rgba(18,46,59,.12),0 14px 28px -12px rgba(18,46,59,.5);
+}
+
+/* zoom cursor only once the lightbox (tarot-view.js) has marked the page ready */
+html.tv-ready .card-picture,
+html.tv-ready .sg-static-cards figure > a,
+html.tv-ready .pair-card-image > a,
+html.tv-ready .triple-image > a,
+html.tv-ready .sg-card-head > a,
+html.tv-ready .cr-card > a,
+html.tv-ready .tp-card > a,
+html.tv-ready .book-observation figure > a:first-child{cursor:zoom-in}
+
+/* --- 2. Course index: module emblems ------------------------------------
+   The build puts <svg class="module-emblem"> first in each <summary>.
+   The emblem column is `auto`, so without the sprite it collapses to 0. */
+.program .module > summary{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  align-items:start;
+}
+.program .module > summary > *{grid-column:2}
+.program .module > summary > .module-emblem{
+  grid-column:1;
+  grid-row:1 / span 2;
+  align-self:center;
+  width:48px;
+  height:48px;
+  margin:0 16px 0 -4px;
+  color:var(--ink);
+  --em-accent:var(--gold);
+  overflow:visible;
+}
+/* an open module keeps one left edge: the lesson list starts where the
+   eyebrow and heading start (summary padding 27 + emblem 48 + 16 − 4) */
+@media(min-width:761px){
+  .program .module:has(> summary > .module-emblem) > .lesson-list{padding-left:87px}
+}
+/* two narrow columns (761–1050px): a smaller emblem leaves room for the text */
+@media(min-width:761px) and (max-width:1050px){
+  .program .module > summary > .module-emblem{width:40px;height:40px;margin:0 12px 0 -3px}
+  .program .module:has(> summary > .module-emblem) > .lesson-list{padding-left:76px}
+}
+
+/* optical balance of the set: the sprite draws every symbol with the same
+   1.5 stroke, so dense symbols read darker than sparse ones. The stroke is
+   a custom property that inherits into <use>, so it can be evened out here. */
+.module-emblem > use[href$="#em-s03"],
+.line-emblem > use[href$="#em-s03"]{--em-stroke:1.25}
+.module-emblem > use[href$="#em-s02"],
+.line-emblem > use[href$="#em-s02"],
+.line-emblem > use[href$="#em-tree"],
+.line-emblem > use[href$="#em-yetzirah"]{--em-stroke:1.3}
+.module-emblem > use[href$="#em-s04"],
+.module-emblem > use[href$="#em-s05"],
+.module-emblem > use[href$="#em-s06"],
+.module-emblem > use[href$="#em-s08"],
+.line-emblem > use[href$="#em-s04"],
+.line-emblem > use[href$="#em-s06"]{--em-stroke:1.7}
+/* the aleph is a solid glyph (its fill ignores the stroke): a touch smaller */
+.module-emblem > use[href$="#em-s10"]{transform-box:view-box;transform-origin:50% 50%;transform:scale(.9)}
+
+/* --- 3. Course index: line emblems in an arch niche ---------------------- */
+.books-start.has-emblem{justify-content:flex-start}
+.books-start.has-emblem > div{margin-right:auto}
+.books-start > .line-emblem{
+  flex:none;
+  align-self:flex-start;
+  box-sizing:border-box;
+  width:64px;
+  height:74px;
+  padding:10px 5px 6px;
+  margin:2px -7px 0 0;
+  color:var(--ink);
+  --em-accent:var(--gold);
+  background:var(--paper);
+  border-radius:32px 32px 4px 4px;
+  box-shadow:inset 0 0 0 1px rgba(178,139,78,.55);
+  overflow:visible;
+}
+
+/* --- 4. Section ornament: a small gold star on the top hairline ---------- */
+.section{position:relative}
+.section::before{
+  content:'';
+  position:absolute;
+  top:-7px;
+  left:50%;
+  width:36px;
+  height:13px;
+  margin-left:-18px;
+  background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='9 9 46 46'%3E%3Cpath d='M32 9 37 27 55 32 37 37 32 55 27 37 9 32 27 27Z' fill='%23b28b4e'/%3E%3C/svg%3E") center / 11px 11px no-repeat;
+  pointer-events:none;
+}
+
+/* --- 5. Accessibility: lesson numbers at 4.5:1 -------------------------- */
+.lesson-list .num{color:var(--muted)}
+
+/* --- 6. Tarot page: deck promo ------------------------------------------ */
+.deck-promo{
+  position:relative;
+  display:grid;
+  /* fan and text keep their natural widths and sit together in the middle,
+     so a wide band does not end in an empty dark third */
+  grid-template-columns:minmax(260px,340px) minmax(0,500px);
+  justify-content:center;
+  align-items:center;
+  gap:48px;
+  margin:0 0 60px;
+  padding:34px 48px 34px 36px;
+  border-radius:6px;
+  color:#f4f1e8;
+  background:
+    radial-gradient(60% 90% at 88% 12%,rgba(223,193,140,.07),rgba(223,193,140,0) 70%),
+    radial-gradient(120% 150% at 26% 100%,#214b5c 0%,#18394a 40%,#122e3b 75%);
+  box-shadow:inset 0 0 0 1px rgba(223,193,140,.28);
+  overflow:hidden;
+}
+.deck-promo-fan{
+  position:relative;
+  justify-self:center;
+  width:330px;
+  max-width:100%;
+  height:214px;
+}
+/* a faint arch behind the fan, echoing the course cover */
+.deck-promo-fan::before{
+  content:'';
+  position:absolute;
+  left:50%;
+  bottom:-34px;
+  width:210px;
+  height:236px;
+  margin-left:-105px;
+  border:1px solid rgba(223,193,140,.34);
+  border-bottom:0;
+  border-radius:105px 105px 0 0;
+}
+.deck-promo-fan > span{
+  --k:0;
+  --step:11deg;
+  position:absolute;
+  left:50%;
+  bottom:10px;
+  width:90px;
+  margin-left:-45px;
+  border-radius:5px;
+  transform-origin:50% 210%;
+  transform:rotate(calc(var(--k) * var(--step)));
+  box-shadow:0 0 0 1px rgba(223,193,140,.45),0 12px 24px -10px rgba(0,0,0,.75);
+  transition:transform .35s cubic-bezier(.2,.7,.2,1);
+}
+.deck-promo-fan > span:nth-child(1){--k:-2}
+.deck-promo-fan > span:nth-child(2){--k:-1}
+.deck-promo-fan > span:nth-child(4){--k:1}
+.deck-promo-fan > span:nth-child(5){--k:2}
+.deck-promo:hover .deck-promo-fan > span,
+.deck-promo:focus-within .deck-promo-fan > span{--step:12.5deg}
+.deck-promo-fan img{
+  display:block;
+  width:100%;
+  height:auto;
+  border-radius:5px;
+  background:#f3ede1;
+}
+.deck-promo-text{min-width:0}
+.deck-promo .eyebrow{color:#dfc18c;margin:0 0 12px}
+.deck-promo h2{font-size:44px;line-height:1.05;margin:0 0 14px;color:#fcfcfa}
+.deck-promo h2 em{color:#dfc18c}
+.deck-promo-text p:not(.eyebrow){font-size:16px;line-height:1.7;color:#d5dfe2;max-width:470px;margin:0 0 24px}
+.deck-promo .button.gold:hover{background:#ecd3a1;border-color:#ecd3a1}
+/* the whole band is one link target; the link text stays the only label */
+.deck-promo-link::after{content:'';position:absolute;inset:0;z-index:1;border-radius:6px}
+
+/* --- 7. Narrow screens -------------------------------------------------- */
+@media(max-width:760px){
+  .program .module > summary > .module-emblem{grid-row:1;width:40px;height:40px;margin:-2px 12px -2px -3px}
+  .program .module > summary > .eyebrow{align-self:center;margin:0}
+  .program .module > summary > :not(.module-emblem):not(.eyebrow){grid-column:1 / -1}
+  .program .module > summary > h3{margin-top:12px}
+  .books-start > .line-emblem{display:block;width:56px;height:64px;padding:9px 4px 5px;margin:0 0 18px}
+  .deck-promo{grid-template-columns:minmax(0,1fr);gap:24px;padding:26px 22px 28px}
+  .deck-promo-fan{width:260px;height:166px}
+  .deck-promo-fan::before{width:156px;height:158px;margin-left:-78px;bottom:0;border-radius:78px 78px 0 0}
+  .deck-promo-fan > span{width:68px;margin-left:-34px;bottom:10px}
+  .deck-promo h2{font-size:36px}
+}
+
+/* --- 8. Motion and print ------------------------------------------------ */
+@media(prefers-reduced-motion:reduce){
+  .card-picture,
+  .sg-static-cards figure > a,
+  .pair-card-image > a,
+  .triple-image > a,
+  .sg-card-head > a,
+  .cr-card > a,
+  .tp-card > a,
+  .book-observation figure > a > img,
+  .hk-card-figure > img,
+  .deck-promo-fan > span{transition:none}
+  .deck-promo:hover .deck-promo-fan > span,
+  .deck-promo:focus-within .deck-promo-fan > span{--step:11deg}
+}
+@media print{
+  .module-emblem,.line-emblem,.deck-promo{display:none!important}
+  .section::before{content:none}
+  .card-picture,
+  .sg-static-cards figure > a,
+  .pair-card-image > a,
+  .triple-image > a,
+  .sg-card-head > a,
+  .cr-card > a,
+  .tp-card > a,
+  .pair-card .pair-card-image > a,
+  .triple-card .triple-image > a,
+  .book-observation figure > a > img,
+  .hk-card-figure > img{box-shadow:0 0 0 1px #999}
+}
+
+/* Контакт автора (появляется, когда заполнен src/contact.json) */
+.contact-line{font-size:15px;line-height:1.7;margin:0 0 22px;padding:14px 18px;border-left:2px solid var(--gold);background:var(--pale)}
+.contact-line a{text-decoration-thickness:1px;text-underline-offset:4px}
+.contact-line a:hover{color:#957035}
+.footer a.contact-link{white-space:nowrap}

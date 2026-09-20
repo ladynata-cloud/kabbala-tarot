@@ -1,0 +1,19 @@
+{
+ "defsHtml": "defs.html",
+ "detect": [
+  "class=\"tree-visual\"",
+  "class=\"tp-tree\"",
+  "aria-label=\"Щедрость, Мера, Согласование\""
+ ],
+ "replacements": [
+  {
+   "ariaLabel": "Щедрость, Мера, Согласование",
+   "file": "balance-triad.svg",
+   "inGenerator": true
+  },
+  {
+   "ariaLabel": "Пути разделены на сефирот и буквы; буквы — на матерей, двойные и простые",
+   "file": "thirty-two-paths.svg"
+  }
+ ]
+}

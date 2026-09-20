@@ -1,0 +1,150 @@
+/* Teaching engine v3: first circle, library, quiz ladder, stage 4, completion, card panels, notebook. */
+.first-circle{border:1px solid var(--line);background:var(--pale);padding:28px;border-radius:4px}
+.first-circle h2{margin-bottom:12px}
+.first-circle .progress-line{margin:14px 0 18px}
+.circle-list{list-style:none;padding:0;margin:0;display:grid;gap:8px;counter-reset:none}
+.circle-list li a{display:flex;gap:14px;align-items:flex-start;text-decoration:none;color:inherit;background:white;border:1px solid var(--line);border-radius:4px;padding:12px 14px;min-height:44px}
+.circle-list li a:hover{border-color:#a8c0ca}
+.circle-list li.is-next a{border-color:var(--gold);box-shadow:inset 3px 0 0 var(--gold)}
+.circle-list li.is-done a{background:#f4f8f5}
+.circle-num{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid var(--gold);display:grid;place-items:center;font-size:13px}
+.circle-list li.is-done .circle-num{background:var(--good,#2f6b4f);border-color:transparent;color:white}
+.circle-body{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.circle-body small{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.circle-body b{font-weight:500;font-size:16px}
+.circle-why{font-size:13px;line-height:1.6;color:var(--muted)}
+.circle-list .done-mark{flex:none;color:var(--good,#2f6b4f)}
+.circle-after,.library,.module-notebooks{margin-top:22px;border-top:1px solid var(--line);padding-top:6px}
+.circle-after>summary,.library>summary,.module-notebooks>summary{cursor:pointer;display:flex;flex-direction:column;gap:4px;padding:14px 0;min-height:44px;list-style:none}
+.circle-after>summary::-webkit-details-marker,.library>summary::-webkit-details-marker{display:none}
+.circle-after>summary strong,.library>summary strong{font:500 28px/1.2 Cormorant,Georgia,serif}
+.circle-after>summary strong::after,.library>summary strong::after{content:' +';color:#758b95;font-weight:300}
+.circle-after[open]>summary strong::after,.library[open]>summary strong::after{content:' −'}
+.library{margin:40px 0 20px}
+.library-lead{font-size:14px;color:var(--muted);max-width:760px}
+.library-doors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:12px 0 26px}
+.library-doors>section{border:1px solid var(--line);background:white;padding:18px;border-radius:4px}
+.library-doors h3{font-size:24px;margin-bottom:8px}
+.module-notebooks>summary{font-size:15px}
+/* lesson header and stage 1 */
+.lesson-meta .meta-keyword b{font-weight:600;color:var(--ink)}
+.source-line{margin:0 0 26px;padding:14px 18px;border-left:3px solid var(--gold);background:var(--pale)}
+.source-line blockquote{margin:0;font:italic 21px/1.45 Cormorant,Georgia,serif}
+.source-line figcaption{font-size:12px;color:var(--muted);margin-top:8px}
+.lesson-card-figure{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin:10px 0 24px}
+.lesson-card-figure img{width:120px;height:auto;display:block;border-radius:4px;box-shadow:0 2px 8px rgba(18,46,59,.15)}
+.lesson-card-figure figcaption{flex-basis:100%;font-size:12px;color:var(--muted)}
+.table-scroll{overflow-x:auto;max-width:100%;margin:14px 0 20px}
+.table-scroll table{border-collapse:collapse;min-width:420px;width:100%;font-size:14px}
+.table-scroll caption{text-align:left;font-size:12px;color:var(--muted);padding-bottom:8px}
+.table-scroll th,.table-scroll td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.section-links{margin:10px 0 0;padding-left:18px;font-size:14px}
+.term-row .fine{margin-right:6px}
+.term-plain{font-size:12px;padding:4px 0;margin-right:9px}
+.lab-static .sort-static{padding-left:20px}.lab-static .sort-static li{margin:8px 0}
+/* quiz v3 */
+.quiz-intro{font-size:14px;color:var(--muted)}
+.option{min-height:44px}
+.quiz-item .option.is-right{border-color:var(--good,#2f6b4f);background:#edf6f1}
+.quiz-item .option.is-wrong{border-color:#a6544b;background:#fff4f1}
+.quiz-item .option.is-revealed{border-color:var(--good,#2f6b4f);box-shadow:inset 3px 0 0 var(--good,#2f6b4f)}
+.quiz-item.is-resolved legend::after{content:' ✓';color:var(--good,#2f6b4f)}
+.q-feedback .feedback{margin:10px 0}
+.q-hint{border:1px dashed #b5cbd5;padding:10px 14px;border-radius:4px;margin:10px 0;font-size:14px}
+.q-hint p{margin:6px 0}
+.q-badge{font-size:12px;color:var(--muted)}
+/* stage 4 */
+.note-checklist{background:var(--pale);border:1px solid var(--line);padding:12px 16px;margin:16px 0}
+.note-checklist ul{margin:6px 0 0;padding-left:20px;font-size:14px}
+.scaffold{display:grid;gap:8px;margin:14px 0 18px}
+.scaffold-field{width:100%;min-height:52px;border:1px solid #b5cbd5;border-radius:4px;padding:10px 12px;background:white;font-size:16px;line-height:1.6;resize:vertical}
+.note-free{min-height:90px}
+.one-word{margin:4px 0 16px}.one-word input{display:block;margin-top:6px;min-height:44px;width:min(100%,360px);border:1px solid #b5cbd5;border-radius:4px;padding:8px 12px;font-size:16px}
+.sample-hint{font-size:14px;border-left:2px solid var(--gold);padding-left:14px}
+.complete-banner .done-aim{font-size:16px!important;font-weight:500}
+.complete-banner .button{margin-top:8px;max-width:100%;white-space:normal;height:auto}
+.complete-banner:focus{outline:2px solid var(--gold);outline-offset:3px}
+/* card panels: observation first */
+.obs-label{display:block;font-size:13px;margin:10px 0}
+.obs-field{display:block;width:100%;margin-top:6px;min-height:52px;border:1px solid #b5cbd5;border-radius:4px;padding:8px 10px;font-size:15px;background:white;resize:vertical}
+.card-reading{margin-top:10px}
+.card-reading>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:14px;color:var(--ink);text-decoration:underline dotted}
+/* books intro, notebook, glossary */
+.intro-done{border-top:1px solid var(--line)}
+.notebook-h{margin-top:30px}
+.reading-first{font-weight:500}
+.gloss-back{font-size:12px;white-space:nowrap;margin-left:6px}
+.self-check{min-height:44px;align-items:center}
+:where(.first-circle,.library,.circle-after,.quiz-item,.scaffold,.card-reading,.module-notebooks) :focus-visible,.circle-after>summary:focus-visible,.library>summary:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+@media (max-width:760px){.first-circle{padding:18px}.library-doors{grid-template-columns:1fr}.circle-after>summary strong,.library>summary strong{font-size:24px}.table-scroll table{min-width:360px}}
+@media (prefers-reduced-motion:reduce){.first-circle *,.library *,.quiz-item *{transition:none!important;animation:none!important}}
+@media print{.first-circle .actions,.library,.circle-after,[data-sample-locked],.quiz-intro{display:none!important}.card-reading>*{display:block}}
+/* ==== QA round (2026-09-20) ==== */
+/* course page: an open section does not stretch its closed neighbour; the hero numbers share a baseline */
+.program{align-items:start}
+.hero-meta{align-items:baseline}
+/* quiz: fewer boxes — after a question is resolved the «Пока нет» line gives way to the hint and the answer */
+.quiz-item.is-resolved .q-feedback .feedback.bad{display:none}
+.q-hint{border:0;border-left:2px solid var(--gold);background:#fbf7ef;border-radius:0;font-size:15px}
+.q-hint p{font-size:15px}
+.q-hint .feedback{border:0;background:none;padding:0;margin:8px 0 0}
+.q-hint a{font-size:14px}
+.q-peek{font-size:14px;color:var(--muted);border-left:2px solid var(--line);padding:4px 0 4px 12px;margin:8px 0}
+/* completion: one frame, a star, one eyebrow line */
+.complete-banner:focus{outline:none}
+.complete-banner:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.complete-banner h3::before{content:'';display:block;width:14px;height:14px;margin-bottom:10px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='9 9 46 46'%3E%3Cpath d='M32 9 37 27 55 32 37 37 32 55 27 37 9 32 27 27Z' fill='%23b28b4e'/%3E%3C/svg%3E") center/contain no-repeat}
+.complete-banner .done-eyebrow{font-size:12px!important;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.complete-banner .button.secondary{margin-left:0}
+.completion.is-complete #complete-lesson,.completion.is-complete #completion-status{display:none}
+/* first circle: a plaque on the reading page of a circle meeting and on the books introduction */
+.circle-plaque{border-left:3px solid var(--gold);background:var(--pale);padding:10px 14px;margin:0 0 16px;font-size:14px;line-height:1.6}
+.circle-plaque b{font-weight:500}
+/* card panels in lessons: on a phone the picture stands above the text, big enough to see hands and objects */
+@media (max-width:600px){
+  .lesson-cards .tarot-card{display:block}
+  .lesson-cards .tarot-card>.card-picture{display:block;width:min(160px,45vw);margin:0 auto 12px}
+  .lesson-cards .tarot-card>.card-picture img{width:100%;height:auto}
+  .lesson-cards .obs-field{min-height:72px}
+  .lesson-card-figure{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,160px));gap:10px;justify-content:start}
+  /* the link itself is width:max-content elsewhere, so without this the picture keeps its 120px attribute */
+  .lesson-card-figure .card-picture{width:100%}
+  .lesson-card-figure .card-picture img{width:100%;height:auto}
+}
+/* tables: caption above the scroll area, a shadow at the edge that can be scrolled */
+.table-figure{margin:14px 0 20px}
+.table-figure>figcaption{font-size:12px;color:var(--muted);padding-bottom:8px}
+.table-figure .table-scroll{margin:0}
+.table-scroll{background:linear-gradient(90deg,var(--paper) 30%,rgba(252,252,250,0)) left/28px 100% no-repeat local,linear-gradient(270deg,var(--paper) 30%,rgba(252,252,250,0)) right/28px 100% no-repeat local,radial-gradient(farthest-side at 0 50%,rgba(18,46,59,.16),transparent) left/10px 100% no-repeat scroll,radial-gradient(farthest-side at 100% 50%,rgba(18,46,59,.16),transparent) right/10px 100% no-repeat scroll}
+@media (max-width:400px){.table-scroll table{min-width:0;font-size:13px}.table-scroll th,.table-scroll td{padding:6px 6px}}
+/* books table: words break at syllables, not in the middle */
+.book-table th,.book-table td{overflow-wrap:normal;word-break:normal;hyphens:auto}
+@media (max-width:760px){.book-table-wrap{overflow-x:auto}}
+/* gematria: the table is a keyboard; the summary looks like the site's other disclosures */
+.lab[data-gematria] details>summary{list-style:none;cursor:pointer;min-height:44px;display:flex;align-items:center;font:400 22px Cormorant,Georgia,serif}
+.lab[data-gematria] details>summary::-webkit-details-marker{display:none}
+.lab[data-gematria] details>summary::after{content:' +';color:#758b95;margin-left:6px}
+.lab[data-gematria] details[open]>summary::after{content:' −'}
+.letter-keys button{min-height:48px;display:flex;align-items:baseline;justify-content:center;gap:8px;padding:8px 6px;border:1px solid var(--line);border-radius:4px;background:white;color:var(--ink);font-size:14px;cursor:pointer}
+.letter-keys button b{font:400 26px/1.1 Georgia,serif}
+.letter-keys button:hover{border-color:var(--gold)}
+.letter-finals{grid-template-columns:repeat(5,minmax(0,1fr))}
+.gematria-edit{display:flex;flex-wrap:wrap;gap:8px 12px}
+.gematria-chips button bdi{font-size:20px}
+.gematria-ask{margin:8px 0 4px}
+.gematria-ask label{display:block;font-size:15px}
+.gematria-ask-row{display:flex;gap:8px;align-items:center;margin-top:6px}
+.gematria-ask input{width:120px;min-height:44px;border:1px solid #9ab3bd;border-radius:4px;padding:8px 12px;font-size:18px}
+.gematria-result bdi{font-size:1.1em}
+/* notebook: every disclosure has the same + / − marker; the notes keep the text width */
+.module-notebooks>summary::-webkit-details-marker{display:none}
+.module-notebooks>summary{list-style:none}
+.module-notebooks>summary strong{font:500 24px/1.25 Cormorant,Georgia,serif}
+.module-notebooks>summary strong::after{content:' +';color:#758b95;font-weight:300}
+.module-notebooks[open]>summary strong::after{content:' −'}
+.notebook-import>summary{list-style:none;cursor:pointer;min-height:44px;display:flex;align-items:center}
+.notebook-import>summary::-webkit-details-marker{display:none}
+.notebook-import>summary::after{content:' +';color:#758b95;margin-left:6px}
+.notebook-import[open]>summary::after{content:' −'}
+.notebook-item textarea,#reading-notebook textarea{max-width:860px}
+.letter-keys button span{padding:0;margin:0;background:none;border:0;box-shadow:none;border-radius:0;min-width:0;font-size:14px;color:var(--muted)}

@@ -1,0 +1,35 @@
+{
+  "name": "Каббала и Таро — курс Элиоры Вейры",
+  "short_name": "Каббала и Таро",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "/course/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fcfcfa",
+  "theme_color": "#122e3b",
+  "description": "Бесплатный курс: читаем Зоар, разбираемся в символах и знакомимся с Таро.",
+  "icons": [
+    {
+      "src": "/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/assets/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

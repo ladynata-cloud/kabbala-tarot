@@ -40,3 +40,63 @@ assert.deepEqual(restored888.readings,thousand.readings);
 const merged888=C.merge(restored888,{version:2,course:'eliora-kabbalah-v2',lessons:{},notes:{},readings:{88:{note:'Ещё одна старая мысль',done:false}}},expandedMeta);
 assert.equal(merged888.readings[888].note,'Последняя из 888');assert.equal(merged888.readings[89].note,'Новая запись');assert.ok(merged888.readings[88].note.includes('Старая запись'));
 assert.throws(()=>C.merge(thousand,{version:2,course:'eliora-kabbalah-v2',lessons:{},notes:{},readings:{888:{note:42}}},expandedMeta));
+// Course v3: quiz version, per-question resolution, intro flag, scaffold notes; old v2 exports still import.
+{
+const v3meta=[{id:1,qv:3},{id:2,qv:3},{id:3}];
+// An old v2 saved state (live site before v3): answers without qv, done lessons and notes.
+const oldV2={version:2,large:true,lessons:{1:{done:true,checked:true,score:3,stage:3,reflection:false,answers:{0:1,1:0,2:2}},2:{done:false,checked:true,score:2,stage:2,answers:{0:0,1:1,2:2}},3:{done:false,score:1,checked:true,answers:{0:2}}},notes:{1:'Запись из старой версии',2:'Черновик'}};
+const n=C.normalize(oldV2,v3meta);
+assert.equal(n.lessons[1].done,true);assert.equal(n.notes[1],'Запись из старой версии');assert.equal(n.notes[2],'Черновик');assert.equal(n.large,true);
+assert.deepEqual(n.lessons[1].answers,{});assert.deepEqual(n.lessons[1].res,{});assert.equal(n.lessons[1].score,0);assert.equal(n.lessons[1].checked,false);assert.equal(n.lessons[1].qv,3);assert.equal(n.lessons[1].stage,3);
+assert.deepEqual(n.lessons[2].answers,{});assert.equal(n.lessons[2].done,false);
+assert.deepEqual(n.lessons[3].answers,{0:2},'a lesson without quizVersion keeps its answers');
+assert.equal(n.intro,false);
+// A v3 record survives a round trip; garbage in res/miss is dropped.
+const v3={version:2,intro:true,lessons:{1:{qv:3,answers:{0:1,1:2,2:0},res:{0:1,1:2,2:7},miss:{1:2,2:'x'},score:2,checked:false,stage:2}},notes:{}};
+const n3=C.normalize(v3,v3meta);assert.equal(n3.intro,true);assert.deepEqual(n3.lessons[1].res,{0:1,1:2});assert.deepEqual(n3.lessons[1].miss,{1:2});assert.deepEqual(n3.lessons[1].answers,{0:1,1:2,2:0});
+assert.deepEqual(C.normalize(JSON.parse(JSON.stringify(n3)),v3meta),n3);
+// A stale quiz version clears answers but keeps done, notes and reflection.
+const stale=C.normalize({version:2,lessons:{1:{qv:2,done:true,reflection:true,res:{0:1,1:1,2:1},answers:{0:1}}},notes:{1:'Моя мысль'}},v3meta);
+assert.equal(stale.lessons[1].done,true);assert.equal(stale.lessons[1].reflection,true);assert.deepEqual(stale.lessons[1].res,{});assert.equal(stale.notes[1],'Моя мысль');
+// Completion: all three resolved (correct or via hint) and a note or the tick.
+assert.equal(C.resolved({res:{0:1,1:2,2:1}}),true);assert.equal(C.resolved({res:{0:1,1:2}}),false);assert.equal(C.resolved({res:{0:1,1:0,2:1}}),false);
+assert.equal(C.canComplete({res:{0:1,1:2,2:1}},'Одна строка',false),true);
+assert.equal(C.canComplete({res:{0:1,1:2,2:1}},'   ',false),false);
+assert.equal(C.canComplete({res:{0:1,1:2,2:1}},'',true),true);
+assert.equal(C.canComplete({res:{0:1,1:2}},'Длинная и подробная запись',true),false);
+assert.equal(C.canComplete({score:3,checked:true},'Коротко',false),true,'a record saved before v3 still counts as resolved');
+// Import of an old v2 export (course marker, no qv/res/intro) into a v3 state.
+const cur=C.normalize({version:2,intro:true,lessons:{2:{qv:3,res:{0:1,1:1,2:2},score:3,checked:true,done:true}},notes:{2:'Новая запись'}},v3meta);
+const imported=C.merge(cur,{...oldV2,course:'eliora-kabbalah-v2'},v3meta);
+assert.equal(imported.lessons[1].done,true,'old done lesson kept on import');assert.equal(imported.notes[1],'Запись из старой версии');
+assert.ok(imported.notes[2].startsWith('Новая запись')&&imported.notes[2].endsWith('Черновик'));
+assert.equal(imported.lessons[2].done,true);assert.deepEqual(imported.lessons[2].res,{0:1,1:1,2:2});assert.equal(imported.intro,true);
+assert.deepEqual(C.merge(imported,{...oldV2,course:'eliora-kabbalah-v2'},v3meta).notes,imported.notes,'repeated import is idempotent');
+// An incoming v3 export with res marks a lesson done; intro flag travels.
+const fresh=C.merge(C.empty(),{version:2,course:'eliora-kabbalah-v2',intro:true,lessons:{2:{qv:3,res:{0:1,1:2,2:1},done:true}},notes:{2:'Строка'}},v3meta);
+assert.equal(fresh.lessons[2].done,true);assert.equal(fresh.intro,true);
+// Scaffold fields ↔ one note string with labelled lines.
+const labels=C.scaffoldLabels(['Текст: …','Обсуждение: …','Ближе всего карта… потому что на рисунке…','32 = …','Сефирот здесь — …, а на Древе — …','Текст: …','Запомнилось']);
+assert.deepEqual(labels,['Текст','Обсуждение','Ближе всего карта','32','Сефирот здесь','Текст 2','Запомнилось']);
+const vals=['«Помни день субботний»','сорок без одной\nработ','','','Тиферет','','суббота'];
+const joined=C.joinNote(labels,vals,'Свободная мысль\nв две строки');
+assert.equal(joined,'Текст: «Помни день субботний»\nОбсуждение: сорок без одной\n  работ\nСефирот здесь: Тиферет\nЗапомнилось: суббота\n\nСвободная мысль\nв две строки');
+const back=C.parseNote(labels,joined);assert.deepEqual(back.values,vals);assert.equal(back.free,'Свободная мысль\nв две строки');
+assert.deepEqual(C.parseNote(labels,'Старая запись без подписей\nвторая строка'),{values:labels.map(()=>''),free:'Старая запись без подписей\nвторая строка'});
+assert.equal(C.joinNote(labels,labels.map(()=>''),''),'');
+assert.equal(C.parseNote(['Текст'],C.joinNote(['Текст'],['а'],'')).values[0],'а');
+// Stage-2 «Мои наблюдения»: kept per lesson and card id, junk discarded, import fills empty slots only.
+const obsRaw={version:2,lessons:{},notes:{},obs:{1:{'9':'фонарь в руке','w7':'   ','bad key':'x','s2':7},99:{'0':'нет такого урока'}}};
+const obsN=C.normalize(obsRaw,v3meta);
+assert.deepEqual(obsN.obs,{1:{'9':'фонарь в руке'}});
+assert.deepEqual(C.normalize({version:2,lessons:{},notes:{}},v3meta).obs,{});
+const obsMerged=C.merge({...C.empty(),obs:{1:{'9':'моё'}}},{version:2,course:'eliora-kabbalah-v2',lessons:{},notes:{},obs:{1:{'9':'чужое','s2':'второе'}}},v3meta);
+assert.deepEqual(obsMerged.obs,{1:{'9':'моё','s2':'второе'}});
+// Every v3 lesson in the course: quiz grading and a meta list with quiz versions.
+const course=require('../content/course.json');
+const pageMeta=course.lessons.map(l=>({id:l.id,qv:l.quizVersion}));
+const all=C.normalize({version:2,lessons:Object.fromEntries(course.lessons.map(l=>[l.id,{done:true,answers:{0:0}}])),notes:{}},pageMeta);
+assert.ok(course.lessons.every(l=>all.lessons[l.id].done&&(l.quizVersion===undefined||Object.keys(all.lessons[l.id].answers).length===0)));
+for(const l of course.lessons)if(l.quizVersion===3)assert.ok(l.quiz.every(q=>q.feedback.length===3&&q.hint));
+console.log('Quiz v3 storage: old v2 state and exports keep done lessons and notes, stale answers cleared, resolution gate, intro flag, scaffold notes: passed.');
+}

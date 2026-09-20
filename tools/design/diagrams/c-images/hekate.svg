@@ -1,0 +1,19 @@
+<svg class="hk-emblem c-images-hk" viewBox="0 0 380 330" role="img" aria-label="Учебная схема трёх путей: источники, каббала, Таро. В центре — их сопоставление">
+<defs>
+<radialGradient id="c-images-hk-glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#e4c995" stop-opacity=".2"/><stop offset=".45" stop-color="#e4c995" stop-opacity=".07"/><stop offset="1" stop-color="#e4c995" stop-opacity="0"/></radialGradient>
+<radialGradient id="c-images-hk-disc" cx=".45" cy=".4" r=".65"><stop offset="0" stop-color="#21505f"/><stop offset="1" stop-color="#132c37"/></radialGradient>
+</defs>
+<circle cx="190" cy="160" r="118" fill="url(#c-images-hk-glow)"/>
+<circle cx="190" cy="160" r="132" fill="none" stroke="currentColor" stroke-opacity=".2" stroke-width=".7"/>
+<circle cx="190" cy="160" r="126" fill="none" stroke="currentColor" stroke-opacity=".5" stroke-width="1"/>
+<circle cx="190" cy="160" r="119" fill="none" stroke="currentColor" stroke-opacity=".38" stroke-width="1" stroke-dasharray="1 6" stroke-linecap="round"/>
+<path class="c-images-hk-paths" d="M190 110L190 24M152.93 193.55L78.79 260.66M227.07 193.55L301.21 260.66" fill="none" stroke="currentColor" stroke-width="1.4"/>
+<circle cx="190" cy="34" r="10" fill="#173541"/><path transform="translate(178.17 22.17) scale(0.37)" d="M32 9 37 27 55 32 37 37 32 55 27 37 9 32 27 27Z" class="c-images-hk-node" fill="#e4c995"/><circle cx="96.59" cy="244.56" r="10" fill="#173541"/><path transform="translate(84.76 232.73) scale(0.37)" d="M32 9 37 27 55 32 37 37 32 55 27 37 9 32 27 27Z" class="c-images-hk-node" fill="#e4c995"/><circle cx="283.41" cy="244.56" r="10" fill="#173541"/><path transform="translate(271.59 232.73) scale(0.37)" d="M32 9 37 27 55 32 37 37 32 55 27 37 9 32 27 27Z" class="c-images-hk-node" fill="#e4c995"/>
+<circle cx="190" cy="160" r="50" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width=".7"/>
+<circle cx="190" cy="160" r="44" fill="url(#c-images-hk-disc)" stroke="currentColor" stroke-width="1.2"/>
+<circle cx="190" cy="160" r="38.5" fill="none" stroke="currentColor" stroke-opacity=".4" stroke-width=".6"/>
+<text x="190" y="167" text-anchor="middle">Геката</text>
+<text x="190" y="18" text-anchor="middle">источники</text>
+<text x="66" y="295" text-anchor="middle">каббала</text>
+<text x="310" y="295" text-anchor="middle">Таро</text>
+</svg>

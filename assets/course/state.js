@@ -2,7 +2,9 @@
 (function(root){
  const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
  const dict=o=>o!==null&&typeof o==='object'&&!Array.isArray(o);
- const empty=()=>({version:2,lessons:{},notes:{},readings:{},large:false,intro:false});
+ // obs: stage-2 «Мои наблюдения» under each card — {lessonId:{cardId:text}}; the course promises
+ // that what the learner types is kept, and these fields used to be the only ones that were not.
+ const empty=()=>({version:2,lessons:{},notes:{},obs:{},readings:{},large:false,intro:false});
  // quizVersion of a lesson in the page metadata (the page list uses qv, course.json uses quizVersion)
  const quizVersion=l=>Number.isInteger(l.qv)?l.qv:Number.isInteger(l.quizVersion)?l.quizVersion:undefined;
  const small=(o,max)=>{const out={};if(dict(o))for(let i=0;i<3;i++)if(Number.isInteger(o[i])&&o[i]>=0&&o[i]<=max)out[i]=o[i];return out;};
@@ -17,6 +19,8 @@
   for(const l of meta){
    const n=dict(raw.notes)&&own(raw.notes,l.id)?raw.notes[l.id]:undefined;
    if(typeof n==='string'&&n.length<=100000)out.notes[l.id]=n;
+   const o=dict(raw.obs)&&own(raw.obs,l.id)?raw.obs[l.id]:undefined;
+   if(dict(o)){const kept={};for(const k of Object.keys(o))if(/^[A-Za-z0-9]{1,8}$/.test(k)&&typeof o[k]==='string'&&o[k].length<=2000&&o[k].trim())kept[k]=o[k];if(Object.keys(kept).length)out.obs[l.id]=kept;}
    const r=dict(raw.lessons)&&own(raw.lessons,l.id)?raw.lessons[l.id]:undefined;
    if(!dict(r))continue;
    const rec={score:Number.isInteger(r.score)?Math.max(0,Math.min(3,r.score)):0,checked:r.checked===true,done:r.done===true,stage:Number.isInteger(r.stage)?Math.max(0,Math.min(3,r.stage)):0,reflection:r.reflection===true,answers:small(r.answers,2),res:small(r.res,2),miss:small(r.miss,2)};
@@ -50,6 +54,9 @@
     if(combined.length>100000)throw Error('После объединения запись слишком велика. Сохраните её отдельно и сократите перед импортом.');
     merged.notes[l.id]=combined;
    }
+   // Observations are short per-card lines: an existing one wins, an empty slot takes the imported text.
+   const io=incoming.obs[l.id];
+   if(io){const m=merged.obs[l.id]||(merged.obs[l.id]={});for(const k of Object.keys(io))if(!m[k])m[k]=io[k];}
    const a=incoming.lessons[l.id];if(a){
     const old=merged.lessons[l.id];
     const better=!old||(!old.done&&(a.score>old.score||resolvedCount(a)>resolvedCount(old)));

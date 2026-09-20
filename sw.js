@@ -3,7 +3,7 @@
    Оформление, шрифты, эмблемы, карты: из кэша, с тихим обновлением в фоне.
    Чтобы выключить офлайн-режим, замените этот файл содержимым tools/design/sw-remove.js
    (sw.js пишет tools/design.py из tools/design/sw.template.js; VERSION меняется вместе с файлами оболочки). */
-const VERSION = 'kt-b7c1eff722';
+const VERSION = 'kt-7eb0800021';
 const SHELL = `${VERSION}-shell`;
 const PAGES = `${VERSION}-pages`;
 const MEDIA = `${VERSION}-media`;
@@ -42,7 +42,10 @@ async function networkFirst(request) {
     if (fresh.ok) { cache.put(request, fresh.clone()); trim(PAGES, MAX_PAGES); }
     return fresh;
   } catch {
-    return (await cache.match(request)) || (await caches.match(request)) ||
+    // Offline, a page opened with a query tail (?selftest=1, ?__errs=1, utm…) is the same document as the
+    // saved copy, so the navigation is matched without the query string.
+    const same = { ignoreSearch: true };
+    return (await cache.match(request, same)) || (await caches.match(request, same)) ||
       new Response('<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Нет сети — Каббала и Таро</title>' +
         '<body style="margin:0;background:#fcfcfa;color:#122e3b;font:17px/1.75 Georgia,serif"><main style="max-width:34em;margin:14vh auto 0;padding:0 24px">' +
         '<p style="font:600 11px/1.6 system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#526c78;margin:0 0 10px">Нет подключения</p>' +

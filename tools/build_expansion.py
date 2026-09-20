@@ -10,14 +10,26 @@ def pkt_link(c):
  """Waite's Pictorial Key: a card-specific page where sacred-texts has one (the majors), else the contents page."""
  specific=not c['source'].rstrip('/').endswith('index.htm')
  return '<a class="fine" href="'+E(c['source'])+'" target="_blank" rel="noopener noreferrer">'+('Уэйт об этой карте (Pictorial Key) ↗' if specific else 'Руководство Уэйта: оглавление ↗')+'</a>'
-def card(c,full=True,observe=False,anchor=True):
+def big_image(c):
+ """The 960-px copy in the repository: a click on a card in a lesson has to give the card itself,
+ not an English file page on Commons with a licence table where it must be opened a second time."""
+ return c['image'].replace('-240.webp','-960.webp')
+def card_srcset(c):
+ """In a lesson the card is shown up to 160 CSS px wide, so a phone at devicePixelRatio 2 needs the 480-px copy."""
+ return f'srcset="{E(c["image"])} 240w, {E(c["image"].replace("-240.webp","-480.webp"))} 480w"'
+def commons_note(c):
+ return f'<p class="fine">Источник изображения: <a href="{E(c["imageSource"])}" target="_blank" rel="noopener noreferrer">Wikimedia Commons ↗</a></p>'
+def card(c,full=True,observe=False,anchor=True,big=False):
  """In a lesson (observe=True) the ready scene line would hand the learner the observations: it moves into the reading."""
  """Card panel, observation first: scene → (lessons) «Мои наблюдения» → «Показать учебное прочтение» → question."""
  kind='Старший аркан '+str(c['rank']) if c['group']=='major' else ('Придворная карта' if c['rank']>10 else 'Числовая карта · '+str(c['rank']))
- obs='<label class="obs-label">Мои наблюдения<textarea class="obs-field" rows="2" maxlength="2000" placeholder="Что видно на рисунке: поза, руки, предметы, фон"></textarea></label>' if observe else ''
- reading='<details class="card-reading"><summary>'+'Показать учебное прочтение курса'+'</summary>'+(('<p class="card-scene"><strong>Что нарисовано.</strong> '+E(c['scene'])+'</p>') if observe else '')+'<p><strong>Учебное прочтение курса.</strong> '+E(c['reading'])+'</p>'+('<p><strong>Уэйт:</strong> '+E(c['waite'])+'</p>' if c.get('waite') else '')+'<p class="card-question">'+E(c['question'])+'</p>'+pkt_link(c)+'</details>' if full else ''
+ # data-obs is the save key: without it the field looked like a notebook field and lost everything on reload.
+ obs=f'<label class="obs-label">Мои наблюдения<textarea class="obs-field" rows="2" maxlength="2000" data-obs="{E(c["id"],quote=True)}" placeholder="Что видно на рисунке: поза, руки, предметы, фон"></textarea></label>' if observe else ''
+ reading='<details class="card-reading"><summary>'+'Показать учебное прочтение курса'+'</summary>'+(('<p class="card-scene"><strong>Что нарисовано.</strong> '+E(c['scene'])+'</p>') if observe else '')+'<p><strong>Учебное прочтение курса.</strong> '+E(c['reading'])+'</p>'+('<p><strong>Уэйт:</strong> '+E(c['waite'])+'</p>' if c.get('waite') else '')+'<p class="card-question">'+E(c['question'])+'</p>'+pkt_link(c)+(commons_note(c) if big else '')+'</details>' if full else ''
  idattr=f' id="card-{c["id"]}"' if anchor else ''
- return f'<article class="tarot-card"{idattr} data-search-item="cards" data-card-group="{c["group"]}" data-card-rank="{c["rank"]}"><a class="card-picture" href="{E(c["imageSource"])}" target="_blank" rel="noopener noreferrer"><img loading="lazy" width="120" height="208" src="{E(c["image"])}" alt="{E(c["name"])} — Памела Колман Смит"></a><div><p class="eyebrow">{kind}</p><h3>{E(c["name"])}</h3>'+('' if observe else textp(c['scene']))+obs+reading+'</div></article>'
+ pic=big_image(c) if big else c['imageSource']
+ title=' title="Открыть карту крупнее"' if big else ''
+ return f'<article class="tarot-card"{idattr} data-search-item="cards" data-card-group="{c["group"]}" data-card-rank="{c["rank"]}"><a class="card-picture" href="{E(pic)}"{title} target="_blank" rel="noopener noreferrer"><img loading="lazy" width="120" height="208" src="{E(c["image"])}"'+(' '+card_srcset(c)+' sizes="(max-width:356px) 45vw, 160px"' if big else '')+f' alt="{E(c["name"])} — Памела Колман Смит"></a><div><p class="eyebrow">{kind}</p><h3>{E(c["name"])}</h3>'+('' if observe else textp(c['scene']))+obs+reading+'</div></article>'
 GEM_LETTERS='אבגדהוזחטיכלמנסעפצקרשת';GEM_VALUES=list(range(1,10))+list(range(10,100,10))+list(range(100,500,100))
 GEM_NAMES=['алеф','бет','гимель','далет','хе','вав','заин','хет','тет','йод','каф','ламед','мем','нун','самех','айн','пе','цади','коф','реш','шин','тав']
 GEM_FINALS=[('ך',20,'конечная каф'),('ם',40,'конечная мем'),('ן',50,'конечная нун'),('ף',80,'конечная пе'),('ץ',90,'конечная цади')]
@@ -43,7 +55,7 @@ def study(L):
  pair_link='<p><a class="button" href="../tarot-pairs/">Конструктор всех пар: соответствия, порядок и своя запись →</a></p>' if L['slug']=='two-cards' else ''
  own_tables=any(x.get('table') for x in L.get('sections',[]))
  instruction=(L.get('labData') or {}).get('instruction') or L.get('practice','')
- s='<div class="lab lab-study"><h3>Работаем с изображением</h3>'+textp(instruction)+'<div class="tarot-grid lesson-cards">'+''.join(card(CARDS[k],observe=True) for k in L.get('cards',[]))+'</div><p><a href="../tarot/#compare">Открыть сравнение двух карт →</a> · <a href="../tarot/#cards">Все 78 карт →</a></p>'
+ s='<div class="lab lab-study"><h3>Работаем с изображением</h3>'+textp(instruction)+'<div class="tarot-grid lesson-cards">'+''.join(card(CARDS[k],observe=True,big=True) for k in L.get('cards',[]))+'</div><span class="status-text" data-obs-status role="status">Наблюдения хранятся в этом браузере и не отправляются автору курса.</span><p><a href="../tarot/#compare">Открыть сравнение двух карт →</a> · <a href="../tarot/#cards">Все 78 карт →</a></p>'
  s+=pair_link
  if L['slug']=='three-cards':
   s+='<p><a class="button" href="../tarot-triples/">Все тройки: каббалистический разбор, шесть порядков и своя запись →</a></p>'

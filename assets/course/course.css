@@ -535,6 +535,7 @@ html.tv-locked{overflow:visible}
 .lesson-cards .tarot-card>.card-picture img{width:100%;height:auto}
 .lesson-cards .obs-field{min-height:72px}
 .lesson-card-figure{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,160px));gap:10px;justify-content:start}
+.lesson-card-figure .card-picture{width:100%}
 .lesson-card-figure .card-picture img{width:100%;height:auto}
 }
 .table-figure{margin:14px 0 20px}

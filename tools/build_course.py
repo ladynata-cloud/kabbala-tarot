@@ -56,6 +56,7 @@ def circle_items():
   out.append({'kind':k,'ref':ref,'key':key,'href':href,'label':label,'title':it['title'],'minutes':it.get('minutes','10–20'),'why':it.get('why','')})
  return out
 CIRCLE_ITEMS=circle_items()
+CIRCLE_LESSON_IDS={it['ref'] for it in CIRCLE_ITEMS if it['kind']=='lesson'}
 def linkify(html,links):
  for x in links or []:
   t=E(x['text'])
@@ -211,7 +212,7 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
 def crumbs(prefix,title=None):return '<nav class="crumb" aria-label="Путь к странице"><span><a href="'+prefix+'">Главная</a></span><span><a href="'+prefix+'course/">Курс</a></span>'+(('<span>'+E(title)+'</span>') if title else '')+'</nav>'
 def sources(ids):return ''.join(f'<p class="fine"><a href="{E(D["sources"][i]["url"],quote=True)}" target="_blank" rel="noopener noreferrer">{E(D["sources"][i]["title"])}</a><br>{E(D["sources"][i]["detail"])}</p>' for i in ids)
 # Books orientation is available before the numbered lessons and needs no JavaScript.
-books=(ROOT/'content/books.html').read_text().replace('остаётся под рукой в меню «Книги»','остаётся под рукой в меню «О книгах»')
+books=(ROOT/'content/books.html').read_text(encoding='utf-8')
 if CIRCLE_ITEMS and CIRCLE_ITEMS[0]['kind']=='intro':
  plaque=f'<p class="circle-plaque" data-circle-plaque="intro"><b>Первый круг · встреча 1 из {len(CIRCLE_ITEMS)}.</b> Сейчас достаточно двух частей: <a href="#map">«Перед нами целая библиотека»</a> и <a href="#rose">«Как цветок становится образом общины»</a>. Остальное можно прочитать позже — введение остаётся в меню «О книгах». В конце страницы отметьте встречу.</p>'
  books=books.replace('</header>','</header>'+plaque,1)
@@ -226,7 +227,7 @@ def circle_block():
  items=''.join(f'<li data-circle-item="{x["key"]}"><a href="{E(x["href"],quote=True)}"><span class="circle-num">{n}</span><span class="circle-body"><small>{E(x["label"])} · {E(x["minutes"])} мин</small><b>{E(x["title"])}</b><span class="circle-why">{E(x["why"])}</span></span><span class="done-mark" data-circle-mark="{x["key"]}"></span></a></li>' for n,x in enumerate(CIRCLE_ITEMS,1))
  forks=''.join(f'<a class="button secondary" href="{BYID[f["ref"]]["slug"]}/">{E(f["title"])}: урок {f["ref"]} →</a>' for f in CIRCLE.get('forks',[]))
  total=len(CIRCLE_ITEMS)
- return f'<section class="section first-circle" id="first-circle" aria-labelledby="circle-title"><p class="eyebrow">{total} {plural(total,"встреча","встречи","встреч")} по 10–20 минут · <span data-circle-count>0 из {total}</span></p><h2 id="circle-title">{E(CIRCLE.get("title","Первый круг"))}</h2><p class="lead">{E(PAGES["courseLead"])}</p><div class="progress-line" role="presentation"><i data-circle-fill></i></div><ol class="circle-list">{items}</ol><div class="actions"><a class="button" data-circle-resume href="{E(CIRCLE_ITEMS[0]["href"],quote=True)}">{E(PAGES["circleStart"])}</a></div><details class="circle-after" id="circle-after" data-circle-after><summary><span class="eyebrow">После восьми встреч</span><strong data-circle-after-title>Что будет после круга</strong></summary>'+para(CIRCLE.get('done',''))+f'<div class="actions">{forks}</div>'+(para(PAGES['circleDoneText']) if PAGES['circleDoneText'] else '')+'<!--circle-promos--></details></section>'
+ return f'<section class="section first-circle" id="first-circle" aria-labelledby="circle-title"><p class="eyebrow">{total} {plural(total,"встреча","встречи","встреч")} по 10–20 минут · <span data-circle-count>0 из {total}</span></p><h2 id="circle-title">{E(CIRCLE.get("title","Первый круг"))}</h2><p class="lead">{E(PAGES["courseLead"])}</p><div class="progress-line" role="presentation"><i data-circle-fill></i></div><ol class="circle-list">{items}</ol><div class="actions"><a class="button" data-circle-resume href="{E(CIRCLE_ITEMS[0]["href"],quote=True)}">{E(PAGES["circleStart"])}</a></div><details class="circle-after" id="circle-after" data-circle-after><summary><span class="eyebrow">После восьми встреч</span><strong data-circle-after-title>Что будет после круга</strong></summary>'+('<div data-circle-preview>'+para(CIRCLE['preview'])+'</div>' if CIRCLE.get('preview') else '')+'<div data-circle-done hidden>'+para(CIRCLE.get('done',''))+f'<div class="actions">{forks}</div>'+(para(PAGES['circleDoneText']) if PAGES['circleDoneText'] else '')+'<!--circle-promos--></div></details></section>'
 body='<section class="hero-course"><div><p class="eyebrow">Бесплатный вводный курс</p><h1>Сначала — интерес.<br><em>Потом — понимание.</em></h1><p class="lead">Если Вы уже пытались читать о каббале и запутались в первых же терминах — Вы не одиноки. Здесь начнём спокойно: один небольшой урок, одна понятная схема, несколько вопросов. Так постепенно и сложится целая картина.</p><div class="actions"><a class="button" data-circle-resume href="'+(CIRCLE_ITEMS[0]['href'] if CIRCLE_ITEMS else 'jewish-context/')+'">'+E(PAGES['circleStart'])+'</a><a href="#program">Вся программа: 45 уроков ↓</a></div><div class="hero-meta"><span><strong>45</strong> уроков</span><span><strong>'+str(len(CIRCLE_ITEMS) or 8)+'</strong> встреч первого круга</span><span>в своём темпе</span></div><div class="index-progress">'+progress()+'</div></div><figure class="cover"><picture><source type="image/webp" srcset="../assets/img/beginning-640.webp 640w, ../assets/img/beginning-960.webp 960w, ../assets/img/beginning-1280.webp 1280w" sizes="(max-width: 760px) calc(100vw - 44px), 40vw"><img src="../assets/beginning.jpg" width="1536" height="1024" fetchpriority="high" alt="Открытая книга и карты у золотого дерева под ночным небом" decoding="async"></picture></figure></section>'
 body+=circle_block()
 body+='<section class="section"><div class="features"><div><h3>Можно начать с нуля</h3><p>Иврит знать не нужно, названия сефирот тоже пока учить не придётся. Сначала разберёмся со словами, а затем увидим их в тексте.</p></div><div><h3>Будем читать, а не пересказывать легенды</h3><p>Возьмём небольшие отрывки Зоара и разберём их рядом со схемами. Для цитат и пересказов укажем источники, чтобы всё можно было проверить.</p></div><div><h3>Свои мысли не потеряются</h3><p>Вопросы, заметки и пройденные уроки сохраняются в этом браузере. Тетрадь можно выгрузить и перенести на другое устройство.</p></div></div></section><section class="section" id="program"><div class="section-head"><h2>Как устроен курс</h2><p>Можно идти по порядку, а можно открыть тему, которая зацепила именно Вас. Все уроки уже доступны.</p></div><label for="lesson-search" class="fine">Найти тему</label><br><input class="search" id="lesson-search" data-search="lessons" type="search" placeholder="Например, Зоар или четыре мира"><span class="status-text" data-search-status="lessons" aria-live="polite"></span><div class="program">'
@@ -250,11 +251,21 @@ def card_figure(ids):
  """Real card images next to the first section (lessons whose lab does not already show the cards)."""
  cs=[expansion.CARDS[k] for k in ids if k in expansion.CARDS]
  if not cs:return ''
- return '<figure class="lesson-card-figure">'+''.join(f'<a class="card-picture" href="{E(c["imageSource"],quote=True)}" target="_blank" rel="noopener noreferrer"><img loading="lazy" width="120" height="208" src="{E(c["image"],quote=True)}" alt="{E(c["name"],quote=True)} — Памела Колман Смит"></a>' for c in cs)+'<figcaption>'+' · '.join(E(c['name']) for c in cs)+' — колода Уэйта–Смит, рисунки Памелы Колман Смит (1909).</figcaption></figure>'
+ # A click gives the 960-px copy from the repository, not an English file page on Commons: the lesson
+ # asks the learner to look at the card closely, and Commons needs a second click to get to it at all.
+ return '<figure class="lesson-card-figure">'+''.join(f'<a class="card-picture" href="{E(expansion.big_image(c),quote=True)}" title="Открыть карту крупнее" target="_blank" rel="noopener noreferrer"><img loading="lazy" width="120" height="208" src="{E(c["image"],quote=True)}" {expansion.card_srcset(c)} sizes="160px" alt="{E(c["name"],quote=True)} — Памела Колман Смит"></a>' for c in cs)+'<figcaption>'+' · '.join(E(c['name']) for c in cs)+' — колода Уэйта–Смит, рисунки Памелы Колман Смит (1909). Источник изображений: <a href="https://commons.wikimedia.org/wiki/Category:RWS_Tarot_deck" target="_blank" rel="noopener noreferrer">Wikimedia Commons ↗</a>.</figcaption></figure>'
 def lesson_section(L,i,s,p):
  links=[x for x in L.get('links',[]) if x.get('section')==i]
- h=f'<section class="learn-text" id="sec-{i+1}"><h2>{E(s["title"])}</h2>{para(s["text"],links)}'
- if i==0 and L.get('cards') and L['lab'] not in ('study','observe','pair'):h+=card_figure(L['cards'])
+ body=para(s["text"],links)
+ # Lessons of the first circle always show the card next to the first section (as 21 and 22 do): a beginner
+ # who came with a deck must see it on stage «Разберёмся», not only inside the lab on stage «Попробуем».
+ # The figure goes right after the opening paragraph, not at the end of the section: in lesson 27 the
+ # section first asks three questions about the drawing and only then gives the answers — the card has to
+ # be above the answers, or there is nothing left to look at.
+ if i==0 and L.get('cards') and (L['lab'] not in ('study','observe','pair') or L['id'] in CIRCLE_LESSON_IDS):
+  fig=card_figure(L['cards']);k=body.find('</p>')
+  body=body[:k+4]+fig+body[k+4:] if k>=0 else body+fig
+ h=f'<section class="learn-text" id="sec-{i+1}"><h2>{E(s["title"])}</h2>{body}'
  if s.get('table'):h+=table(s['table'])
  if s.get('links'):h+='<ul class="section-links">'+''.join(f'<li><a href="{E(x["href"],quote=True)}">{E(x["text"])}</a></li>' for x in s['links'])+'</ul>'
  return h+'</section>'
@@ -282,6 +293,12 @@ for L in LESSONS:
  for i,m in enumerate(D['modules']):side+=f'<details {"open" if i==L["module"] else ""}><summary>{i+1}. {m["title"]}</summary>{lessonlist(in_module(i),p,L["id"])}</details>'
  side+='</div></details></aside>'
  b=crumbs(p,'Урок '+str(L['id']))+'<div class="lesson-shell">'+side+f'<article class="lesson-main"><p class="eyebrow">Раздел {L["module"]+1} · {D["modules"][L["module"]]["title"]} · Урок {L["id"]}</p><h1>{E(L["title"])}</h1><p class="hook">{E(L["hook"])}</p>{lesson_summary(L)}<p class="aim">После урока Вы сможете: {E(aim_text(L))}</p><div class="lesson-meta"><span class="meta-time">{E(L.get("time") or "10–20 минут вместе с упражнением и записью; можно в два подхода")}</span>'+(f'<span class="meta-keyword">Главное слово: <b>{E(L["keyword"])}</b></span>' if L.get('keyword') else '')+'<span class="reader-tools"><button data-font-size type="button">Крупнее текст</button></span></div><nav class="steps" aria-label="Шаги урока">'+''.join(f'<button type="button" data-go-stage="{i}"><b>0{i+1}</b>{t}</button>' for i,t in enumerate(['Разберёмся','Попробуем','Проверим','Своими словами']))+'</nav>'
+ # A lesson that is a meeting of the first circle says so on the page itself: a visitor who came straight
+ # from the landing button lands here without ever having seen /course/, and used to meet the word «круг»
+ # for the first time on the completion screen.
+ if L['id'] in CIRCLE_LESSON_IDS:
+  cn=next(i for i,it in enumerate(CIRCLE_ITEMS) if it['key']=='l'+str(L['id']))
+  b+=f'<p class="circle-plaque" data-circle-plaque="l{L["id"]}"><b>Первый круг · встреча {cn+1} из {len(CIRCLE_ITEMS)}.</b> Это {len(CIRCLE_ITEMS)} коротких встреч вперемешку — книги, Зоар и карты, — чтобы с самого начала были и чтение, и практика. Урок можно пройти и отдельно от круга. <a href="{p}course/#first-circle">Посмотреть весь круг →</a></p>'
  if L['id'] in (9,10):b+='<aside class="books-reminder"><p><strong>Продолжить чтение Сефер Йецира.</strong> Отдельный модуль из 12 занятий: короткие выписки, схемы, сравнение редакций и собственный комментарий.</p><a href="../yetzirah/">Открыть подробный модуль →</a></aside>'
  if L['id'] in (1,11,12):b+='<aside class="books-reminder"><p><strong>Если названия книг пока путаются.</strong> Введение поможет вспомнить, что такое Тора, Талмуд и Зоар, как они связаны и где начинается комментарий.</p><a href="../books/">Открыть знакомство с книгами →</a></aside>'
  src=L.get('source')

@@ -22,7 +22,9 @@ function updateProgress(){
  $$('[data-progress-fill]').forEach(el=>el.style.width=(100*done/META.length)+'%');
  $$('[data-lesson-status]').forEach(el=>{const ok=isDone(el.dataset.lessonStatus);el.textContent=ok?'✓':'';el.setAttribute('aria-label',ok?'пройден':'');});
  const next=PROG.find(l=>!isDone(l.id))||PROG[0];
- $$('[data-resume]').forEach(el=>{if(!next)return;el.href=link(next);el.textContent=done?'Продолжить: урок '+next.id:'Начать первый урок';});
+ // While the first circle is unfinished it is the only way on: a second «Продолжить: урок N» would compete with it.
+ const circleOpen=CIRCLE.length>0&&CIRCLE.some(x=>!circleDone(x.key));
+ $$('[data-resume]').forEach(el=>{if(!next)return;el.hidden=circleOpen;if(circleOpen)return;el.href=link(next);el.textContent=done?'Продолжить: урок '+next.id:'Начать первый урок';});
  $$('[data-module-count]').forEach(el=>{const m=Number(el.dataset.moduleCount),ls=PROG.filter(l=>l.module===m),k=ls.filter(l=>isDone(l.id)).length;el.textContent=k?'✓ '+k+' из '+ls.length+' · ':'';});
  $$('[data-all-done]').forEach(el=>el.hidden=done!==META.length);
 }
@@ -38,6 +40,9 @@ function updateCircle(){
  $$('[data-circle-resume]').forEach(el=>{if(c.next){el.href=abs(c.next.href);el.textContent=c.done?(PAGES.circleContinue||'Продолжить круг →'):(PAGES.circleStart||'Начать первую встречу →');}else{el.href='#circle-after';el.textContent='Первый круг пройден: что дальше ↓';}});
  $$('[data-circle-after]').forEach(el=>{if(!c.next&&!el.dataset.opened){el.open=true;el.dataset.opened='1';}});
  $$('[data-circle-after-title]').forEach(el=>el.textContent=c.next?'Что будет после круга':(PAGES.circleDoneTitle||'Первый круг пройден'));
+ // The account of what the circle gave is written in the past tense: it appears only once it is true.
+ $$('[data-circle-done]').forEach(el=>el.hidden=!!c.next);
+ $$('[data-circle-preview]').forEach(el=>el.hidden=!c.next);
  $$('[data-circle-meeting]').forEach(el=>{const ok=circleDone(el.dataset.circleMeeting);el.classList.toggle('is-done',ok);const m=$('[data-circle-meeting-state]',el);if(m)m.textContent=ok?'Встреча отмечена.':'';});
 }
 // A circle meeting that is a Zohar reading: a plaque on the reading card says where it sits and what comes next.
@@ -116,6 +121,15 @@ if(DATA.lesson){const L=DATA.lesson,r=record(L.id),Q=L.quiz||[];document.body.cl
   sync();save();drawQ(i);summary();completionHint();
  }));
  Q.forEach((q,i)=>drawQ(i));summary();
+ // Stage 2: «Мои наблюдения» under each card. They are kept per card id, like the reflection note —
+ // the course promises that what the learner writes stays, and these fields used to lose it on reload.
+ const obsFields=$$('[data-obs]'),obsStatus=$('[data-obs-status]');
+ if(obsFields.length){
+  const store=state.obs[L.id]||(state.obs[L.id]={});
+  obsFields.forEach(f=>{const k=f.dataset.obs;if(typeof store[k]==='string')f.value=store[k];
+   f.addEventListener('input',()=>{const v=f.value.slice(0,2000);if(v.trim())store[k]=v;else delete store[k];save();
+    if(obsStatus)obsStatus.textContent=storageOK?'Сохранено в этом браузере':'Пока хранится в открытой вкладке';});});
+ }
  // Stage 4: scaffold fields ↔ one note string of labelled lines; the one-word memo is the last label.
  const scaffold=L.scaffold||[],fields=$$('[data-scaffold-field]'),note=$('#reflection'),status=$('#note-status'),check=$('#reflection-check'),oneBox=$('[data-one-word]'),one=$('#one-word');
  const labels=CourseState.scaffoldLabels([...scaffold,'Запомнилось']);

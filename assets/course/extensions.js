@@ -22,9 +22,13 @@
   // Practice words: the learner's own sum first, the breakdown after (no ready number on screen).
   $$('[data-gematria-practice]',gem).forEach(b=>b.addEventListener('click',()=>{pending=b.dataset.gematriaPractice;input.value='';out.replaceChildren();out.textContent='Сначала — Ваша сумма.';askLabel.replaceChildren(document.createTextNode('Ваша сумма для '),heb(pending));guess.value='';ask.hidden=false;guess.focus();}));
   const check=()=>{if(!pending)return;const v=guess.value.trim();if(!/^\d{1,5}$/.test(v)){out.textContent='Введите число — сумму, которую Вы получили по таблице.';guess.focus();return;}
-   const r=calculate(pending),n=Number(v);input.value=pending;closeAsk();
-   draw(n===r.total?'Совпало: ':'У Вас '+n+', по таблице — '+r.total+'. ');
-   if(n!==r.total)out.append(document.createElement('br'),document.createTextNode('Проверьте каждую букву по таблице — особенно те, что стоят после девятой: там значения идут десятками.'));};
+   const r=calculate(pending),n=Number(v);input.value=pending;
+   // A wrong sum keeps the field open, so a corrected number can be checked again and confirmed:
+   // closing it left «У Вас 12» on screen for good, even after the learner had fixed the number.
+   if(n===r.total){closeAsk();draw('Совпало: ');}
+   else{draw('У Вас '+n+', по таблице — '+r.total+'. ');
+    out.append(document.createElement('br'),document.createTextNode('Проверьте каждую букву по таблице — особенно те, что стоят после девятой: там значения идут десятками. Исправьте число и нажмите «Сверить» ещё раз.'));
+    guess.focus();}};
   $('[data-gematria-check]',gem)?.addEventListener('click',check);guess?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();check();}});
   // On-screen letters: the table cells type into the field.
   $$('[data-gematria-letter]',gem).forEach(b=>b.addEventListener('click',()=>{closeAsk();if(input.value.length<100)input.value+=b.dataset.gematriaLetter;draw();}));

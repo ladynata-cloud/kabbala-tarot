@@ -313,9 +313,15 @@ KINDS['luria-explore']=(el,d,u)=>{
 
 /* ---------------------------------------------------------------- deck: 12 cards into three groups */
 const TYPES=['Старший аркан','Придворная','Числовая'];
-const WHY=[[ '', 'В подписи есть звание и масть, а у старших арканов масти нет.','У старших арканов нет масти, а в подписи этой карты масть есть.'],
+// Only the ace of a suit carries a caption at the bottom («Ace of Cups»); 2–10 have none — just the
+// roman numeral on top — so the reply about «the suit is in the caption» must not be sent for them.
+const isAce=c=>/^[wcsp]1$/.test(c||'');
+const WHY=[[ '', 'В подписи есть звание и масть, а у старших арканов масти нет.',
+  c=>isAce(c)?'У старших арканов нет масти, а здесь внизу стоит «Ace» и масть.'
+   :'У старшего аркана внизу стоит имя. Здесь подписи внизу нет — только римская цифра, а масть видна по ряду одинаковых предметов на рисунке.'],
  ['Звания — паж, рыцарь, королева, король — в подписи нет, и масти тоже нет.','','Масть есть, но звания нет: число и туз — не звания.'],
- ['Римская цифра вверху ещё не делает карту числовой: у числовой карты есть масть — ряд одинаковых предметов на рисунке, а подписи внизу нет. Здесь внизу стоит имя, и масти в нём нет.','Посмотрите на подпись: паж, рыцарь, королева и король — это звания, а не числа.','']];
+ ['Римская цифра вверху ещё не делает карту числовой: у числовой карты видна масть — ряд одинаковых предметов на рисунке, а внизу либо ничего не написано, либо стоит «Ace» и масть. Здесь внизу стоит имя, и масти в нём нет.','Посмотрите на подпись: паж, рыцарь, королева и король — это звания, а не числа.','']];
+const why=(got,want,card)=>{const w=WHY[got][want];return typeof w==='function'?w(card):w;};
 KINDS.deck=(el,d,u)=>{
  const cards=$$('[data-card3]',el),groups=$$('[data-type3]',el),cur=$('[data-deck-current]',el),M=cards.length,miss=new Array(M).fill(0),done=new Array(M).fill(0);
  let sel=-1;const name=i=>cards[i].dataset.name||$('.deck3-name',cards[i]).textContent,label=i=>$('.deck3-name',cards[i]).textContent;
@@ -329,8 +335,8 @@ KINDS.deck=(el,d,u)=>{
   const i=sel,want=d.cards[i].type,got=Number(g.dataset.type3),mark=$('[data-card3-mark]',cards[i]);
   if(got===want){done[i]=miss[i]?2:1;cards[i].classList.add('is-done');named(i);mark.textContent='✓ '+TYPES[want];u.say('<b>Верно:</b> «'+esc(name(i))+'» — '+esc(TYPES[want].toLowerCase())+'.','good');}
   else{miss[i]++;
-   if(miss[i]>=2){done[i]=2;cards[i].classList.add('is-done','is-shown');named(i);mark.textContent=TYPES[want];u.say('<b>Это '+esc(TYPES[want].toLowerCase())+'.</b> '+esc(WHY[got][want])+BADGE,'good');}
-   else{u.say('<b>Пока нет.</b> '+esc(WHY[got][want])+'<br>Подсказка: '+esc(d.hint||'')+' <span class="fine">Если и вторая попытка не подойдёт, группа откроется.</span>','bad');return;}}
+   if(miss[i]>=2){done[i]=2;cards[i].classList.add('is-done','is-shown');named(i);mark.textContent=TYPES[want];u.say('<b>Это '+esc(TYPES[want].toLowerCase())+'.</b> '+esc(why(got,want,d.cards[i].card))+BADGE,'good');}
+   else{u.say('<b>Пока нет.</b> '+esc(why(got,want,d.cards[i].card))+'<br>Подсказка: '+esc(d.hint||'')+' <span class="fine">Если и вторая попытка не подойдёт, группа откроется.</span>','bad');return;}}
   const n=counter();
   if(n===M){select(-1);cur.textContent='Все карты разложены';u.win('');return;}
   const nx=cards.findIndex((c,j)=>j>i&&!done[j]),to=nx>=0?nx:done.findIndex(x=>!x);select(to);cards[to].focus();

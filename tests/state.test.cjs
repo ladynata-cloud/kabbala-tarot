@@ -85,6 +85,13 @@ const back=C.parseNote(labels,joined);assert.deepEqual(back.values,vals);assert.
 assert.deepEqual(C.parseNote(labels,'Старая запись без подписей\nвторая строка'),{values:labels.map(()=>''),free:'Старая запись без подписей\nвторая строка'});
 assert.equal(C.joinNote(labels,labels.map(()=>''),''),'');
 assert.equal(C.parseNote(['Текст'],C.joinNote(['Текст'],['а'],'')).values[0],'а');
+// Stage-2 «Мои наблюдения»: kept per lesson and card id, junk discarded, import fills empty slots only.
+const obsRaw={version:2,lessons:{},notes:{},obs:{1:{'9':'фонарь в руке','w7':'   ','bad key':'x','s2':7},99:{'0':'нет такого урока'}}};
+const obsN=C.normalize(obsRaw,v3meta);
+assert.deepEqual(obsN.obs,{1:{'9':'фонарь в руке'}});
+assert.deepEqual(C.normalize({version:2,lessons:{},notes:{}},v3meta).obs,{});
+const obsMerged=C.merge({...C.empty(),obs:{1:{'9':'моё'}}},{version:2,course:'eliora-kabbalah-v2',lessons:{},notes:{},obs:{1:{'9':'чужое','s2':'второе'}}},v3meta);
+assert.deepEqual(obsMerged.obs,{1:{'9':'моё','s2':'второе'}});
 // Every v3 lesson in the course: quiz grading and a meta list with quiz versions.
 const course=require('../content/course.json');
 const pageMeta=course.lessons.map(l=>({id:l.id,qv:l.quizVersion}));

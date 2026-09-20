@@ -107,6 +107,8 @@
   .lesson-cards .tarot-card>.card-picture img{width:100%;height:auto}
   .lesson-cards .obs-field{min-height:72px}
   .lesson-card-figure{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,160px));gap:10px;justify-content:start}
+  /* the link itself is width:max-content elsewhere, so without this the picture keeps its 120px attribute */
+  .lesson-card-figure .card-picture{width:100%}
   .lesson-card-figure .card-picture img{width:100%;height:auto}
 }
 /* tables: caption above the scroll area, a shadow at the edge that can be scrolled */

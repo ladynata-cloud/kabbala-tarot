@@ -303,9 +303,13 @@ KINDS.soul=(el,d,u)=>{
 /* ---------------------------------------------------------------- Luria: explore */
 KINDS['luria-explore']=(el,d,u)=>{
  const bs=$$('[data-luria]',el),shapes=$$('[data-luria-shape]',el),note=$('[data-luria-note]',el),det=$('[data-detail]',el),seen=new Set();
+ // The parts of the drawing are wired in app.js — the atlas carries the same markup. Without it the labels and
+ // the legend still stand; only the selection stops working.
+ const fig=(globalThis.CourseLuriaFigure||(()=>({step(){}})))(el);
  const select=i=>{bs.forEach((b,j)=>press(b,j===i));shapes.forEach((s,j)=>{if(j===i)s.removeAttribute('hidden');else s.setAttribute('hidden','');});
+  fig.step(i);
   const n=(d.notes||[])[i]||'';note.textContent=n;note.hidden=!n;
-  const L=LURIA[i]||['','',''];det.innerHTML='<h4>'+esc('Шаг '+(i+1)+'. '+L[0])+'</h4><p><b>'+esc(L[1])+'</b> '+esc(L[2])+' Это этап учебного рассказа, а не физическая модель Вселенной.</p>';
+  const L=LURIA[i]||['','',''];det.innerHTML='<h4>'+esc('Шаг '+(i+1)+'. '+L[0])+'</h4><p><b>'+esc(L[1])+'</b> '+esc(L[2])+'</p>';
   seen.add(i);u.count('Просмотрено: '+seen.size+' из '+bs.length);if(seen.size===bs.length&&!el.classList.contains('is-solved'))u.win('');};
  bs.forEach((b,i)=>b.addEventListener('click',()=>select(i)));
  select(Math.max(0,Math.min(bs.length-1,Number(d.start)||0)));

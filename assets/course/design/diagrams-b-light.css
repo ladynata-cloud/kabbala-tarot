@@ -4,8 +4,33 @@
    engraved hairline .7–.8, light = gold core 3–5 with a soft warm halo. State changes are instant (no motion). */
 
 /* Lurianic sequence (course/atlas, tzimtzum, breaking-vessels): ink arch plate, a little larger than before */
-.lab[data-lab="luria"] .luria-symbol{min-height:210px}
-.lab[data-lab="luria"] .luria-symbol svg.b-light-luria{width:228px;height:210px;max-width:100%;filter:drop-shadow(0 6px 10px rgba(18,46,59,.16))}
+.lab[data-lab="luria"] .luria-symbol{min-height:276px}
+.lab[data-lab="luria"] .luria-symbol svg.b-light-luria{width:300px;height:276px;max-width:100%;filter:drop-shadow(0 6px 10px rgba(18,46,59,.16))}
+/* On a phone the figure takes the width it can get: labels stay legible (10.5 units of the 190-wide viewBox ≈
+   16.6 px at the desktop size, about 17 px here) and the 30-unit hit areas stay above 44 px. */
+@media(max-width:760px){
+  .lab[data-lab="luria"] .luria-symbol{min-height:0}
+  .lab[data-lab="luria"] .luria-symbol svg.b-light-luria{width:100%;max-width:320px;height:auto}
+}
+
+/* Labels of the parts. One colour reads both on the ink plate and on the warm light: cream with a dark outline
+   (paint-order), contrast against that outline about 9:1. The leader line is drawn twice for the same reason.
+   Positions, leaders and hit areas come from content/luria-figure.json through tools/build_labs.py. */
+svg.b-light-luria .bl-part{cursor:pointer}
+svg.b-light-luria .bl-hit{fill:none;pointer-events:all}
+svg.b-light-luria .bl-name{font:500 10.5px Golos,Arial,sans-serif;letter-spacing:.01em;fill:#f8e8c0;paint-order:stroke;stroke:#0b222d;stroke-width:3.6;stroke-linejoin:round}
+svg.b-light-luria .bl-lead-halo{fill:none;stroke:#0b222d;stroke-width:2.6;stroke-opacity:.92;stroke-linecap:round}
+svg.b-light-luria .bl-lead{fill:none;stroke:#f0d9a5;stroke-width:.9;stroke-linecap:round}
+/* What appears on this step keeps its full strength; what came from the earlier steps is softened, never hidden. */
+svg.b-light-luria .b-light-art [data-part].is-prior{opacity:.6}
+svg.b-light-luria .bl-part.is-prior .bl-name{fill:#e6d3ab}
+svg.b-light-luria .bl-part.is-new .bl-name{fill:#fff2d2}
+/* The chosen part: the shape comes back to full strength, the label is framed. */
+svg.b-light-luria .b-light-art [data-part].is-sel{opacity:1;filter:drop-shadow(0 0 2.5px rgba(255,236,190,.95))}
+svg.b-light-luria .bl-part.is-sel .bl-name{fill:#fffaf0;stroke-width:4.2}
+svg.b-light-luria .bl-part.is-sel .bl-hit{fill:#f0d9a5;fill-opacity:.14;stroke:#f0d9a5;stroke-width:1}
+svg.b-light-luria .bl-part:focus-visible{outline:none}
+svg.b-light-luria .bl-part:focus-visible .bl-hit{stroke:#f6c964;stroke-width:2.4}
 
 /* Rivers and sea; soul levels: labels stay ≥ 11px on phones without oversizing on desktop */
 .lab[data-lab="river"] svg.b-light-river,
@@ -41,7 +66,17 @@
   svg.b-light-luria .bl-edge{stroke:#4d7888}
   svg.b-light-luria .bl-fine{stroke:#4d7888;stroke-opacity:.35}
   svg.b-light-luria .bl-ray{stroke:#b28b4e}
-  svg.b-light-luria .bl-hl{display:none}
+  svg.b-light-luria .bl-hl,
+  svg.b-light-luria .bl-wall{display:none}
   svg.b-light-luria .bl-spark{fill:#987438}
   svg.b-light-luria .bl-arc{stroke:#4f8472}
+  svg.b-light-luria .bl-trace{stroke:#b28b4e}
+  svg.b-light-luria .bl-trace-halo{stroke:#fff;stroke-opacity:1}
+  svg.b-light-luria .bl-name{fill:#122e3b;stroke:#fff;stroke-width:3}
+  svg.b-light-luria .bl-part.is-prior .bl-name,
+  svg.b-light-luria .bl-part.is-new .bl-name{fill:#122e3b}
+  svg.b-light-luria .bl-lead{stroke:#4d7888}
+  svg.b-light-luria .bl-lead-halo{stroke:#fff;stroke-opacity:1}
+  svg.b-light-luria .b-light-art [data-part].is-prior{opacity:.72}
+  svg.b-light-luria .bl-hit{display:none}
 }

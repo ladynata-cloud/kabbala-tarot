@@ -81,23 +81,77 @@ def timeline(d,L):
  inner='<p class="lab3-label">От раннего — вверху — к позднему</p>'+order_list(entries,'timeline:'+ev[0]['what'])+bar()
  return shell('timeline','timeline',d,inner)
 
-# ---------------------------------------------------------------- Luria: images with small labels
-def luria_svg(i):
+# ---------------------------------------------------------------- Luria: the six teaching images
+# Every visible element of each drawing is named, and the names live in content/luria-figure.json, not here:
+# the author edits the labels and the one-sentence explanations there. The drawing carries data-part="<id>"
+# on the shapes (tools/design/diagrams/b-light/luria-*.svg); this module puts the label, the leader line and a
+# transparent hit area over them, marks what is new on the step and what is inherited, and renders the legend.
+FIG=json.loads((design.ROOT/'content/luria-figure.json').read_text(encoding='utf-8'))
+CHAR=6.0  # width of a Cyrillic glyph at the 10.5px label size, in viewBox units — sizes the hit area
+
+def part_class(svg,pid,cls):
+ """Add a class to every element of the drawing that carries data-part="pid"."""
+ def one(m):
+  t=m.group(0)
+  if ' class="' in t:return t.replace(' class="',' class="'+cls+' ',1)
+  k=len(t)-(2 if t.endswith('/>') else 1)
+  return t[:k]+f' class="{cls}"'+t[k:]
+ return re.sub(r'<[a-zA-Z]+\b[^>]*\bdata-part="'+re.escape(pid)+r'"[^>]*>',one,svg)
+def hit_rect(x,y,w,h):return f'<rect class="bl-hit" x="{x:g}" y="{y:g}" width="{w:g}" height="{h:g}" rx="4"/>'
+def part_label(p):
+ """Label + optional leader inside one focusable group: pointer, touch (the box is 30 units ≈ 44 px on a
+ phone) and keyboard all reach the same part. The name is drawn once; the dark outline comes from paint-order."""
+ at=p['at'];x,y=at['x'],at['y'];anc=at.get('anchor','middle');name=p.get('short') or p['label']
+ w=len(name)*CHAR+14;bx={'middle':x-w/2,'start':x-7,'end':x-w+7}[anc]
+ s=f'<g class="bl-part {"is-new" if p.get("new") else "is-prior"}" data-part="{p["id"]}" role="button" tabindex="0" aria-label="{E("Часть рисунка: "+p["label"],quote=True)}">'+hit_rect(bx,y-21,w,30)
+ if p.get('hit'):h=p['hit'];s+=hit_rect(h['x'],h['y'],h['w'],h['h'])
+ if p.get('lead'):s+=f'<path class="bl-lead-halo" d="{p["lead"]}"/><path class="bl-lead" d="{p["lead"]}"/>'
+ return s+f'<text class="bl-name" x="{x:g}" y="{y:g}" text-anchor="{anc}">{E(name)}</text></g>'
+def luria_svg(i,labels=True):
  s=re.sub(r'aria-label="[^"]*"','aria-label="Условный образ: '+E(D['luria'][i][0])+'"',design.diagram(f'b-light/luria-{i}.svg'),count=1)
- add={1:'<g class="bl-label"><path d="M141 141 124 111" fill="none" stroke="#f3dfb0" stroke-width=".8"/><text x="146" y="156" text-anchor="middle" fill="#f3dfb0" font-size="12">решиму</text><text x="101" y="24" fill="#143545" font-size="12">кав</text></g>',
-      4:'<g class="bl-label"><text x="95" y="167" text-anchor="middle" fill="#f3dfb0" font-size="12">обломки — клипот</text></g>'}.get(i,'')
- return s.replace('</svg>',add+'</svg>',1) if add else s
+ step=FIG['steps'][i]
+ # What is inherited from an earlier step recedes. "soften": false keeps a shape at full strength anyway —
+ # the dark circle of the empty place turns grey at half opacity instead of receding, and so does the light
+ # around it: they are the ground the step is drawn on, and only their labels step back.
+ for p in step['parts']:
+  if p.get('new'):s=part_class(s,p['id'],'is-new')
+  elif p.get('soften',True):s=part_class(s,p['id'],'is-prior')
+ if labels:
+  # role="img" would hide the inner parts from assistive technology; with labels the drawing is a group.
+  s=s.replace('role="img"','role="group"',1).replace('</svg>','<g class="bl-label">'+''.join(part_label(p) for p in step['parts'])+'</g></svg>',1)
+ return s
+def luria_legends():
+ """Under the figure: what appeared on this step, every part by name, and what the picture does and does not claim."""
+ out=''
+ for i,st in enumerate(FIG['steps']):
+  items=''.join(f'<li><button type="button" class="luria-part" data-part="{p["id"]}" data-about="{E(p["about"],quote=True)}" aria-pressed="false">{E(p["label"])}</button></li>' for p in st['parts'])
+  out+=(f'<div class="luria-legend" data-luria-legend="{i}"{"" if i==0 else " hidden"}>'
+        f'<p class="diagram-caption">{E(st["shows"])} {E(FIG["caveat"])}</p>'
+        f'<p class="luria-change"><b>{E(st["changeLabel"])}:</b> {E(st["change"])}</p>'
+        f'<ul class="luria-parts">{items}</ul></div>')
+ return '<div class="luria-legends">'+out+'</div>'
+def luria_about():
+ return f'<p class="luria-about" data-part-about role="status" aria-live="polite" data-prompt="{E(FIG["prompt"],quote=True)}"></p>'
+def luria_parts_line(i):
+ """Only what appears on this step. The full list named every part in every row — and «рамка образа» in all six —
+ which let the order be restored by matching words instead of by following the story."""
+ new=[p['label'] for p in FIG['steps'][i]['parts'] if p.get('new')]
+ return f'<span class="order3-parts">{E(FIG["inFigure"])}: {E(", ".join(new))}</span>' if new else ''
 def luria(d,L):
  mode=d.get('mode','explore');notes=(d.get('notes') or ['']*6)+['']*6
  if mode=='order':
+  # Thumbnails: no labels (they would be unreadable at 76 px) and nothing focusable inside the list item,
+  # so moving the rows keeps working; the parts are named in the row instead.
   order=[i for i in d.get('order',range(6)) if 0<=i<6]
-  entries=[f'<span class="order3-img">{luria_svg(i).replace(" hidden>",">",1)}</span><span class="order3-body"><b class="order3-what">{E(D["luria"][i][0])}</b><span class="order3-q">{E(D["luria"][i][1])}</span><span class="order3-note" hidden>{E(notes[i])}</span></span>' for i in range(6)]
-  inner='<p class="lab3-label">От первого шага — вверху — к последнему</p>'+order_list(entries,'luria:'+','.join(map(str,order)),set(order))+bar()
+  entries=[f'<span class="order3-img">{luria_svg(i,labels=False).replace(" hidden>",">",1)}</span><span class="order3-body"><b class="order3-what">{E(D["luria"][i][0])}</b><span class="order3-q">{E(D["luria"][i][1])}</span>{luria_parts_line(i)}<span class="order3-note" hidden>{E(notes[i])}</span></span>' for i in range(6)]
+  inner=('<p class="lab3-label">От первого шага — вверху — к последнему</p>'
+         +order_list(entries,'luria:'+','.join(map(str,order)),set(order))
+         +f'<p class="diagram-caption">{E(FIG["caveat"])}</p>'+bar())
   return shell('luria','luria-order',d,inner,success=d.get('success'))
  start=d.get('start',0) if isinstance(d.get('start'),int) else 0
  steps='<div class="lab-stepper">'+''.join(f'<button type="button" data-luria="{i}" aria-label="Шаг {i+1}: {E(t[0],quote=True)}">{i+1}</button>' for i,t in enumerate(D['luria']))+'</div>'
  pics='<div class="luria-symbol">'+''.join(luria_svg(i) for i in range(6))+'</div>'
- inner=steps+pics+'<p class="lab3-note" data-luria-note></p><div class="lab-detail" data-detail aria-live="polite"></div>'+bar(check=None,reset=False)
+ inner=steps+pics+luria_legends()+luria_about()+'<p class="lab3-note" data-luria-note></p><div class="lab-detail" data-detail aria-live="polite"></div>'+bar(check=None,reset=False)
  return shell('luria','luria-explore',{**d,'start':start,'notes':notes[:6]},inner)
 
 # ---------------------------------------------------------------- tree (explore / find / place)

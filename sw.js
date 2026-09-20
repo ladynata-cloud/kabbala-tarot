@@ -3,7 +3,7 @@
    Оформление, шрифты, эмблемы, карты: из кэша, с тихим обновлением в фоне.
    Чтобы выключить офлайн-режим, замените этот файл содержимым tools/design/sw-remove.js
    (sw.js пишет tools/design.py из tools/design/sw.template.js; VERSION меняется вместе с файлами оболочки). */
-const VERSION = 'kt-7eb0800021';
+const VERSION = 'kt-759400f37a';
 const SHELL = `${VERSION}-shell`;
 const PAGES = `${VERSION}-pages`;
 const MEDIA = `${VERSION}-media`;

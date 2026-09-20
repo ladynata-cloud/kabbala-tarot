@@ -110,9 +110,9 @@ def lab(kind,L=None,data=None):
   names={'river':['Реки','Море','Ниже по течению'],'rose':['Образ','Соответствие','Комментарий'],'soul':['Нефеш','Руах','Нешама'],'balance':['Щедрость','Мера','Согласование']}[kind]
   s+=symbols(kind)+chips(names,'data-symbol-step')+detail
  elif kind=='luria':
-  s+='<p>Выберите номер. Следите, какой вопрос появляется после предыдущего шага.</p><div class="lab-stepper">'+''.join(f'<button type="button" data-luria="{i}" aria-label="{E(t[0])}">{i+1}</button>' for i,t in enumerate(D['luria']))+'</div><div class="luria-symbol">'
+  s+='<p>Выберите номер. Следите, какой вопрос появляется после предыдущего шага, и нажимайте на части рисунка.</p><div class="lab-stepper">'+''.join(f'<button type="button" data-luria="{i}" aria-label="{E(t[0])}">{i+1}</button>' for i,t in enumerate(D['luria']))+'</div><div class="luria-symbol">'
   for i in range(6):s+=labs.luria_svg(i)
-  s+='</div>'+detail
+  s+='</div>'+labs.luria_legends()+labs.luria_about()+detail
  elif kind=='layers':s+='<p>Отличите слова текста, пояснение редакции и собственный отклик.</p><p class="sort-prompt" data-sort-prompt></p><div class="chips">'+''.join(f'<button type="button" data-sort="{i}">{t}</button>' for i,t in enumerate(['Наблюдение','Пояснение источника','Личная ассоциация']))+'</div><p class="feedback" data-sort-feedback aria-live="polite"></p>'+btn('Другая фраза','data-sort-next',True)
  elif kind=='context':s+=chips(['Писание','Толкование','Практика'],'data-context')+detail
  elif kind=='deck':s+='<div class="formula">22 + 4 × 14 = 78</div><div class="deck-grid">'+''.join(f'<div class="deck-unit"><b>{sym}</b><span>{name}<br>10 + 4 карты</span></div>' for sym,name in [('Ⅰ','Жезлы'),('Ⅱ','Кубки'),('Ⅲ','Мечи'),('Ⅳ','Пентакли')])+'</div><h4 data-deck-card></h4><div class="chips">'+''.join(f'<button type="button" data-deck-type="{i}">{t}</button>' for i,t in enumerate(['Старший аркан','Придворная','Числовая']))+'</div><p class="feedback" data-deck-feedback aria-live="polite"></p>'+btn('Следующая карта','data-deck-next',True)

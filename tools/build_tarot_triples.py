@@ -1,6 +1,7 @@
 """Generate a compact, complete triple analysis tool and readable authored examples."""
 from pathlib import Path
 from html import escape as E
+from html_fragment import read_fragment
 import json
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,7 +23,7 @@ def build(page, crumbs):
     selectors = ''
     for i,letter in enumerate('АБВ'):
         selectors += '<fieldset><legend>Карта '+letter+'</legend><label class="sr-only" for="triple-card-'+str(i)+'">Выберите карту '+letter+'</label><select id="triple-card-'+str(i)+'">'+options(['p4','p5','p6'][i])+'</select><label class="triple-orientation" hidden>Положение<select id="triple-rev-'+str(i)+'"><option value="0">Прямое</option><option value="1">Перевёрнутое</option></select></label></fieldset>'
-    body=(ROOT/'content/tarot-triples.html').read_text().replace('{{SELECTORS}}',selectors)
+    body=read_fragment(ROOT/'content/tarot-triples.html').replace('{{SELECTORS}}',selectors)
     body=body.replace('{{EXAMPLE_BUTTONS}}',''.join('<button type="button" data-triple-example="'+str(i)+'">'+E(ex['title'])+'</button>' for i,ex in enumerate(data['examples'])))
     examples=''
     for ex in data['examples']:

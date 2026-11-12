@@ -1,6 +1,7 @@
 """Build the complete pair workshop from the shared 78-card atlas and authored data."""
 from pathlib import Path
 from html import escape
+from html_fragment import read_fragment
 import json
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -19,7 +20,7 @@ def build(page, crumbs):
         groups = [('major','Старшие арканы'),('w','Жезлы'),('c','Кубки'),('s','Мечи'),('p','Пентакли')]
         return ''.join('<optgroup label="'+label+'">'+''.join('<option value="'+c['id']+'"'+(' selected' if c['id']==selected else '')+'>'+escape(c['name'])+'</option>' for c in cards if c['group']==g)+'</optgroup>' for g,label in groups)
     conditions = [('open','Пока не определено'),('balanced','Соразмерное проявление'),('lack','Недостаток'),('excess','Избыток'),('distortion','Искажение')]
-    body = (ROOT / 'content/tarot-pairs.html').read_text()
+    body = read_fragment(ROOT / 'content/tarot-pairs.html')
     body = body.replace('{{OPTIONS_A}}',options('1')).replace('{{OPTIONS_B}}',options('p8'))
     body = body.replace('{{CONDITIONS}}',''.join('<option value="'+v+'">'+t+'</option>' for v,t in conditions))
     body = body.replace('{{EXAMPLE_BUTTONS}}',''.join('<button type="button" data-pair-example="'+str(i)+'">'+escape(ex['title'])+'</button>' for i,ex in enumerate(data['examples'])))

@@ -2,8 +2,8 @@
 """Build the static course; no packages or network needed. Run from any directory."""
 from pathlib import Path
 from html import escape as E
-from datetime import date
 import json,math,re
+from html_fragment import read_fragment
 import build_expansion as expansion
 import build_reading_catalog as reading_catalog
 import build_yetzirah as yetzirah
@@ -25,6 +25,7 @@ import design
 import build_labs as labs
 ROOT=Path(__file__).resolve().parents[1]
 D=json.loads((ROOT/'content/course.json').read_text());CFG=json.loads((ROOT/'content/site.json').read_text());ORIGIN=CFG['origin'].rstrip('/')
+SEARCH_PAGES=CFG.get('searchPages',{})
 LESSONS=D['lessons'];routes=[]
 BYID={l['id']:l for l in LESSONS}
 # Program (navigation) order: ids stay as they are, only the path through them changes (SPEC §3).
@@ -136,9 +137,12 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
   sec='<section class="section"><h2>Мои самостоятельные расклады</h2><p>Работы итоговой мастерской, снимки версий и возвращения к наблюдениям.</p><a href="/course/spread-workshop/notebook/">Тетрадь мастерской →</a></section>';k=body.rfind('</details>');body=body[:k]+sec+body[k:]
  if path=='/course/spread-dynamics/' or path=='/course/spread-dynamics/record-and-revisit/':
   body+='<section class="section"><p class="eyebrow">Следующая ступень</p><h2>Собрать самостоятельный расклад</h2><p>Соедините изученное в мастерской: вопрос, схема, связи карт, обоснование и собственные наблюдения.</p><a class="button" href="/course/spread-workshop/">Перейти к восьми практикумам →</a></section>'
+ search=SEARCH_PAGES.get(path)
+ if search:title,description=search['title'],search['description']
+ document_title=title if search else f'{title} | {D["author"]}'
  prefix=rootprefix(path);url=ORIGIN+path;author={'@type':'Person','name':D['author'],'url':ORIGIN+'/author/'}
  schema={'@context':'https://schema.org','@graph':[{'@type':'WebPage','@id':url+'#page','url':url,'name':title,'description':description,'inLanguage':'ru','isPartOf':{'@id':ORIGIN+'/#website'}},{'@type':'WebSite','@id':ORIGIN+'/#website','name':'Каббала и Таро','url':ORIGIN+'/','inLanguage':'ru'}]}
- if L:schema['@graph']+=[{'@type':'Article','headline':L['title'],'description':description,'author':author,'dateModified':CFG['updated'],'inLanguage':'ru','mainEntityOfPage':url,'isPartOf':{'@type':'Course','name':D['title'],'url':ORIGIN+'/course/'}},{'@type':'BreadcrumbList','itemListElement':[{'@type':'ListItem','position':1,'name':'Главная','item':ORIGIN+'/'},{'@type':'ListItem','position':2,'name':'Курс','item':ORIGIN+'/course/'},{'@type':'ListItem','position':3,'name':L['title'],'item':url}]}]
+ if L:schema['@graph']+=[{'@type':'Article','headline':L['title'],'description':description,'author':author,'inLanguage':'ru','mainEntityOfPage':url,'isPartOf':{'@type':'Course','name':D['title'],'url':ORIGIN+'/course/'}},{'@type':'BreadcrumbList','itemListElement':[{'@type':'ListItem','position':1,'name':'Главная','item':ORIGIN+'/'},{'@type':'ListItem','position':2,'name':'Курс','item':ORIGIN+'/course/'},{'@type':'ListItem','position':3,'name':L['title'],'item':url}]}]
  if path=='/course/':schema['@graph'].append({'@type':'Course','@id':url+'#course','name':D['title'],'description':description,'inLanguage':'ru','isAccessibleForFree':True,'educationalLevel':'Beginner','provider':author,'hasPart':[{'@type':'LearningResource','name':x['title'],'url':ORIGIN+'/course/'+x['slug']+'/','position':x['id']} for x in LESSONS]})
  if path=='/author/':schema['@graph'].append(author)
  payload={'root':prefix,'order':ORDER,'modules':[m['title'] for m in D['modules']],'circle':[{k:x[k] for k in ['key','href','label','title','minutes','kind']} for x in CIRCLE_ITEMS],'forks':[{'id':f['ref'],'title':f['title']} for f in (CIRCLE or {}).get('forks',[]) if f.get('ref') in BYID],'pages':{k:PAGES[k] for k in ['completionTitle','circleStart','circleContinue','circleDoneTitle']},'lessons':[{'id':l['id'],'slug':l['slug'],'title':l['title'],'module':l['module'],'time':time_range(l),**({'qv':l['quizVersion']} if isinstance(l.get('quizVersion'),int) else {})} for l in LESSONS],**{k:D[k] for k in ['sefirot','worlds','timeline','luria']}}
@@ -147,7 +151,7 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
  nav=''.join(f'<a href="{prefix}{loc}" {"aria-current=page" if path=="/"+loc else ""}>{txt}</a>' for loc,txt in [('course/','Курс'),('course/books/','О книгах'),('course/tarot/','Таро'),('course/atlas/','Схемы'),('course/reading/','Читаем Зоар'),('course/glossary/','Словарь'),('course/notebook/','Моя тетрадь')])
  catalog_script=f'<script defer src="{prefix}assets/course/reading-catalog.js"></script>' if path=='/course/reading/catalog/' else ''
  if 'data-lab3=' in body:catalog_script+=f'<script defer src="{prefix}assets/course/labs.js"></script>'
- html=f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#122e3b"><title>{E(title)} | Элиора Вейра</title><meta name="description" content="{E(description,quote=True)}"><meta name="author" content="Элиора Вейра"><meta name="robots" content="{'noindex,follow' if noindex else 'index,follow,max-image-preview:large'}"><link rel="canonical" href="{url}"><meta property="og:type" content="{'article' if L else 'website'}"><meta property="og:locale" content="ru_RU"><meta property="og:site_name" content="Каббала и Таро"><meta property="og:title" content="{E(title,quote=True)}"><meta property="og:description" content="{E(description,quote=True)}"><meta property="og:url" content="{url}"><meta property="og:image" content="{ORIGIN}/assets/beginning.jpg"><meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="{prefix}assets/course/course.css"><link rel="icon" href="{prefix}assets/course/icon.svg"><script type="application/ld+json">{jsonsafe(schema)}</script></head><body><a class="skip" href="#main">Перейти к содержанию</a><header class="top"><div class="top-inner"><a class="wordmark" href="{prefix or './'}" aria-label="Каббала и Таро — главная">Каббала<span><i>и</i> Таро</span></a><nav aria-label="Разделы курса">{nav}</nav><a class="author" href="{prefix}author/">Элиора Вейра</a></div></header><main class="wrap" id="main">{body}</main><footer class="footer"><div>Каббала и Таро · Элиора Вейра · 2026<br>Знакомиться можно постепенно. Возвращаться — сколько угодно.</div><div><a href="{prefix}author/">Об авторе и курсе</a><a href="{prefix}course/reading/#sources">Источники</a><a href="{prefix}course/notebook/">Тетрадь и перенос записей</a></div></footer><script id="course-data" type="application/json">{jsonsafe(payload)}</script><script defer src="{prefix}assets/course/state.js"></script><script defer src="{prefix}assets/course/readings-data.js"></script><script defer src="{prefix}assets/course/app.js"></script><script defer src="{prefix}assets/course/extensions.js"></script>{catalog_script}</body></html>'''
+ html=f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#122e3b"><title>{E(document_title)}</title><meta name="description" content="{E(description,quote=True)}"><meta name="author" content="Элиора Вейра"><meta name="robots" content="{'noindex,follow' if noindex else 'index,follow,max-image-preview:large'}"><link rel="canonical" href="{url}"><meta property="og:type" content="{'article' if L else 'website'}"><meta property="og:locale" content="ru_RU"><meta property="og:site_name" content="Каббала и Таро"><meta property="og:title" content="{E(title,quote=True)}"><meta property="og:description" content="{E(description,quote=True)}"><meta property="og:url" content="{url}"><meta property="og:image" content="{ORIGIN}/assets/beginning.jpg"><meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="{prefix}assets/course/course.css"><link rel="icon" href="{prefix}assets/course/icon.svg"><script type="application/ld+json">{jsonsafe(schema)}</script></head><body><a class="skip" href="#main">Перейти к содержанию</a><header class="top"><div class="top-inner"><a class="wordmark" href="{prefix or './'}" aria-label="Каббала и Таро — главная">Каббала<span><i>и</i> Таро</span></a><nav aria-label="Разделы курса">{nav}</nav><a class="author" href="{prefix}author/">Элиора Вейра</a></div></header><main class="wrap" id="main">{body}</main><footer class="footer"><div>Каббала и Таро · Элиора Вейра · 2026<br>Знакомиться можно постепенно. Возвращаться — сколько угодно.</div><div><a href="{prefix}author/">Об авторе и курсе</a><a href="{prefix}course/reading/#sources">Источники</a><a href="{prefix}course/notebook/">Тетрадь и перенос записей</a></div></footer><script id="course-data" type="application/json">{jsonsafe(payload)}</script><script defer src="{prefix}assets/course/state.js"></script><script defer src="{prefix}assets/course/readings-data.js"></script><script defer src="{prefix}assets/course/app.js"></script><script defer src="{prefix}assets/course/extensions.js"></script>{catalog_script}</body></html>'''
  if path.startswith('/course/yetzirah/'):
   html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/yetzirah.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/yetzirah-state.js"></script><script defer src="{prefix}assets/course/yetzirah.js"></script></body>')
  if path.startswith(('/course/tomer-devorah/','/course/bahir/','/course/book-modules/')):
@@ -212,7 +216,7 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
 def crumbs(prefix,title=None):return '<nav class="crumb" aria-label="Путь к странице"><span><a href="'+prefix+'">Главная</a></span><span><a href="'+prefix+'course/">Курс</a></span>'+(('<span>'+E(title)+'</span>') if title else '')+'</nav>'
 def sources(ids):return ''.join(f'<p class="fine"><a href="{E(D["sources"][i]["url"],quote=True)}" target="_blank" rel="noopener noreferrer">{E(D["sources"][i]["title"])}</a><br>{E(D["sources"][i]["detail"])}</p>' for i in ids)
 # Books orientation is available before the numbered lessons and needs no JavaScript.
-books=(ROOT/'content/books.html').read_text(encoding='utf-8')
+books=read_fragment(ROOT/'content/books.html')
 if CIRCLE_ITEMS and CIRCLE_ITEMS[0]['kind']=='intro':
  plaque=f'<p class="circle-plaque" data-circle-plaque="intro"><b>Первый круг · встреча 1 из {len(CIRCLE_ITEMS)}.</b> Сейчас достаточно двух частей: <a href="#map">«Перед нами целая библиотека»</a> и <a href="#rose">«Как цветок становится образом общины»</a>. Остальное можно прочитать позже — введение остаётся в меню «О книгах». В конце страницы отметьте встречу.</p>'
  books=books.replace('</header>','</header>'+plaque,1)
@@ -375,8 +379,10 @@ body=crumbs('../','Об авторе и курсе')+'<article class="hero-small
 page('/author/','Элиора Вейра — о курсе каббалы и Таро','Авторский проект Элиоры Вейры: понятное знакомство с каббалой, чтением Зоара и Таро. Замысел курса, подход к источникам и самостоятельной работе.',body)
 # Existing home stays an introduction, now in a more natural voice with a visible course entrance.
 home=ROOT/'index.html';s=home.read_text()
-s=s.replace('<title>Каббала и Таро — от любопытства к пониманию</title>','<title>Каббала и Таро для начинающих — курс Элиоры Вейры</title>')
-s=re.sub(r'<meta name="description" content="[^"]*">','<meta name="description" content="С чего начать изучение каббалы и Таро: бесплатный курс Элиоры Вейры, 45 уроков, Древо сефирот и понятные разборы Зоара.">',s)
+home_search=SEARCH_PAGES['/']
+s=re.sub(r'<title>[^<]*</title>',f'<title>{E(home_search["title"])}</title>',s,count=1)
+s=re.sub(r'<meta name="description"[^>]*>',f'<meta name="description" content="{E(home_search["description"])}">',s,count=1)
+s=re.sub(r'<link rel="icon"[^>]*>','<link rel="icon" href="/assets/icons/icon-192.png" type="image/png" sizes="192x192">',s,count=1)
 s=s.replace('За древними текстами и знакомыми символами — целый мир вопросов. О человеке. О его месте в мироздании. О смысле пути, который он выбирает.','Иногда достаточно одной картинки или случайно прочитанной строки, чтобы захотелось узнать больше. Если с Вами так и случилось — давайте попробуем разобраться вместе.')
 s=s.replace('<a class="read" href="#about">Зачем появился этот проект <span aria-hidden="true">↓</span></a>','<a class="read" href="course/">Открыть курс: 45 занятий <span aria-hidden="true">→</span></a><p style="margin-top:18px;font-size:13px"><a href="#about">Несколько слов о замысле</a></p>')
 # first step = the first circle (the whole program is one click further on /course/)
@@ -390,11 +396,18 @@ s=s[:start]+'''<article><h2 id="essay-title">Можно начать с прос
 <p class="invitation">Начните со знакомства с книгами. Возможно, дальше Вас поведёт уже собственный вопрос.</p>
 '''+design.routes_html()+'''<div class="signature">Элиора Вейра<span>Автор проекта</span></div></article>'''+s[end+len('</article>'):]
 s=re.sub(r'<link rel="canonical"[^>]*>','',s)
-s=re.sub(r'<meta (?:name="robots"|property="og:url")[^>]*>','',s)
+s=re.sub(r'<meta (?:name="(?:robots|twitter:card|google-site-verification|yandex-verification)"|property="og:(?:url|site_name)")[^>]*>','',s)
 s=re.sub(r'<script type="application/ld\+json">.*?</script>','',s,flags=re.S)
-s=re.sub(r'<meta property="og:title"[^>]*>','<meta property="og:title" content="Каббала и Таро — курс Элиоры Вейры">',s)
-s=re.sub(r'<meta property="og:description"[^>]*>','<meta property="og:description" content="45 занятий: читаем Зоар, разбираемся в символах и знакомимся с Таро. С понятными схемами, заданиями и личной тетрадью.">',s)
-s=s.replace('</head>',f'<link rel="canonical" href="{ORIGIN}/"><meta name="robots" content="index,follow,max-image-preview:large"><meta property="og:url" content="{ORIGIN}/"><script type="application/ld+json">'+json.dumps({'@context':'https://schema.org','@type':'WebSite','name':'Каббала и Таро','url':ORIGIN+'/','inLanguage':'ru','creator':{'@type':'Person','name':'Элиора Вейра','url':ORIGIN+'/author/'}},ensure_ascii=False)+'</script></head>')
+s=re.sub(r'<meta property="og:title"[^>]*>',f'<meta property="og:title" content="{E(home_search["title"])}">',s)
+s=re.sub(r'<meta property="og:description"[^>]*>',f'<meta property="og:description" content="{E(home_search["description"])}">',s)
+website={'@context':'https://schema.org','@type':'WebSite','@id':ORIGIN+'/#website','name':CFG['name'],'alternateName':'Каббала-Таро','url':ORIGIN+'/','inLanguage':'ru','creator':{'@type':'Person','name':CFG['author'],'url':ORIGIN+'/author/'}}
+verification=''.join(f'<meta name="{E(name)}" content="{E(value)}">' for name,value in CFG.get('verification',{}).items())
+s=s.replace('</head>',(
+ f'<link rel="canonical" href="{ORIGIN}/"><meta name="robots" content="index,follow,max-image-preview:large">'
+ f'<meta property="og:url" content="{ORIGIN}/"><meta property="og:site_name" content="{E(CFG["name"])}">'
+ '<meta name="twitter:card" content="summary_large_image">'+verification
+ +'<script type="application/ld+json">'+json.dumps(website,ensure_ascii=False)+'</script></head>'
+))
 s=s.replace('Здесь начинается знакомство. Материалы будут появляться постепенно.','<a href="course/">Курс</a> · <a href="course/reading/">Читаем Зоар</a> · <a href="author/">Об авторе</a>')
 s=re.sub(r'https?://kabbala-tarot.online/assets/beginning.jpg',ORIGIN+'/assets/beginning.jpg',s)
 s=s.replace('24 небольших урока','45 занятий').replace('24 интерактивных урока','45 уроков')
@@ -410,6 +423,6 @@ css=(ROOT/'assets/course/style.css').read_text();css=re.sub(r'@import[^;]+;','',
 design.write_assets()
 (ROOT/'assets/course/icon.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#122e3b"/><path d="M32 9 37 27 55 32 37 37 32 55 27 37 9 32 27 27Z" fill="#dfc18c"/></svg>')
 routes=['/']+routes
-xml='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+''.join(f'  <url><loc>{ORIGIN}{p}</loc><lastmod>{CFG["updated"]}</lastmod></url>\n' for p in routes)+'</urlset>\n'
+xml='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+''.join(f'  <url><loc>{E(ORIGIN+p)}</loc></url>\n' for p in routes)+'</urlset>\n'
 (ROOT/'sitemap.xml').write_text(xml);(ROOT/'robots.txt').write_text(f'User-agent: *\nAllow: /\n# design sources and tests are published with the repository but are not pages\nDisallow: /tools/\nDisallow: /tests/\n\nSitemap: {ORIGIN}/sitemap.xml\n')
 print(f'Built {len(LESSONS)} lessons; {len(routes)} indexable URLs; private notebook excluded from sitemap.')

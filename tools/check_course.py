@@ -2,12 +2,24 @@
 from pathlib import Path
 from html.parser import HTMLParser
 from urllib.parse import urlsplit,unquote
+from urllib.robotparser import RobotFileParser
+from xml.etree import ElementTree
+from html_fragment import SOURCE_NOINDEX
 import json,collections
 P=Path(__file__).resolve().parents[1]
 class HTML(HTMLParser):
- def __init__(self):super().__init__();self.ids=[];self.links=[];self.js=[];self.uses=[]
+ def __init__(self):
+  super().__init__()
+  self.ids=[];self.links=[];self.js=[];self.uses=[]
+  self.in_head=False;self.title_parts=None;self.titles=[];self.canonicals=[]
+  self.meta=collections.defaultdict(list)
  def handle_starttag(self,tag,attrs):
   a=dict(attrs)
+  if tag=='head':self.in_head=True
+  if self.in_head:
+   if tag=='title':self.title_parts=[]
+   if tag=='meta' and (key:=a.get('name') or a.get('property')):self.meta[key].append(a.get('content',''))
+   if tag=='link' and a.get('rel')=='canonical':self.canonicals.append(a.get('href'))
   if 'id' in a:self.ids.append(a['id'])
   # images (src and every srcset candidate) must resolve; <use href="file.svg#id"> must name an existing symbol
   if tag=='img' and a.get('src'):self.links.append(a['src'])
@@ -17,6 +29,13 @@ class HTML(HTMLParser):
   if tag in ['script','link']:
    u=a.get('src') or a.get('href')
    if u:self.links.append(u)
+ def handle_data(self,data):
+  if self.title_parts is not None:self.title_parts.append(data)
+ def handle_endtag(self,tag):
+  if tag=='title' and self.title_parts is not None:
+   self.titles.append(''.join(self.title_parts).strip())
+   self.title_parts=None
+  if tag=='head':self.in_head=False
 parsers={};errors=[]
 for p in P.rglob('*.html'):
  if '.git' in p.parts or {'content','tools'}&set(p.relative_to(P).parts):continue
@@ -140,6 +159,39 @@ assert len(sy['comparisons'])==7 and len({x['letter'] for x in sy['comparisons']
 assert len(sy['months'])==12 and len({x['month'] for x in sy['months']})==12
 assert sy['comparisons'][0]['Tplanet']=='Сатурн' and sy['comparisons'][0]['Gplanet']=='Луна'
 sitemap=(P/'sitemap.xml').read_text()
+site=json.loads((P/'content/site.json').read_text())
+origin=site['origin'].rstrip('/')
+namespace={'s':'http://www.sitemaps.org/schemas/sitemap/0.9'}
+locations=[node.text for node in ElementTree.fromstring(sitemap).findall('s:url/s:loc',namespace)]
+assert len(locations)==len(set(locations)), 'Duplicate URLs in sitemap'
+robots=RobotFileParser()
+robots.parse((P/'robots.txt').read_text().splitlines())
+assert robots.site_maps()==[origin+'/sitemap.xml'], 'Wrong sitemap URL in robots.txt'
+indexable=set()
+for path,page in parsers.items():
+ rel=path.relative_to(P).as_posix()
+ directives=page.meta['robots']
+ assert len(directives)==1, f'{rel}: expected one robots meta tag in head'
+ if 'noindex' in directives[0].split(','):continue
+ route='/'+rel.removesuffix('index.html')
+ url=origin+route
+ indexable.add(url)
+ assert page.canonicals==[url] and page.meta['og:url']==[url], f'{rel}: canonical or social URL mismatch'
+ assert len(page.titles)==1 and page.titles[0], f'{rel}: expected one title'
+ descriptions=page.meta['description']
+ assert len(descriptions)==1 and descriptions[0], f'{rel}: expected one description'
+ assert robots.can_fetch('Googlebot',url) and robots.can_fetch('Yandex',url), f'{rel}: robots.txt blocks this URL'
+ if search:=site['searchPages'].get(route):
+  assert page.titles==[search['title']] and page.meta['og:title']==[search['title']], f'{rel}: configured title not rendered'
+  assert descriptions==[search['description']] and page.meta['og:description']==descriptions, f'{rel}: configured description not rendered'
+assert set(locations)==indexable, f'Sitemap differs from indexable pages: {set(locations)^indexable}'
+assert all(origin+route in indexable for route in site['searchPages']), 'SEO metadata configured for a nonpublic URL'
+for path in (P/'content').glob('*.html'):
+ assert path.read_text().startswith(SOURCE_NOINDEX), f'{path.name}: source fragment needs noindex'
+home=parsers[P/'index.html']
+for name,value in site.get('verification',{}).items():
+ assert home.meta[name]==[value], f'{name}: verification meta tag missing from home head'
+print(f'{len(indexable)} indexable URLs match the sitemap, with checked metadata and crawl access.')
 assert '/course/yetzirah/notebook/' not in sitemap
 assert all('/course/yetzirah/'+l['slug']+'/' in sitemap for l in sy['lessons'])
 print('Yetzirah: 12 complete lessons, 24 questions, 7 comparison rows, 12 months, notes, sources and public routes verified.')

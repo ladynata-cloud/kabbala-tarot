@@ -55,7 +55,8 @@ def study(L):
  pair_link='<p><a class="button" href="../tarot-pairs/">Конструктор всех пар: соответствия, порядок и своя запись →</a></p>' if L['slug']=='two-cards' else ''
  own_tables=any(x.get('table') for x in L.get('sections',[]))
  instruction=(L.get('labData') or {}).get('instruction') or L.get('practice','')
- s='<div class="lab lab-study"><h3>Работаем с изображением</h3>'+textp(instruction)+'<div class="tarot-grid lesson-cards">'+''.join(card(CARDS[k],observe=True,big=True) for k in L.get('cards',[]))+'</div><span class="status-text" data-obs-status role="status">Наблюдения хранятся в этом браузере и не отправляются автору курса.</span><p><a href="../tarot/#compare">Открыть сравнение двух карт →</a> · <a href="../tarot/#cards">Все 78 карт →</a></p>'
+ heading='' if L['slug']=='one-card' else '<h3>Работаем с изображением</h3>'
+ s='<div class="lab lab-study">'+heading+textp(instruction)+'<div class="tarot-grid lesson-cards">'+''.join(card(CARDS[k],observe=True,big=True) for k in L.get('cards',[]))+'</div><span class="status-text" data-obs-status role="status">Наблюдения хранятся в этом браузере и не отправляются автору курса.</span><p><a href="../tarot/#compare">Открыть сравнение двух карт →</a> · <a href="../tarot/#cards">Все 78 карт →</a></p>'
  s+=pair_link
  if L['slug']=='three-cards':
   s+='<p><a class="button" href="../tarot-triples/">Все тройки: каббалистический разбор, шесть порядков и своя запись →</a></p>'

@@ -1,0 +1,193 @@
+.one-card-page { overflow-wrap: anywhere; }
+.one-card-page .skip { max-width: calc(100% - 40px); }
+
+.one-card-page .lesson-shell {
+  display: block;
+  padding-bottom: 4rem;
+}
+
+.one-card-page .wrap { max-width: 1070px; }
+.one-card-page .crumb { margin-bottom: 1.15rem; }
+.one-card-page .lesson-main { max-width: 870px; }
+
+.one-card-heading { max-width: 45rem; }
+
+.one-card-page .lesson-main h1 {
+  margin-bottom: .55rem;
+  font-size: clamp(2.3rem, 5vw, 3.4rem);
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.one-card-lead {
+  max-width: 61ch;
+  margin-bottom: .65rem;
+  font-size: var(--body-size);
+  line-height: 1.62;
+}
+
+.one-card-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 1rem;
+  font-size: .87rem;
+  color: var(--muted);
+}
+
+.one-card-tools button,
+.one-card-tools summary {
+  min-height: 2.5rem;
+  padding: .42rem 0;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+
+.one-card-tools button {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.one-card-program[open] { flex-basis: 100%; }
+
+.one-card-program > div {
+  max-width: 39rem;
+  margin: 0 0 .6rem;
+  padding: .65rem 1rem;
+  border-inline-start: 2px solid #527071;
+  background: #eef3f2;
+}
+
+.one-card-program .side-note { margin-bottom: .65rem; }
+.one-card-program .lesson-list a { padding: .45rem 0; }
+.one-card-program .lesson-list a[aria-current="page"] { font-weight: 700; }
+.one-card-program details summary { padding: .45rem 0; }
+
+.one-card-page .steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 .9rem;
+  margin: .1rem 0 1.4rem;
+}
+
+.one-card-page .steps button {
+  min-height: 2.75rem;
+  padding: .35rem .12rem;
+  font-size: .94rem;
+  line-height: 1.45;
+}
+
+.one-card-page .steps button[aria-current="step"] {
+  border-bottom-color: #3c6665;
+  font-weight: 700;
+}
+
+.one-card-page .stage:focus-visible,
+.one-card-page :focus-visible {
+  outline: 2px solid #2e6665;
+  outline-offset: 3px;
+}
+
+.one-card-page .top :focus-visible { outline-color: #f2d4a3; }
+
+.one-card-page .stage h2 {
+  font-size: clamp(1.85rem, 3.4vw, 2.4rem);
+  line-height: 1.15;
+}
+
+.one-card-page .learn-text {
+  max-width: 66ch;
+  padding-bottom: 0;
+  margin-bottom: 1.9rem;
+  border: 0;
+}
+
+.one-card-page .learn-text:first-child { max-width: none; }
+.one-card-page .learn-text h2 { margin-bottom: .8rem; }
+.one-card-page .learn-text p { max-width: 66ch; }
+
+.one-card-study {
+  display: grid;
+  grid-template-columns: minmax(0, 13.5rem) minmax(0, 31rem);
+  gap: clamp(1.3rem, 4vw, 2.5rem);
+  align-items: start;
+}
+
+.one-card-study > div { padding-top: .35rem; }
+.one-card-figure { margin: 0; }
+
+.one-card-image {
+  display: block;
+  max-width: 13.5rem;
+  font-size: .875rem;
+  line-height: 1.5;
+}
+
+.one-card-image img { display: block; width: 100%; height: auto; }
+.one-card-image span { display: inline-block; padding-top: .35rem; }
+.one-card-figure figcaption { color: var(--muted); font-size: .875rem; line-height: 1.5; margin-top: .4rem; }
+.one-card-page .one-card-figure figcaption .fine { font-size: inherit; margin: .2rem 0 0; }
+
+.one-card-example {
+  margin: .85rem 0 1rem;
+  padding: .45rem 1rem .45rem 1.2rem;
+  border-inline-start: 2px solid #527071;
+  background: #eef3f2;
+}
+
+.one-card-example > div {
+  display: grid;
+  grid-template-columns: minmax(0, 9rem) minmax(0, 1fr);
+  gap: .6rem;
+  padding: .55rem 0;
+}
+
+.one-card-example > div + div { border-top: 1px solid #cddcda; }
+.one-card-example dt { font-weight: 700; }
+.one-card-example dd { margin: 0; }
+
+.one-card-page .lab-study { border: 0; padding: 0; background: transparent; }
+.one-card-page .lab-study > p { max-width: 66ch; font-size: var(--body-size); }
+.one-card-page .lab-study > .status-text { font-size: .875rem; margin-bottom: .8rem; }
+.one-card-page .scaffold label { font-size: .94rem; font-weight: 700; }
+.one-card-page .scaffold-field { margin-top: .25rem; font-size: var(--body-size); }
+.one-card-page .source-block { max-width: 66ch; }
+.one-card-page .source-block :is(li, .fine) { font-size: .875rem; }
+.one-card-page .next-prev a { text-decoration: underline; text-underline-offset: .2em; }
+
+@media (max-width: 640px) {
+  .one-card-page .top-inner { padding: .65rem 1rem; gap: .4rem .8rem; }
+  .one-card-page .top nav { gap: .12rem .8rem; padding: .35rem 0 0; }
+  .one-card-page .top nav a { white-space: normal; }
+  .one-card-page .wrap { padding: 0 1rem; }
+  .one-card-page .crumb { padding-top: .75rem; margin-bottom: .65rem; }
+  .one-card-page .lesson-main h1 { text-wrap: wrap; }
+  .one-card-study { grid-template-columns: minmax(0, 1fr); gap: .8rem; }
+  .one-card-study > div { padding-top: 0; }
+  .one-card-image { max-width: 11rem; }
+  .one-card-example > div { grid-template-columns: minmax(0, 1fr); gap: .1rem; }
+}
+
+@media (max-width: 440px) {
+  .one-card-page .steps { gap: 0 .55rem; margin-bottom: .9rem; }
+  .one-card-page .steps button { font-size: .9rem; }
+}
+
+@media (max-width: 360px) {
+  .one-card-page .steps {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 .85rem;
+  }
+
+  .one-card-page .steps button { min-width: 0; }
+}
+
+@media print {
+  .one-card-tools { display: none; }
+  .one-card-study { display: block; }
+  .one-card-image img { max-height: 240px; width: auto; }
+}

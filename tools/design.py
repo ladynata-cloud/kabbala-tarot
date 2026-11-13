@@ -141,7 +141,7 @@ def externalize_fonts(text,font_dir):
   return re.sub(r'url\(\s*["\']?data:font[^)]*\)\s*format\(\s*[\'"]?woff[\'"]?\s*\)',lambda _:f"url({font_dir}{f}) format('woff')",m.group(0),count=1)
  return re.sub(r'@font-face\s*\{([^}]*)\}',face,text)
 
-HERO='<picture><source type="image/webp" srcset="assets/img/beginning-640.webp 640w, assets/img/beginning-960.webp 960w, assets/img/beginning-1280.webp 1280w, assets/img/beginning-1536.webp 1536w" sizes="(max-width: 760px) calc(100vw - 48px), 52vw"><img src="assets/beginning.jpg" width="1536" height="1024" fetchpriority="high" decoding="async" alt="{alt}"></picture>'
+HERO='<picture><source type="image/webp" srcset="assets/img/beginning-640.webp 640w, assets/img/beginning-960.webp 960w, assets/img/beginning-1280.webp 1280w, assets/img/beginning-1536.webp 1536w" sizes="(max-width: 760px) calc(100vw - 44px), (max-width: 1200px) 38vw, 440px"><img src="assets/beginning.jpg" width="1536" height="1024" fetchpriority="high" decoding="async" alt="{alt}"></picture>'
 CSS_START='\n/* === upgrade: landing components === */\n';CSS_END='\n/* === end: landing components === */'
 def routes_html():return fragment('landing/routes.html')
 def landing(s):
@@ -167,7 +167,7 @@ def landing(s):
 def _slim(s):return re.sub(r'\n{2,}','\n',re.sub(r'^[ \t]+','',re.sub(r'/\*[\s\S]*?\*/','',s),flags=re.M)).strip()
 DESIGN_CSS=['visual.css','tarot-view.css','engine.css','labs.css']
 def course_css(fonts,style):
- parts=DESIGN_CSS+sorted(p.name for p in (ROOT/'assets/course/design').glob('diagrams-*.css'))
+ parts=DESIGN_CSS+sorted(p.name for p in (ROOT/'assets/course/design').glob('diagrams-*.css'))+['editorial-pilot.css']
  c=externalize_fonts(fonts,'../fonts/')+'\n'+style
  for p in parts:c+=f'\n/* === upgrade: {p} === */\n{_slim((ROOT/"assets/course/design"/p).read_text(encoding="utf-8"))}\n'
  return c

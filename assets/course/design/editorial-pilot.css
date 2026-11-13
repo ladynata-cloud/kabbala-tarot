@@ -1,0 +1,52 @@
+/* Four-page editorial pilot. The home page has its own landing stylesheet. */
+.editorial-pilot p{line-height:1.7}
+.editorial-pilot .hero-small{max-width:760px;padding-bottom:24px}
+.editorial-pilot .hero-small h1,.editorial-pilot .lesson-main h1{font-size:clamp(44px,4vw,52px);line-height:1.08;letter-spacing:-.5px;margin-bottom:18px}
+.editorial-pilot .lead,.editorial-pilot .lesson-summary{font-size:var(--body-size);line-height:1.7;max-width:740px;margin-bottom:20px}
+.editorial-pilot h2{font-size:34px;line-height:1.15}
+.editorial-pilot h3{font-size:27px;line-height:1.2}
+.editorial-pilot .fine{font-size:14px!important;line-height:1.6}
+.editorial-pilot .source-block li,.editorial-pilot .source-link,.editorial-pilot .lesson-card-figure figcaption{font-size:14px;line-height:1.6}
+.editorial-pilot .reading-card{max-width:760px;padding:28px 0}
+.editorial-pilot .reading-card>p{max-width:740px}
+.editorial-pilot .reading-card h3{font-size:25px;margin:24px 0 10px}
+.editorial-pilot .reading-card .quote{font-size:30px;line-height:1.4}
+.editorial-pilot .author-note h2{font-size:31px;margin:32px 0 15px}
+.editorial-hermit .lesson-main{max-width:760px}
+.editorial-hermit .lesson-meta{font-size:14px;line-height:1.5;gap:10px 18px;margin:12px 0 10px}
+.editorial-hermit .steps{margin:16px 0 22px}
+.editorial-hermit .steps button{font-size:13px;min-height:52px}
+.editorial-hermit .lesson-observation{display:grid;grid-template-columns:220px minmax(0,1fr);gap:26px;align-items:start}
+.editorial-hermit .lesson-observation .lesson-card-figure{display:block;margin:0}
+.editorial-hermit .lesson-observation .card-picture{display:block;width:220px;max-width:100%}
+.editorial-hermit .lesson-observation .card-picture img{width:100%;height:auto}
+.editorial-hermit .lesson-observation figcaption{margin-top:12px}
+.editorial-hermit .circle-plaque{margin:28px 0 22px;font-size:14px}
+.editorial-hermit .question-help{margin:12px 0 18px;padding:10px 0}
+.editorial-hermit .question-help summary{font-size:14px;cursor:pointer}
+.editorial-hermit .question-help p{font-size:14px;line-height:1.6;margin:12px 0 0}
+.editorial-hermit .hermit3-waite{font-style:normal}
+.editorial-rose .reading-guide{margin:8px 0 18px}
+.editorial-rose .reading-guide summary{font-size:14px;cursor:pointer}
+.editorial-rose .reading-guide p{margin:12px 0 0}
+@media(max-width:1050px){
+ .editorial-hermit .lesson-observation{grid-template-columns:180px minmax(0,1fr);gap:20px}
+ .editorial-hermit .lesson-observation .card-picture{width:180px}
+}
+@media(max-width:760px){
+ .editorial-pilot .hero-small h1,.editorial-pilot .lesson-main h1{font-size:36px;line-height:1.1;letter-spacing:-.25px}
+ .editorial-pilot h2,.editorial-pilot .stage h2{font-size:30px}
+ .editorial-pilot .author-note h2{font-size:28px}
+ .editorial-hermit .side{margin-bottom:20px}
+ .editorial-hermit .lesson-meta{margin:10px 0}
+ .editorial-hermit .steps{margin:12px 0 18px}
+ .editorial-hermit .steps button{font-size:12px;padding:8px 3px}
+ .editorial-hermit .lesson-observation{grid-template-columns:1fr;gap:18px}
+ .editorial-hermit .lesson-observation .lesson-card-figure{max-width:100%}
+ .editorial-hermit .lesson-observation .card-picture{width:200px;max-width:75vw}
+ .editorial-pilot .reading-card .quote{font-size:27px;padding-left:16px}
+}
+@media print{
+ .editorial-hermit .lesson-observation{grid-template-columns:160px minmax(0,1fr)}
+ .editorial-hermit .lesson-observation .card-picture{width:160px}
+}

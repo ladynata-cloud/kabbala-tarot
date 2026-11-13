@@ -9,12 +9,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#102330">
   <title>Каббала и Таро для начинающих — курс Элиоры Вейры</title>
-  <meta name="description" content="Бесплатный курс для самостоятельного изучения каббалы и Таро: 45 вводных уроков, Древо сефирот, разборы Зоара и практика чтения карт.">
+  <meta name="description" content="Бесплатный курс каббалы и Таро для начинающих: восемь первых встреч с книгами и картами, 45 занятий, разборы Зоара и тетрадь для собственных наблюдений.">
   <meta name="author" content="Элиора Вейра">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ru_RU">
   <meta property="og:title" content="Каббала и Таро для начинающих — курс Элиоры Вейры">
-  <meta property="og:description" content="Бесплатный курс для самостоятельного изучения каббалы и Таро: 45 вводных уроков, Древо сефирот, разборы Зоара и практика чтения карт.">
+  <meta property="og:description" content="Бесплатный курс каббалы и Таро для начинающих: восемь первых встреч с книгами и картами, 45 занятий, разборы Зоара и тетрадь для собственных наблюдений.">
   <meta property="og:image" content="https://kabbala-tarot.online/assets/beginning.jpg">
   <link rel="icon" href="/assets/icons/icon-192.png" type="image/png" sizes="192x192">
   <style>
@@ -167,6 +167,33 @@
   .intro .read-second{display:flex;width:fit-content;margin:10px 0 0}
 }
 
+/* Editorial pilot: a concrete first task and a quieter role for the existing illustration. */
+.hero{grid-template-columns:minmax(0,1.35fr) minmax(0,.8fr);align-items:start;padding:48px 56px 56px;gap:40px}
+.intro h1{font-size:clamp(44px,4vw,58px);line-height:1.08;letter-spacing:-.6px;margin-bottom:24px}
+.lead{max-width:620px;font-size:17px;line-height:1.7;margin-bottom:26px}
+.hero figure{max-width:440px;margin-left:auto}
+.intro .read{display:flex;width:fit-content;min-height:44px;line-height:1.55;padding:8px 0;gap:12px}
+.intro .read-second{margin:8px 0 0}
+.intro-about{margin:20px 0 0;font-size:14px;line-height:1.6}
+.essay{max-width:1160px;padding:56px 56px 64px;grid-template-columns:136px minmax(0,1fr);gap:40px}
+.essay article{max-width:740px}
+article h2{font-size:38px;line-height:1.15;margin-bottom:24px}
+article p{font-size:17px;line-height:1.7;margin-bottom:22px}
+article p:first-of-type::first-letter{float:none;font:inherit;line-height:inherit;padding:0;color:inherit}
+@media(max-width:1000px){
+ .hero{padding:36px 32px 44px;gap:28px}
+ .essay{padding:44px 32px;grid-template-columns:110px minmax(0,1fr);gap:28px}
+}
+@media(max-width:760px){
+ .hero{grid-template-columns:1fr;padding:28px 22px 32px;gap:24px}
+ .intro h1{font-size:36px;line-height:1.1;letter-spacing:-.25px;margin-bottom:20px}
+ .lead{font-size:17px;line-height:1.7;margin-bottom:20px}
+ .hero figure{width:100%;max-width:360px;margin:0 auto}
+ .essay{display:block;padding:36px 22px 42px}
+ article h2{font-size:32px;line-height:1.15}
+ article p{font-size:17px;line-height:1.7}
+}
+
 /* === end: landing components === */
 
   </style>
@@ -181,26 +208,26 @@
     <main>
       <section class="hero" aria-labelledby="page-title">
         <div class="intro">
-          <h1 id="page-title">От любопытства<br><em>к пониманию</em></h1>
-          <p class="lead">Иногда достаточно одной картинки или случайно прочитанной строки, чтобы захотелось узнать больше. Если с Вами так и случилось — давайте попробуем разобраться вместе.</p>
-          <a class="read" href="course/#first-circle">Начать первый круг: книги и карты вперемешку <span aria-hidden="true">→</span></a><a class="read read-second" href="course/reading-the-hermit/">Начать с карты <span aria-hidden="true">→</span></a><p style="margin-top:18px;font-size:13px"><a href="#about">Несколько слов о замысле</a></p>
-        </div>
+  <h1 id="page-title">Каббала и Таро<br><em>для начинающих</em></h1>
+  <p class="lead">В первом круге мы рассмотрим Отшельника Уэйта–Смит и откроем начало Зоара. Будем отделять детали изображения от объяснения автора, читать короткие отрывки и записывать свои вопросы.</p>
+  <a class="read" href="course/#first-circle">Первый круг: восемь встреч <span aria-hidden="true">→</span></a><a class="read read-second" href="course/reading-the-hermit/">Рассмотреть Отшельника <span aria-hidden="true">→</span></a>
+  <p class="intro-about"><a href="#about">Как устроены занятия</a></p>
+</div>
         <figure>
-          <picture><source type="image/webp" srcset="assets/img/beginning-640.webp 640w, assets/img/beginning-960.webp 960w, assets/img/beginning-1280.webp 1280w, assets/img/beginning-1536.webp 1536w" sizes="(max-width: 760px) calc(100vw - 48px), 52vw"><img src="assets/beginning.jpg" width="1536" height="1024" fetchpriority="high" decoding="async" alt="Золотое дерево под каменной аркой, открытая книга и три карты с солнцем, луной и звездой на фоне ночного неба."></picture>
-          <figcaption>Каждое знакомство начинается с открытой страницы.</figcaption>
+          <picture><source type="image/webp" srcset="assets/img/beginning-640.webp 640w, assets/img/beginning-960.webp 960w, assets/img/beginning-1280.webp 1280w, assets/img/beginning-1536.webp 1536w" sizes="(max-width: 760px) calc(100vw - 44px), (max-width: 1200px) 38vw, 440px"><img src="assets/beginning.jpg" width="1536" height="1024" fetchpriority="high" decoding="async" alt="Золотое дерево под каменной аркой, открытая книга и три карты с солнцем, луной и звездой на фоне ночного неба."></picture>
+
         </figure>
       </section>
     </main>
   </div>
   <section class="essay" id="about" aria-labelledby="essay-title">
     <aside class="margin-note"><span>О замысле</span>Первая страница</aside>
-    <article><h2 id="essay-title">Можно начать с простого любопытства</h2>
-<p>Возможно, Вы уже открывали книгу по каббале — и закрывали её через несколько страниц. Слишком много непривычных слов, одно объяснение требует другого, а с чего начать, всё равно непонятно. Или Вас привлекли карты Таро: хочется рассмотреть их, понять образы, но не заучивать чужие толкования без разбора.</p>
-<p>Я задумала этот курс именно для такого начала. Будем знакомиться с понятиями постепенно, пробовать читать небольшие отрывки, возвращаться к схемам. Где-то хватит одной страницы. Где-то захочется задержаться и задать ещё один вопрос.</p>
-<p>Начать можно с книги, карты или знакомой песни. Будем чередовать чтение Зоара, знакомство с каббалой — мистической традицией иудаизма — и работу с образами Таро. Разберём, зачем нужны сефирот, что называют светом и сосудами, как числа связываются с буквами. У нас есть каталог из 888 коротких фрагментов Зоара, включая 88 встреч с пояснениями, и разборы всех 78 карт. Связи между этими традициями тоже рассмотрим: с именами авторов и пониманием того, когда эти связи появились.</p>
-<p>Мне хочется, чтобы после урока у Вас оставалось ощущение: «Вот это я теперь могу объяснить». Поэтому здесь есть задания с пояснениями, схемы, на которых можно нажимать и переключать, и тетрадь для собственных мыслей. И никакой спешки: все уроки открыты, к любому можно вернуться.</p>
-<p class="invitation">Начните со знакомства с книгами. Возможно, дальше Вас поведёт уже собственный вопрос.</p>
-<nav class="routes" aria-label="С чего начать">
+    <article>
+  <h2 id="essay-title">Что будем делать с книгами и картами</h2>
+  <p>В <a href="course/reading-the-hermit/">уроке об Отшельнике</a> сначала рассмотрим фонарь, посох и горный склон, затем прочтём объяснение Уэйта. В <a href="course/reading/rose/">подборке о розе</a> проследим, как один стих получает разные толкования в соседних параграфах Зоара. Для каждого разбора нужны конкретный рисунок или место в книге.</p>
+  <p>Каббала возникает в иудейской традиции. Связи с Таро рассматриваются отдельно, у авторов более поздних систем. В занятиях указано, где мы читаем историческое исследование, где — религиозное толкование, а где пробуем собственное сопоставление.</p>
+  <p>В основной программе 45 занятий. В разделе Зоара есть <a href="course/reading/#guided">88 разборов по темам</a> и <a href="course/reading/catalog/">каталог из 888 фрагментов</a> с адресами в книгах. Раздел Таро содержит изображения и учебные прочтения всех 78 карт. К заданиям можно вернуться; свои наблюдения удобно сохранять в <a href="course/notebook/">тетради</a>.</p>
+  <nav class="routes" aria-label="С чего начать">
 <a class="route route--lead" href="/course/books/"><span class="route-mark"><svg class="emblem" aria-hidden="true" focusable="false"><use href="/assets/emblems/emblems.svg#em-books"/></svg></span><span class="route-text"><span class="route-title">Тора, Талмуд, Зоар</span><span class="route-line">Что это за книги?</span></span><span class="route-go" aria-hidden="true">→</span></a>
 <a class="route" href="/course/"><span class="route-mark"><svg class="emblem" aria-hidden="true" focusable="false"><use href="/assets/emblems/emblems.svg#em-course"/></svg></span><span class="route-text"><span class="route-title">Курс каббалы и&nbsp;Таро</span><span class="route-line">Перейти к&nbsp;курсу: 45&nbsp;занятий</span></span><span class="route-go" aria-hidden="true">→</span></a>
 <a class="route" href="/course/tarot/"><span class="route-mark"><svg class="emblem" aria-hidden="true" focusable="false"><use href="/assets/emblems/emblems.svg#em-major"/></svg></span><span class="route-text"><span class="route-title">Таро для начинающих</span><span class="route-line">От первой карты к&nbsp;самостоятельному раскладу</span></span><span class="route-go" aria-hidden="true">→</span></a>
@@ -210,7 +237,9 @@
 <a class="route" href="/course/ritual-magic/"><span class="route-mark"><svg class="emblem" aria-hidden="true" focusable="false"><use href="/assets/emblems/emblems.svg#em-ritual"/></svg></span><span class="route-text"><span class="route-title">Ритуальная магия</span><span class="route-line">Тексты, символы и&nbsp;история</span></span><span class="route-go" aria-hidden="true">→</span></a>
 <a class="route" href="/course/hekate/"><span class="route-mark"><svg class="emblem" aria-hidden="true" focusable="false"><use href="/assets/emblems/emblems.svg#em-hekate"/></svg></span><span class="route-text"><span class="route-title">Геката</span><span class="route-line">28&nbsp;занятий со&nbsp;связями с&nbsp;каббалой и&nbsp;Таро</span></span><span class="route-go" aria-hidden="true">→</span></a>
 <a class="route" href="/course/tarot/deck/"><span class="route-mark"><svg class="emblem" aria-hidden="true" focusable="false"><use href="/assets/emblems/emblems.svg#em-deck"/></svg></span><span class="route-text"><span class="route-title">Колода Таро</span><span class="route-line">Все 78&nbsp;карт</span></span><span class="route-go" aria-hidden="true">→</span></a>
-</nav><div class="signature">Элиора Вейра<span>Автор проекта</span></div></article>
+</nav>
+  <div class="signature">Элиора Вейра<span>Автор проекта</span></div>
+</article>
   </section>
   <section class="deck-band" aria-labelledby="deck-band-title">
   <div class="deck-band-inner">

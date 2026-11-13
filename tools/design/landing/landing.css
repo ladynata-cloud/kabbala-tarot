@@ -100,3 +100,30 @@
 @media (max-width:600px){
   .intro .read-second{display:flex;width:fit-content;margin:10px 0 0}
 }
+
+/* Editorial pilot: a concrete first task and a quieter role for the existing illustration. */
+.hero{grid-template-columns:minmax(0,1.35fr) minmax(0,.8fr);align-items:start;padding:48px 56px 56px;gap:40px}
+.intro h1{font-size:clamp(44px,4vw,58px);line-height:1.08;letter-spacing:-.6px;margin-bottom:24px}
+.lead{max-width:620px;font-size:17px;line-height:1.7;margin-bottom:26px}
+.hero figure{max-width:440px;margin-left:auto}
+.intro .read{display:flex;width:fit-content;min-height:44px;line-height:1.55;padding:8px 0;gap:12px}
+.intro .read-second{margin:8px 0 0}
+.intro-about{margin:20px 0 0;font-size:14px;line-height:1.6}
+.essay{max-width:1160px;padding:56px 56px 64px;grid-template-columns:136px minmax(0,1fr);gap:40px}
+.essay article{max-width:740px}
+article h2{font-size:38px;line-height:1.15;margin-bottom:24px}
+article p{font-size:17px;line-height:1.7;margin-bottom:22px}
+article p:first-of-type::first-letter{float:none;font:inherit;line-height:inherit;padding:0;color:inherit}
+@media(max-width:1000px){
+ .hero{padding:36px 32px 44px;gap:28px}
+ .essay{padding:44px 32px;grid-template-columns:110px minmax(0,1fr);gap:28px}
+}
+@media(max-width:760px){
+ .hero{grid-template-columns:1fr;padding:28px 22px 32px;gap:24px}
+ .intro h1{font-size:36px;line-height:1.1;letter-spacing:-.25px;margin-bottom:20px}
+ .lead{font-size:17px;line-height:1.7;margin-bottom:20px}
+ .hero figure{width:100%;max-width:360px;margin:0 auto}
+ .essay{display:block;padding:36px 22px 42px}
+ article h2{font-size:32px;line-height:1.15}
+ article p{font-size:17px;line-height:1.7}
+}

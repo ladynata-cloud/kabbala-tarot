@@ -49,8 +49,9 @@ function updateCircle(){
 function circlePlaques(){
  CIRCLE.forEach((x,n)=>{if(x.kind!=='reading')return;const card=document.getElementById('reading-'+String(x.key.slice(1)).padStart(2,'0'));if(!card||$('[data-circle-meeting]',card))return;
   const nx=CIRCLE[n+1],p=document.createElement('p');p.className='circle-plaque';p.dataset.circleMeeting=x.key;
-  p.innerHTML='<b>Первый круг · встреча '+(n+1)+' из '+CIRCLE.length+'.</b> Прочитайте цитату и пояснение, ответьте на вопрос и отметьте внизу «Я прочитал(а)…». <span data-circle-meeting-state></span> '+(nx?'Дальше по кругу: <a href="'+esc(abs(nx.href))+'">'+esc(nx.title)+' →</a>':'<a href="'+DATA.root+'course/#circle-after">Что дальше →</a>');
-  const h=$('h2',card);(h?h:card.firstChild).before(p);});
+  const compact=document.body.classList.contains('editorial-rose');
+  p.innerHTML='<b>Первый круг · встреча '+(n+1)+' из '+CIRCLE.length+'.</b> '+(compact?'':'Прочитайте цитату и пояснение, ответьте на вопрос и отметьте внизу «Я прочитал(а)…». ')+'<span data-circle-meeting-state></span> '+(nx?'Дальше по кругу: <a href="'+esc(abs(nx.href))+'">'+esc(nx.title)+' →</a>':'<a href="'+DATA.root+'course/#circle-after">Что дальше →</a>');
+  if(compact)card.append(p);else{const h=$('h2',card);(h?h:card.firstChild).before(p);}});
 }
 if(!storageOK)warn();if(state.large){document.documentElement.style.setProperty('--body-size','19px');$$('[data-font-size]').forEach(b=>b.textContent='Обычный текст');}if(window.matchMedia('(max-width:760px)').matches)$$('.toc').forEach(el=>el.open=false);
 $$('[data-font-size]').forEach(b=>b.addEventListener('click',()=>{state.large=!state.large;document.documentElement.style.setProperty('--body-size',state.large?'19px':'17px');b.textContent=state.large?'Обычный текст':'Крупнее текст';save();}));

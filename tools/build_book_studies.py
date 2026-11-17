@@ -28,7 +28,7 @@ def solution(text,title='Разобрать задание'):return '<details cl
 def sources(d,l=None):
  s='<section class="sy-source" id="sources"><h2>Источник и способ чтения</h2><p><a href="'+d['source']['url']+'" target="_blank" rel="noopener noreferrer">'+E(d['source']['title'])+' →</a></p>'+p(d['source']['detail'])
  if l:s+='<ul>'+''.join('<li><a href="'+x['url']+'" target="_blank" rel="noopener noreferrer">'+E(x['label'])+'</a></li>' for x in l['refs'])+'</ul>'
- s+=p('Русские пояснения, ситуации и упражнения написаны для проекта Элиоры Вейры. Это учебный комментарий к выбранным местам, а не перевод всей книги. Исторический источник, система автора и наши аналогии обозначены отдельно.')
+ s+=p('Учебный комментарий Элиоры Вейры к отдельным фрагментам. Цитаты, изложение учения автора и современные аналогии обозначены отдельно.')
  return s+'</section>'
 def table(headers,rows,caption):
  return '<div class="sy-table-scroll"><table><caption>'+E(caption)+'</caption><thead><tr>'+''.join('<th scope="col">'+E(t)+'</th>' for t in headers)+'</tr></thead><tbody>'+''.join('<tr>'+''.join(('<th scope="row">'+E(t)+'</th>') if i==0 else '<td>'+E(t)+'</td>' for i,t in enumerate(r))+'</tr>' for r in rows)+'</tbody></table></div>'

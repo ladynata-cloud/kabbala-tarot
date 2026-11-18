@@ -152,6 +152,9 @@ def page(path,title,description,body,kind='page',L=None,noindex=False):
  catalog_script=f'<script defer src="{prefix}assets/course/reading-catalog.js"></script>' if path=='/course/reading/catalog/' else ''
  if 'data-lab3=' in body:catalog_script+=f'<script defer src="{prefix}assets/course/labs.js"></script>'
  html=f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#122e3b"><title>{E(document_title)}</title><meta name="description" content="{E(description,quote=True)}"><meta name="author" content="Элиора Вейра"><meta name="robots" content="{'noindex,follow' if noindex else 'index,follow,max-image-preview:large'}"><link rel="canonical" href="{url}"><meta property="og:type" content="{'article' if L else 'website'}"><meta property="og:locale" content="ru_RU"><meta property="og:site_name" content="Каббала и Таро"><meta property="og:title" content="{E(title,quote=True)}"><meta property="og:description" content="{E(description,quote=True)}"><meta property="og:url" content="{url}"><meta property="og:image" content="{ORIGIN}/assets/beginning.jpg"><meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="{prefix}assets/course/course.css"><link rel="icon" href="{prefix}assets/course/icon.svg"><script type="application/ld+json">{jsonsafe(schema)}</script></head><body><a class="skip" href="#main">Перейти к содержанию</a><header class="top"><div class="top-inner"><a class="wordmark" href="{prefix or './'}" aria-label="Каббала и Таро — главная">Каббала<span><i>и</i> Таро</span></a><nav aria-label="Разделы курса">{nav}</nav><a class="author" href="{prefix}author/">Элиора Вейра</a></div></header><main class="wrap" id="main">{body}</main><footer class="footer"><div>Каббала и Таро · Элиора Вейра · 2026<br>Знакомиться можно постепенно. Возвращаться — сколько угодно.</div><div><a href="{prefix}author/">Об авторе и курсе</a><a href="{prefix}course/reading/#sources">Источники</a><a href="{prefix}course/notebook/">Тетрадь и перенос записей</a></div></footer><script id="course-data" type="application/json">{jsonsafe(payload)}</script><script defer src="{prefix}assets/course/state.js"></script><script defer src="{prefix}assets/course/readings-data.js"></script><script defer src="{prefix}assets/course/app.js"></script><script defer src="{prefix}assets/course/extensions.js"></script>{catalog_script}</body></html>'''
+ if path=='/course/one-card/':
+  html=html.replace('<body>','<body class="one-card-page">',1).replace('id="main"','id="main" tabindex="-1"',1)
+  html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/one-card.css"></head>',1)
  if path.startswith('/course/yetzirah/'):
   html=html.replace('</head>',f'<link rel="stylesheet" href="{prefix}assets/course/yetzirah.css"></head>').replace('</body>',f'<script defer src="{prefix}assets/course/yetzirah-state.js"></script><script defer src="{prefix}assets/course/yetzirah.js"></script></body>')
  if path.startswith(('/course/tomer-devorah/','/course/bahir/','/course/book-modules/')):
@@ -258,9 +261,26 @@ def card_figure(ids):
  # A click gives the 960-px copy from the repository, not an English file page on Commons: the lesson
  # asks the learner to look at the card closely, and Commons needs a second click to get to it at all.
  return '<figure class="lesson-card-figure">'+''.join(f'<a class="card-picture" href="{E(expansion.big_image(c),quote=True)}" title="Открыть карту крупнее" target="_blank" rel="noopener noreferrer"><img loading="lazy" width="120" height="208" src="{E(c["image"],quote=True)}" {expansion.card_srcset(c)} sizes="160px" alt="{E(c["name"],quote=True)} — Памела Колман Смит"></a>' for c in cs)+'<figcaption>'+' · '.join(E(c['name']) for c in cs)+' — колода Уэйта–Смит, рисунки Памелы Колман Смит (1909). Источник изображений: <a href="https://commons.wikimedia.org/wiki/Category:RWS_Tarot_deck" target="_blank" rel="noopener noreferrer">Wikimedia Commons ↗</a>.</figcaption></figure>'
+
+def one_card_figure(L):
+ card=expansion.CARDS[L['cards'][0]]
+ return f'''<figure class="one-card-figure">
+  <a class="one-card-image" href="{E(expansion.big_image(card),quote=True)}" target="_blank" rel="noopener noreferrer">
+    <img src="{E(card['image'],quote=True)}" {expansion.card_srcset(card)} sizes="(max-width: 640px) 176px, 216px"
+         width="240" height="413" fetchpriority="high" decoding="async" alt="{E(L['opening']['imageAlt'],quote=True)}">
+    <span>Открыть карту крупнее</span>
+  </a>
+  <figcaption>Памела Колман Смит. Колода Уэйта–Смит, 1909. {expansion.commons_note(card)}</figcaption>
+ </figure>'''
+
 def lesson_section(L,i,s,p):
  links=[x for x in L.get('links',[]) if x.get('section')==i]
  body=para(s["text"],links)
+ if i==0 and L['slug']=='one-card':
+  body=f'<div class="one-card-study">{one_card_figure(L)}<div>{body}</div></div>'
+ if 'exampleSteps' in s:
+  steps=''.join(f'<div><dt>{E(label)}</dt><dd>{E(step)}</dd></div>' for label,step in s['exampleSteps'])
+  body=f'<dl class="one-card-example">{steps}</dl>'+body
  # Lessons of the first circle always show the card next to the first section (as 21 and 22 do): a beginner
  # who came with a deck must see it on stage «Разберёмся», not only inside the lab on stage «Попробуем».
  # The figure goes right after the opening paragraph, not at the end of the section: in lesson 27 the
@@ -279,24 +299,55 @@ def term_link(t,p):
  return f'<a href="{p}course/glossary/#{E(t.lower().replace(" ","-"))}">{E(t)}</a>' if t.lower() in GLOSS else f'<span class="term-plain">{E(t)}</span>'
 def extra_lab(x,L):return lab(x['lab'],L,x.get('labData') or {})
 def stage4(L):
- h='<section class="stage" data-stage="3" tabindex="-1" aria-label="Собственная запись"><h2>А как бы Вы это объяснили?</h2>'+para(L['prompt'])
+ one_card=L['slug']=='one-card'
+ heading='Запишите своё прочтение' if one_card else 'А как бы Вы это объяснили?'
+ h=f'<section class="stage" data-stage="3" tabindex="-1" aria-label="Собственная запись"><h2>{heading}</h2>'+para(L['prompt'])
  if L.get('checklist'):h+='<div class="note-checklist"><p class="fine">Перед тем как писать, держите в уме:</p><ul>'+''.join(f'<li>{E(c)}</li>' for c in L['checklist'])+'</ul></div>'
  sc=L.get('scaffold') or []
  if sc:
-  h+='<div class="scaffold" data-scaffold><p class="fine">Начните любую строку — подсказка в поле исчезнет, как только Вы начнёте писать.</p>'+''.join(f'<textarea class="scaffold-field" rows="2" maxlength="4000" data-scaffold-field="{n}" aria-label="Строка {n+1}: {E(t,quote=True)}" placeholder="{E(t,quote=True)}"></textarea>' for n,t in enumerate(sc))+'</div><label class="reflection-label" for="reflection">Ещё мысль или вопрос — если хочется</label><textarea class="note note-free" id="reflection" maxlength="20000" placeholder="Можно оставить пустым"></textarea>'
+  h+='<div class="scaffold" data-scaffold>'
+  if one_card:
+   h+=''.join(f'<div><label for="one-card-line-{n}">{E(t.partition(":")[0])}</label><textarea class="scaffold-field" id="one-card-line-{n}" rows="2" maxlength="4000" data-scaffold-field="{n}"></textarea></div>' for n,t in enumerate(sc))
+  else:
+   h+='<p class="fine">Начните любую строку — подсказка в поле исчезнет, как только Вы начнёте писать.</p>'+''.join(f'<textarea class="scaffold-field" rows="2" maxlength="4000" data-scaffold-field="{n}" aria-label="Строка {n+1}: {E(t,quote=True)}" placeholder="{E(t,quote=True)}"></textarea>' for n,t in enumerate(sc))
+  h+='</div><label class="reflection-label" for="reflection">Ещё мысль или вопрос — если хочется</label><textarea class="note note-free" id="reflection" maxlength="20000" placeholder="Можно оставить пустым"></textarea>'
  else:h+='<label class="reflection-label" for="reflection">Ваша мысль, пример или вопрос</label><textarea class="note" id="reflection" maxlength="20000" placeholder="Можно начать с одной фразы…"></textarea>'
  h+='<span class="status-text" id="note-status" role="status">Записи хранятся в этом браузере и не отправляются автору курса.</span>'
  h+='<label class="self-check"><input id="reflection-check" type="checkbox"><span>Я обдумал(а) вопрос и хочу пока оставить ответ без записи.</span></label><div class="one-word" data-one-word hidden><label for="one-word">Одно слово, которое запомнилось (необязательно)</label><input id="one-word" type="text" maxlength="80" autocomplete="off"></div>'
- if L.get('sampleHint'):h+='<p class="sample-hint"><strong>Вопрос перед образцом.</strong> '+E(L['sampleHint'])+'</p>'
- h+='<p class="fine" data-sample-locked>Один из возможных ответов откроется здесь, когда Вы напишете хотя бы строку или отметите, что обдумали вопрос без записи.</p><details class="example" data-sample hidden><summary>Посмотреть один из возможных ответов</summary>'+para(L['sample'])+'<p class="fine">Что в образце есть, чего нет у Вас? А что есть у Вас, чего в нём нет?</p></details>'
+ if L.get('sampleHint'):h+='<p class="sample-hint">'+('' if one_card else '<strong>Вопрос перед образцом.</strong> ')+E(L['sampleHint'])+'</p>'
+ locked='Чтобы открыть пример, напишите хотя бы строку или поставьте отметку выше.' if one_card else 'Один из возможных ответов откроется здесь, когда Вы напишете хотя бы строку или отметите, что обдумали вопрос без записи.'
+ h+=f'<p class="fine" data-sample-locked>{locked}</p><details class="example" data-sample hidden><summary>Посмотреть один из возможных ответов</summary>'+para(L['sample'])+'<p class="fine">Что в образце есть, чего нет у Вас? А что есть у Вас, чего в нём нет?</p></details>'
  h+='<div class="completion">'+btn('Завершить урок','id="complete-lesson"')+'<p class="feedback" id="completion-status" role="status">Урок будет отмечен, когда все три вопроса разобраны (с подсказкой тоже считается) и есть запись или отметка «без записи».</p><div class="complete-banner" id="completion-result" tabindex="-1" hidden></div></div></section>'
  return h
+
+def one_card_opening(L, program):
+ return f'''<header class="one-card-heading">
+  <h1>{E(L['title'])}</h1>
+  <p class="one-card-lead">{E(L['opening']['lead'])}</p>
+  <div class="one-card-tools">
+   <span>{E(time_range(L))}</span>
+   <button data-font-size type="button">Крупнее текст</button>
+   {program}
+  </div>
+ </header>'''
+
 for L in LESSONS:
- p='../../';side='<aside class="side"><details class="toc" open><summary class="toc-summary"><span class="mobile-toc-title">Программа и мой прогресс ▾</span></summary><div><p class="eyebrow">Мой путь</p><div class="side-note">'+progress()+'</div>'
+ one_card=L['slug']=='one-card'
+ p='../../'
+ side=('<details class="one-card-program"><summary>Программа и прогресс</summary><div>' if one_card else '<aside class="side"><details class="toc" open><summary class="toc-summary"><span class="mobile-toc-title">Программа и мой прогресс ▾</span></summary><div><p class="eyebrow">Мой путь</p>')
+ side+='<div class="side-note">'+progress()+'</div>'
  side+='<a class="books-side-link" href="../books/">Перед началом: Тора, Талмуд, Зоар</a>'
  for i,m in enumerate(D['modules']):side+=f'<details {"open" if i==L["module"] else ""}><summary>{i+1}. {m["title"]}</summary>{lessonlist(in_module(i),p,L["id"])}</details>'
- side+='</div></details></aside>'
- b=crumbs(p,'Урок '+str(L['id']))+'<div class="lesson-shell">'+side+f'<article class="lesson-main"><p class="eyebrow">Раздел {L["module"]+1} · {D["modules"][L["module"]]["title"]} · Урок {L["id"]}</p><h1>{E(L["title"])}</h1><p class="hook">{E(L["hook"])}</p>{lesson_summary(L)}<p class="aim">После урока Вы сможете: {E(aim_text(L))}</p><div class="lesson-meta"><span class="meta-time">{E(L.get("time") or "10–20 минут вместе с упражнением и записью; можно в два подхода")}</span>'+(f'<span class="meta-keyword">Главное слово: <b>{E(L["keyword"])}</b></span>' if L.get('keyword') else '')+'<span class="reader-tools"><button data-font-size type="button">Крупнее текст</button></span></div><nav class="steps" aria-label="Шаги урока">'+''.join(f'<button type="button" data-go-stage="{i}"><b>0{i+1}</b>{t}</button>' for i,t in enumerate(['Разберёмся','Попробуем','Проверим','Своими словами']))+'</nav>'
+ side+='</div></details>'+('' if one_card else '</aside>')
+ breadcrumb='Урок '+str(L['id'])
+ if one_card:breadcrumb=D['modules'][L['module']]['title']+' · '+breadcrumb
+ b=crumbs(p,breadcrumb)+'<div class="lesson-shell">'+('' if one_card else side)+'<article class="lesson-main">'
+ if one_card:
+  b+=one_card_opening(L,side)
+ else:
+  b+=f'<p class="eyebrow">Раздел {L["module"]+1} · {D["modules"][L["module"]]["title"]} · Урок {L["id"]}</p><h1>{E(L["title"])}</h1><p class="hook">{E(L["hook"])}</p>{lesson_summary(L)}<p class="aim">После урока Вы сможете: {E(aim_text(L))}</p><div class="lesson-meta"><span class="meta-time">{E(L.get("time") or "10–20 минут вместе с упражнением и записью; можно в два подхода")}</span>'+(f'<span class="meta-keyword">Главное слово: <b>{E(L["keyword"])}</b></span>' if L.get('keyword') else '')+'<span class="reader-tools"><button data-font-size type="button">Крупнее текст</button></span></div>'
+ b+='<nav class="steps" aria-label="Шаги урока">'+''.join(f'<button type="button" data-go-stage="{i}">'+('' if one_card else f'<b>0{i+1}</b>')+f'{t}</button>' for i,t in enumerate(['Разберёмся','Попробуем','Проверим','Своими словами']))+'</nav>'
+ if one_card:b+='<noscript><p>Для проверки ответов и сохранения записей нужен JavaScript. Разбор и источники можно читать без него.</p></noscript>'
  # A lesson that is a meeting of the first circle says so on the page itself: a visitor who came straight
  # from the landing button lands here without ever having seen /course/, and used to meet the word «круг»
  # for the first time on the completion screen.
@@ -309,13 +360,16 @@ for L in LESSONS:
  b+='<section class="stage active" data-stage="0" tabindex="-1" aria-label="Объяснение">'+(f'<figure class="source-line"><blockquote>{E(src["text"])}</blockquote><figcaption>{E(src["ref"])}</figcaption></figure>' if src else '')+''.join(lesson_section(L,i,s,p) for i,s in enumerate(L['sections']))
  if L.get('terms'):b+='<div class="term-row"><span class="fine">Слова урока:</span>'+''.join(term_link(t,p) for t in L['terms'])+'</div>'
  b+=btn('Перейдём к практике →','data-go-stage="1"')+'</section>'
- b+='<section class="stage" data-stage="1" tabindex="-1" aria-label="Исследование"><h2>Попробуйте сами</h2>'+lab(L['lab'],L)+''.join(extra_lab(x,L) for x in L.get('extraLabs',[]))+btn('Теперь несколько вопросов →','data-go-stage="2"')+'</section>'
- b+='<section class="stage" data-stage="2" tabindex="-1" aria-label="Проверка понимания"><h2>Проверим себя?</h2><p class="quiz-intro">'+E(PAGES['quizIntro'])+'</p>'
+ practice_title='Прочитайте Отшельника' if one_card else 'Попробуйте сами'
+ b+=f'<section class="stage" data-stage="1" tabindex="-1" aria-label="Исследование"><h2>{practice_title}</h2>'+lab(L['lab'],L)+''.join(extra_lab(x,L) for x in L.get('extraLabs',[]))+btn('Теперь несколько вопросов →','data-go-stage="2"')+'</section>'
+ quiz_intro='Выберите ответ. Пояснение появится под вопросом.' if one_card else PAGES['quizIntro']
+ b+='<section class="stage" data-stage="2" tabindex="-1" aria-label="Проверка понимания"><h2>Проверим себя?</h2><p class="quiz-intro">'+E(quiz_intro)+'</p>'
  for qi,q in enumerate(L['quiz']):b+=f'<fieldset class="quiz-item" data-quiz-item="{qi}"><legend>{qi+1}. {E(q["q"])}</legend>'+''.join(f'<label class="option" data-option="{i}"><input type="radio" data-question="{qi}" name="q{qi}" value="{i}"><span>{E(t)}</span></label>' for i,t in enumerate(q['options']))+f'<div class="q-feedback" data-q-feedback="{qi}" aria-live="polite"></div></fieldset>'
  b+='<p id="quiz-summary" class="feedback" role="status">Выберите ответ — он проверится сразу.</p><div class="actions">'+btn('К своей записи →','data-go-stage="3"',True)+'</div></section>'
  b+=stage4(L)
  if L['slug']=='bahir-and-zohar':b+='<section class="books-start"><div><h2>Читаем Бахир подробнее</h2><p>12 занятий: притчи, источники и дерево, буквы и числа, свой комментарий.</p></div><a class="button" href="../bahir/">Открыть модуль →</a></section>'
- b+='<section class="source-block"><h2>Если хочется прочитать дальше</h2><ul>'+''.join('<li>'+E(t)+'</li>' for t in L['reading'])+'</ul>'+sources(L['sourceIds'])+'</section><nav class="next-prev" aria-label="Соседние уроки">'
+ reading_title='Уэйт и дальнейшее чтение' if one_card else 'Если хочется прочитать дальше'
+ b+=f'<section class="source-block"><h2>{reading_title}</h2><ul>'+''.join('<li>'+E(t)+'</li>' for t in L['reading'])+'</ul>'+sources(L['sourceIds'])+'</section><nav class="next-prev" aria-label="Соседние уроки">'
  k=ORDER.index(L['id'])
  if k>0:
   prev=PROGRAM[k-1];b+=f'<a href="../{prev["slug"]}/"><small>← Урок {prev["id"]}</small>{E(prev["title"])}</a>'

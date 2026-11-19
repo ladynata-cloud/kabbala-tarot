@@ -20,6 +20,7 @@ import build_mixed_reading as mixed_reading
 import build_reversal_study as reversal_study
 import build_spread_dynamics as spread_dynamics
 import build_spread_workshop as spread_workshop
+import build_symbols_assistant as symbols_assistant
 import build_hekate as hekate
 import design
 import build_labs as labs
@@ -399,6 +400,7 @@ body+='</div><div class="notice">Древо показывает выбранн�
 page('/course/atlas/','Древо сефирот, четыре мира и учение Лурии — интерактивные схемы','Изучайте десять сефирот, четыре мира, буквы и этапы лурианского рассказа на интерактивных схемах с понятными пояснениями.',body)
 # Reading library and Tarot workshop.
 expansion.build(page,crumbs,D,lessonlist)
+symbols_assistant.build(page, crumbs)
 reading_catalog.build(page,crumbs)
 yetzirah.build(page,crumbs)
 book_studies.build(page,crumbs)

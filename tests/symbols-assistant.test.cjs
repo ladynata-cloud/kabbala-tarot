@@ -59,3 +59,20 @@ test('a request to extract private notes never fabricates or requests browser st
   const source=fs.readFileSync(path.join(root,'assets/course/symbols-assistant.js'),'utf8');
   assert.doesNotMatch(source,/localStorage|sessionStorage|indexedDB/u);
 });
+
+test('an image request follows the newly selected card even while observation mode is active',()=>{
+  const previous=respond(records,'Покажи учебный смысл Башни',{entityId:'rws-16',aspect:'commentary'});
+  const answer=respond(records,'Теперь открыта Звезда. Что изображено? Дай ссылку на изображение.',{entityId:'rws-17',aspect:'observation'},previous.state);
+  assert.equal(answer.state.entityId,'rws-17');
+  assert.equal(answer.state.aspect,'observation');
+  assert.ok(answer.links.some(link=>link.url==='https://commons.wikimedia.org/wiki/File:RWS_Tarot_17_Star.jpg'));
+  assert.ok(answer.links.every(link=>link.url===byId('rws-17').url || byId('rws-17').sources.some(source=>source.url===link.url)));
+});
+
+test('a tradition mismatch preserves the selected source and does not describe the unseen deck',()=>{
+  const answer=respond(records,'У меня марсельский Суд, но открыта карточка Уэйта–Смит. Это описание моей колоды?',{entityId:'rws-20',aspect:'tradition'});
+  assert.equal(answer.state.entityId,'rws-20');
+  assert.match(answer.reply,/пока нет/u);
+  assert.match(answer.reply,/издание/u);
+  assert.deepEqual(answer.links.map(link=>link.url),[byId('rws-20').url]);
+});
